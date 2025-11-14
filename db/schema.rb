@@ -10,18 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_14_171059) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_14_174450) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "contracts", force: :cascade do |t|
     t.string "agency", default: "other", null: false
+    t.integer "annex_extra_minutes", default: 0, null: false
+    t.integer "annex_minutes_per_hour", default: 0, null: false
+    t.decimal "annex_threshold_hours", precision: 4, scale: 2, default: "0.0", null: false
     t.string "contract_type"
     t.datetime "created_at", null: false
     t.date "end_date"
-    t.decimal "hourly_rate", precision: 5, scale: 2
+    t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88", null: false
     t.decimal "km_rate", precision: 5, scale: 2
     t.string "location"
+    t.decimal "night_rate", precision: 4, scale: 2, default: "0.35", null: false
     t.text "notes"
     t.date "start_date"
     t.datetime "updated_at", null: false
