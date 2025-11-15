@@ -1,0 +1,2 @@
+class WorkSession < ApplicationRecord
+end

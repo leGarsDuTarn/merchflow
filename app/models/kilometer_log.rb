@@ -1,0 +1,2 @@
+class KilometerLog < ApplicationRecord
+end
