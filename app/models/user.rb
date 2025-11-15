@@ -18,29 +18,54 @@ class User < ApplicationRecord
   # VALIDATIONS
   # ============================================================
 
-  validates :address, presence: true, allow_blank: true
-  validates :zipcode, presence: true, allow_blank: true
-  validates :city, presence: true, allow_blank: true
+  validates :firstname, presence: { message: "Vous devez renseigner votre prénom" }
+  validates :lastname,  presence: { message: "Vous devez renseigner votre nom" }
+
+  validates :username,
+            presence: { message: "Vous devez choisir un nom d'utilisateur" },
+            uniqueness: { message: "Ce nom d'utilisateur est déjà pris" },
+            format: {
+              with: /\A[a-zA-Z0-9._-]+\z/,
+              message: "ne peut contenir que des lettres, chiffres, . _ ou -"
+            }
+
+  validates :email,
+            presence: { message: "Vous devez renseigner une adresse email" },
+            uniqueness: { message: "Cette adresse email est déjà utilisée" }
+
+  validates :address, presence: { message: "Vous devez renseigner une adresse" }
+  validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }
+  validates :city,    presence: { message: "Vous devez renseigner une ville" }
 
   # ============================================================
-  # MÉTHODES UTILITAIRES ADRESSE
+  # NORMALISATION DES CHAMPS UTILISATEUR
   # ============================================================
 
-  # Adresse complète formatée (pour Google API)
+  before_validation :normalize_names
+  before_validation :normalize_username
+  before_validation :normalize_email
+  before_validation :generate_username, on: :create
+
+  # ============================================================
+  # MÉTHODES UTILITAIRES
+  # ============================================================
+
+  def full_name
+    "#{firstname.to_s.titleize} #{lastname.to_s.titleize}"
+  end
+
   def full_address
     [address, zipcode, city].compact.join(", ")
   end
 
-  # Vérifie que l'adresse est complète pour calcul distances
   def address_complete?
     address.present? && zipcode.present? && city.present?
   end
 
   # ============================================================
-  # MÉTHODES DASHBOARD
+  # DASHBOARD
   # ============================================================
 
-  # Total des minutes travaillées (toutes missions)
   def total_minutes_worked
     work_sessions.sum(:duration_minutes)
   end
@@ -49,31 +74,23 @@ class User < ApplicationRecord
     (total_minutes_worked / 60.0).round(2)
   end
 
-  # Total brut toutes missions
   def total_brut
-    work_sessions.inject(0) { |sum, ws| sum + ws.brut }
+    work_sessions.map(&:brut).sum
   end
 
-  # Total IFM + CP
   def total_ifm_cp
-    work_sessions.inject(0) { |sum, ws| sum + ws.contract.ifm_cp_total(ws.brut) }
+    work_sessions.sum { |ws| ws.contract.ifm_cp_total(ws.brut) }
   end
 
-  # Total kilomètres
   def total_km
-    work_sessions.inject(0) { |sum, ws| sum + ws.effective_km.to_f }
+    work_sessions.sum { |ws| ws.effective_km.to_f }
   end
 
-  # Total remboursement km
   def total_km_payment
-    work_sessions.inject(0) do |sum, ws|
-      sum + ws.contract.km_payment(ws.effective_km.to_f, recommended: ws.recommended)
+    work_sessions.sum do |ws|
+      ws.contract.km_payment(ws.effective_km.to_f, recommended: ws.recommended)
     end
   end
-
-  # ============================================================
-  # MÉTHODES PAR EMPLOYEUR
-  # ============================================================
 
   def total_by_agency
     contracts.includes(:work_sessions).map do |contract|
@@ -84,5 +101,42 @@ class User < ApplicationRecord
         km: contract.work_sessions.sum(&:effective_km)
       }
     end
+  end
+
+  # ============================================================
+  # PRIVATE
+  # ============================================================
+
+  private
+
+  def normalize_names
+    self.firstname = firstname.to_s.squish.titleize
+    self.lastname  = lastname.to_s.squish.titleize
+  end
+
+  def normalize_username
+    return if username.blank?
+
+    # enlève espaces, accents, majuscules
+    self.username = username.to_s.strip.downcase.gsub(/[^a-z0-9._-]/, "")
+  end
+
+  def normalize_email
+    self.email = email.to_s.strip.downcase
+  end
+
+  def generate_username
+    return if username.present?
+
+    base = "#{firstname}#{lastname}".downcase.gsub(/[^a-z0-9]/, "")
+    candidate = base
+    counter = 1
+
+    while User.exists?(username: candidate)
+      candidate = "#{base}#{counter}"
+      counter += 1
+    end
+
+    self.username = candidate
   end
 end
