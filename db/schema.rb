@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_14_185735) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_15_134520) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,7 +28,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_14_185735) do
     t.decimal "km_limit", precision: 5, scale: 2, default: "0.0", null: false
     t.decimal "km_rate", precision: 5, scale: 2
     t.boolean "km_unlimited", default: false, null: false
-    t.string "location"
     t.string "name", default: "", null: false
     t.decimal "night_rate", precision: 4, scale: 2, default: "0.35", null: false
     t.text "notes"
@@ -66,6 +65,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_14_185735) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.string "address"
+    t.string "city"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -73,6 +74,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_14_185735) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.datetime "updated_at", null: false
+    t.string "zipcode"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -84,6 +86,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_14_185735) do
     t.date "date", null: false
     t.integer "duration_minutes", default: 0, null: false
     t.datetime "end_time", null: false
+    t.decimal "km_custom", precision: 5, scale: 2
     t.decimal "meal_allowance", precision: 5, scale: 2, default: "0.0", null: false
     t.boolean "meal_eligible", default: false, null: false
     t.integer "meal_hours_required", default: 5, null: false
@@ -93,6 +96,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_14_185735) do
     t.string "shift", default: "unknown", null: false
     t.datetime "start_time", null: false
     t.string "store", default: "Unknown", null: false
+    t.string "store_full_address"
     t.datetime "updated_at", null: false
     t.index ["contract_id"], name: "index_work_sessions_on_contract_id"
     t.index ["date"], name: "index_work_sessions_on_date"
