@@ -29,10 +29,12 @@ class WorkSession < ApplicationRecord
   # CALLBACKS
   # ============================================================
 
-  before_save :compute_duration
-  before_save :compute_night_minutes
-  before_save :check_meal_eligibility
-  before_save :compute_effective_km
+  # Avant toute validation → on calcule tout
+  before_validation :ensure_end_time_is_on_correct_day
+  before_validation :compute_duration
+  before_validation :compute_night_minutes
+  before_validation :check_meal_eligibility
+  before_validation :compute_effective_km
 
   # ============================================================
   # VALIDATION LOGIQUE
@@ -46,10 +48,26 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
+  # GESTION DES MISSIONS PASSANT MINUIT
+  # ============================================================
+
+  # Si l'utilisateur met 20h → 02h sans changer de date : on corrige automatiquement
+  def ensure_end_time_is_on_correct_day
+    return if start_time.blank? || end_time.blank?
+
+    if end_time <= start_time
+      # on ajoute 1 jour à l'heure de fin
+      self.end_time = end_time + 1.day
+    end
+  end
+
+  # ============================================================
   # CALCUL DUREE
   # ============================================================
 
   def compute_duration
+    return if start_time.blank? || end_time.blank?
+
     total = ((end_time - start_time) / 60).to_i
     self.duration_minutes = [total - break_minutes, 0].max
   end
@@ -59,6 +77,8 @@ class WorkSession < ApplicationRecord
   # ============================================================
 
   def compute_night_minutes
+    return if start_time.blank? || end_time.blank?
+
     minutes = 0
     current = start_time
 
@@ -80,6 +100,8 @@ class WorkSession < ApplicationRecord
   # ============================================================
 
   def check_meal_eligibility
+    return if duration_minutes.blank?
+
     self.meal_eligible = duration_minutes >= meal_hours_required * 60
   end
 
