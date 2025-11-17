@@ -26,10 +26,9 @@ class WorkSession < ApplicationRecord
   NIGHT_END   = 6  # 6h
 
   # ============================================================
-  # CALLBACKS
+  # CALLBACKS : recalcul complet avant sauvegarde
   # ============================================================
 
-  # Avant toute validation → on calcule tout
   before_validation :ensure_end_time_is_on_correct_day
   before_validation :compute_duration
   before_validation :compute_night_minutes
@@ -51,12 +50,10 @@ class WorkSession < ApplicationRecord
   # GESTION DES MISSIONS PASSANT MINUIT
   # ============================================================
 
-  # Si l'utilisateur met 20h → 02h sans changer de date : on corrige automatiquement
   def ensure_end_time_is_on_correct_day
     return if start_time.blank? || end_time.blank?
 
     if end_time <= start_time
-      # on ajoute 1 jour à l'heure de fin
       self.end_time = end_time + 1.day
     end
   end
@@ -83,12 +80,7 @@ class WorkSession < ApplicationRecord
     current = start_time
 
     while current < end_time
-      hour = current.hour
-
-      if hour >= NIGHT_START || hour < NIGHT_END
-        minutes += 1
-      end
-
+      minutes += 1 if current.hour >= NIGHT_START || current.hour < NIGHT_END
       current += 1.minute
     end
 
@@ -110,41 +102,61 @@ class WorkSession < ApplicationRecord
   # ============================================================
 
   def compute_effective_km
-    if km_custom.present?
-      self.effective_km = km_custom
-    else
-      self.effective_km = kilometer_logs.sum(:distance)
-    end
+    self.effective_km =
+      if km_custom.present?
+        km_custom
+      else
+        kilometer_logs.sum(:distance)
+      end
   end
 
   # ============================================================
-  # CALCUL BRUT
+  # CALCUL BRUT (refactoré — RuboCop OK)
   # ============================================================
 
   def brut
     return 0 if duration_minutes.zero?
 
-    hours_day   = ((duration_minutes - night_minutes) / 60.0).round(2)
-    hours_night = (night_minutes / 60.0).round(2)
-
-    day_pay   = hours_day   * contract.hourly_rate
-    night_pay = hours_night * contract.night_hourly_rate
-
     day_pay + night_pay
   end
 
   # ============================================================
-  # TOTAL REMUNERATION (brut + IFM + CP + frais repas + km)
+  # TOTAL REMUNERATION (refactoré proprement)
   # ============================================================
 
   def total_payment
-    brut_value = brut
-    ifm = contract.ifm(brut_value)
-    cp  = contract.cp(brut_value)
-    km_pay = contract.km_payment(effective_km.to_f, recommended: recommended)
+    brut + contract.ifm(brut) + contract.cp(brut) + km_payment_final + meal_payment
+  end
 
-    meal = meal_eligible ? meal_allowance : 0
+  # ============================================================
+  # MÉTHODES PRIVÉES (optimisation du code)
+  # ============================================================
 
-    brut_value + ifm + cp + km_pay + meal
+  private
+
+  # ---- Heures ----
+  def hours_day
+    ((duration_minutes - night_minutes) / 60.0).round(2)
+  end
+
+  def hours_night
+    (night_minutes / 60.0).round(2)
+  end
+
+  # ---- Paiement ----
+  def day_pay
+    hours_day * contract.hourly_rate
+  end
+
+  def night_pay
+    hours_night * contract.night_hourly_rate
+  end
+
+  def meal_payment
+    meal_eligible ? meal_allowance.to_f : 0
+  end
+
+  def km_payment_final
+    contract.km_payment(effective_km.to_f, recommended: recommended)
   end
 end
