@@ -13,3 +13,30 @@
  *= require_tree .
  *= require_self
  */
+// =============================
+// BOOTSTRAP VARIABLES OVERRIDE
+// =============================
+@import "config/bootstrap_variables";
+
+// =============================
+// BOOTSTRAP
+// =============================
+@import "bootstrap/scss/bootstrap";
+
+// =============================
+// CONFIG
+// =============================
+@import "config/variables";
+@import "config/mixins";
+
+// =============================
+// COMPONENTS
+// =============================
+@import "components/buttons";
+@import "components/navbar";
+
+// =============================
+// PAGES
+// =============================
+@import "pages/home";
+@import "pages/dashboard";

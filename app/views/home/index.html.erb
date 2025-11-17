@@ -1,2 +1,34 @@
-<h1>Home#index</h1>
-<p>Find me in app/views/home/index.html.erb</p>
+<div class="container mt-5">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+
+      <h1 class="display-4 fw-bold mb-3">
+        Simplifiez votre travail <br>
+        <span class="text-primary">de merchandiser</span>
+      </h1>
+
+      <p class="lead text-muted">
+        MerchFlow automatise vos calculs : heures, nuits, IFM, CP, kilomètres,
+        déclarations France Travail… tout est calculé automatiquement, mission par mission.
+      </p>
+
+      <div class="mt-4">
+        <%= link_to "Se connecter", new_user_session_path, class: "btn btn-primary btn-lg me-2" %>
+        <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-outline-primary btn-lg" %>
+      </div>
+
+    </div>
+
+    <div class="col-md-6 text-center d-none d-md-block">
+      <img src="https://cdn-icons-png.flaticon.com/512/2331/2331970.png"
+           alt="Illustration"
+           class="img-fluid"
+           style="max-width: 70%;">
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-muted mt-5 mb-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
+
