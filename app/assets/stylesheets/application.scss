@@ -10,22 +10,16 @@
  * files in this directory. Styles in this file should be added after the last require_* statement.
  * It is generally better to create a new file per style scope.
  *
- *= require_tree .
- *= require_self
  */
-
 // =============================
 // CONFIG FIRST
 // =============================
-@import "config/fonts";            // <--- Définit $body-font, $headers-font
-@import "config/colors";           // <--- Définit $light-gray, $blue, etc.
-@import "config/mixins";           // (Peut rester)
-@import "config/variables";        // charge fonts + colors + mixins
+@import "config/variables";    //
 
 // =============================
 // BOOTSTRAP OVERRIDES
 // =============================
-@import "config/bootstrap_variables";
+@import "config/bootstrap-variables"; // utilise les variables ci-dessus
 
 // =============================
 // BOOTSTRAP
