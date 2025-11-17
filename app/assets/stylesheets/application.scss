@@ -13,8 +13,17 @@
  *= require_tree .
  *= require_self
  */
+
 // =============================
-// BOOTSTRAP VARIABLES OVERRIDE
+// CONFIG FIRST
+// =============================
+@import "config/fonts";            // <--- Définit $body-font, $headers-font
+@import "config/colors";           // <--- Définit $light-gray, $blue, etc.
+@import "config/mixins";           // (Peut rester)
+@import "config/variables";        // charge fonts + colors + mixins
+
+// =============================
+// BOOTSTRAP OVERRIDES
 // =============================
 @import "config/bootstrap_variables";
 
@@ -22,12 +31,6 @@
 // BOOTSTRAP
 // =============================
 @import "bootstrap/scss/bootstrap";
-
-// =============================
-// CONFIG
-// =============================
-@import "config/variables";
-@import "config/mixins";
 
 // =============================
 // COMPONENTS
