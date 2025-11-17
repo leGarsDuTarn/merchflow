@@ -1,0 +1,9 @@
+.lead {
+  font-size: 1.05rem;     // au lieu de ~1.25rem par défaut
+  font-weight: 400;       // moins “bold”
+  line-height: 1.5;
+}
+
+.text-orange {
+  color: $orange;
+}

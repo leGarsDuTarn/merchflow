@@ -3,33 +3,32 @@
 
     <!-- Texte -->
     <div class="col-md-6 order-2 order-md-1 text-center text-md-start">
-      <h1 class="display-4 fw-bold mb-3">
+      <h1 class="display-4 fw-bold mb-4">
         Simplifiez votre travail <br>
-        <span class="text-primary">de merchandiser</span>
+        <span class="text-orange">de merchandiser</span>
       </h1>
 
       <p class="lead text-muted">
-        MerchFlow automatise vos calculs : heures, nuits, IFM, CP, kilomètres,
-        déclarations France Travail… tout est calculé automatiquement, mission par mission.
+        Merchflow automatise vos calculs, mission par mission.
       </p>
 
-      <div class="mt-4">
-        <%= link_to "Se connecter", new_user_session_path, class: "btn btn-orange btn-lg  me-2" %>
-        <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-orange-outline btn-lg me-2" %>
+      <div class="mt-2">
+        <%= link_to "Se connecter", new_user_session_path, class: "btn btn-orange mt-2 me-2" %>
+        <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-orange-outline mt-2 me-2" %>
       </div>
     </div>
 
     <!-- Image -->
-    <div class="col-md-6 order-1 order-md-2 text-center mb-4 mb-md-0">
+    <div class="col-md-6 order-1 order-md-2 text-center mb-2 mb-md-0">
       <%= image_tag "LogoTransparent.png",
-           alt: "Logo MerchFlow",
+           alt: "Logo de MerchFlow",
            class: "img-fluid",
-           style: "max-width: 90%;" %>
+           style: "max-width: 80%" %>
     </div>
 
   </div>
 </div>
 
-<footer class="text-center text-muted mt-3 mb-3">
+<footer class="text-center text-muted mt-2 mb-3">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>
