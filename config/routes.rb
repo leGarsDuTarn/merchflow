@@ -1,14 +1,40 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  get "home/index"
+  # ============================================================
+  # DEVISE AUTHENTICATION
+  # ============================================================
   devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  # ============================================================
+  # DASHBOARD
+  # ============================================================
+  root 'dashboard#index'
+  get 'dashboard', to: 'dashboard#index'
 
-  # Defines the root path route ("/")
-  # root "posts#index"
-  root to: "home#index"
+  # ============================================================
+  # CONTRATS + WORKSESSIONS (shallow routing)
+  # ============================================================
+  resources :contracts do
+    # Shallow = évite les URL trop longues pour les actions qui n’ont pas besoin du parent.
+    resources :work_sessions, shallow: true
+    resources :declarations, only: %i[index create]
+  end
 
+  # ============================================================
+  # KILOMETER LOGS (lié à une work_session)
+  # ============================================================
+  resources :work_sessions, only: [] do
+    resources :kilometer_logs, only: %i[create destroy]
+  end
+
+  # ============================================================
+  # DECLARATIONS FRANCE TRAVAIL (vue globale)
+  # ============================================================
+  get 'france_travail', to: 'declarations#france_travail'
+
+  # ============================================================
+  # API Google Distance (optionnel)
+  # ============================================================
+  get 'km/calc', to: 'km_api#calculate'
 end
