@@ -9,7 +9,10 @@ Rails.application.routes.draw do
   # ============================================================
   # DASHBOARD
   # ============================================================
-  root 'dashboard#index'
+
+  # Landing page publique -> pas de before_action :authenticate_user!
+  root 'home#index'
+  # Dashboard après login
   get 'dashboard', to: 'dashboard#index'
 
   # ============================================================
