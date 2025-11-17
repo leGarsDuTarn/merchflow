@@ -1,0 +1,45 @@
+
+.btn-orange {
+  background: linear-gradient(135deg, #ff8a00, #ff3d00);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  border-radius: .5rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.btn-orange-outline {
+  background: transparent;
+  border: 2px solid #ff7a00;
+  color: #ff7a00;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  border-radius: .5rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #ff8a00, #ff3d00);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.20);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
