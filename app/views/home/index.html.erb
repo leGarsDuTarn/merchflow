@@ -1,7 +1,8 @@
-<div class="container mt-5">
-  <div class="row align-items-center">
-    <div class="col-md-6">
+<div class="container min-vh-100 d-flex align-items-center">
+  <div class="row align-items-center w-100">
 
+    <!-- Texte -->
+    <div class="col-md-6 order-2 order-md-1 text-center text-md-start">
       <h1 class="display-4 fw-bold mb-3">
         Simplifiez votre travail <br>
         <span class="text-primary">de merchandiser</span>
@@ -13,22 +14,22 @@
       </p>
 
       <div class="mt-4">
-        <%= link_to "Se connecter", new_user_session_path, class: "btn btn-primary btn-lg me-2" %>
+        <%= link_to "Se connecter", new_user_session_path, class: "btn btn-primary btn-lg  me-2" %>
         <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-outline-primary btn-lg" %>
       </div>
-
     </div>
 
-    <div class="col-md-6 text-center d-none d-md-block">
-      <img src="https://cdn-icons-png.flaticon.com/512/2331/2331970.png"
-           alt="Illustration"
-           class="img-fluid"
-           style="max-width: 70%;">
+    <!-- Image -->
+    <div class="col-md-6 order-1 order-md-2 text-center mb-4 mb-md-0">
+      <%= image_tag "LogoTransparent.png",
+           alt: "Logo MerchFlow",
+           class: "img-fluid",
+           style: "max-width: 90%;" %>
     </div>
+
   </div>
 </div>
 
-<footer class="text-center text-muted mt-5 mb-3">
+<footer class="text-center text-muted mt-3 mb-3">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>
-
