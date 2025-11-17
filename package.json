@@ -1,0 +1,8 @@
+{
+  "name": "merchflow",
+  "packageManager": "yarn@4.3.1",
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.8"
+  }
+}
