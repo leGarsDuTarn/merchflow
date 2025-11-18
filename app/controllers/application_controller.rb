@@ -8,9 +8,6 @@ class ApplicationController < ActionController::Base
       :firstname,
       :lastname,
       :username,
-      :address,
-      :zipcode,
-      :city
     ])
 
     devise_parameter_sanitizer.permit(:account_update, keys: [

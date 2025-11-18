@@ -32,9 +32,9 @@ class User < ApplicationRecord
             format:     { with: URI::MailTo::EMAIL_REGEXP, message: "exemple : john@gmail.com" },
             uniqueness: { message: "Cette adresse email est déjà utilisée" }
 
-  validates :address, presence: { message: "Vous devez renseigner une adresse" }
-  validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }
-  validates :city,    presence: { message: "Vous devez renseigner une ville" }
+  validates :address, presence: { message: "Vous devez renseigner une adresse" }, unless: :new_record?
+  validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }, unless: :new_record?
+  validates :city,    presence: { message: "Vous devez renseigner une ville" }, unless: :new_record?
 
   # ============================================================
   # MOT DE PASSE FORT
@@ -158,4 +158,3 @@ class User < ApplicationRecord
     end
   end
 end
-
