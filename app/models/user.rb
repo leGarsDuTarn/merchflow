@@ -30,12 +30,42 @@ class User < ApplicationRecord
             }
 
   validates :email,
-            presence: { message: "Vous devez renseigner une adresse email" },
-            uniqueness: { message: "Cette adresse email est déjà utilisée" }
+            presence: { message: "Veuillez renseigner un email." },
+            format: {
+              with: URI::MailTo::EMAIL_REGEXP,
+              message: "exemple : john@gmail.com"
+            },
+            uniqueness: {
+              message: "Cette adresse email est déjà utilisée"
+            }
 
   validates :address, presence: { message: "Vous devez renseigner une adresse" }
   validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }
   validates :city,    presence: { message: "Vous devez renseigner une ville" }
+
+  # ============================================================
+  # MOT DE PASSE FORT (compatible Devise)
+  # ============================================================
+
+  VALID_PASSWORD_REGEX = /\A
+    (?=.{8,})            # Minimum 8 caractères
+    (?=.*\d)             # Au moins un chiffre
+    (?=.*[a-z])          # Au moins une minuscule
+    (?=.*[A-Z])          # Au moins une majuscule
+    (?=.*[[:^alnum:]])   # Au moins un caractère spécial
+  \z/x
+
+  validates :password,
+            format: {
+              with: VALID_PASSWORD_REGEX,
+              message: 'Doit contenir au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial.'
+            },
+            if: :password_required?
+
+  # Devise-friendly: permet de modifier le profil sans retaper un mot de passe
+  def password_required?
+    new_record? || password.present? || password_confirmation.present?
+  end
 
   # ============================================================
   # NORMALISATION DES CHAMPS UTILISATEUR
@@ -117,7 +147,6 @@ class User < ApplicationRecord
   def normalize_username
     return if username.blank?
 
-    # enlève espaces, accents, majuscules
     self.username = username.to_s.strip.downcase.gsub(/[^a-z0-9._-]/, "")
   end
 

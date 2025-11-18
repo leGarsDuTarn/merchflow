@@ -86,13 +86,11 @@ class Contract < ApplicationRecord
   # ============================================================
 
   validates :name, presence: true
-  validates :hourly_rate, numericality: { greater_than: 0 }
   validates :night_rate, :ifm_rate, :cp_rate,
             numericality: { greater_than_or_equal_to: 0 }
   validates :km_rate, numericality: true, allow_nil: true
   validates :km_limit, :annex_minutes_per_hour, :annex_threshold_hours,
             numericality: { greater_than_or_equal_to: 0 }
-
   validate :dates_coherent
 
   # Vérification cohérence dates
@@ -115,11 +113,6 @@ class Contract < ApplicationRecord
   # ============================================================
   # MÉTHODES MÉTIER
   # ============================================================
-
-  # Taux horaire nuit : taux de base * (1 + majoration)
-  def night_hourly_rate
-    (hourly_rate * (1 + night_rate)).round(2)
-  end
 
   # Indemnités de fin de mission
   def ifm(brut)

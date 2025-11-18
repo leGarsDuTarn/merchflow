@@ -63,7 +63,7 @@ class WorkSessionsController < ApplicationController
     params.require(:work_session).permit(
       :date, :start_time, :end_time, :break_minutes, :shift, :store,
       :store_full_address, :notes, :meal_allowance, :meal_hours_required,
-      :recommended, :km_custom
+      :recommended, :km_custom, :hourly_rate
     )
   end
 end

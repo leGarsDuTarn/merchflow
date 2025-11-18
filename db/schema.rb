@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_17_083419) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_18_083639) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,7 +23,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_17_083419) do
     t.decimal "cp_rate", precision: 4, scale: 2, default: "0.1", null: false
     t.datetime "created_at", null: false
     t.date "end_date"
-    t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88", null: false
     t.decimal "ifm_rate", precision: 4, scale: 2, default: "0.1", null: false
     t.decimal "km_limit", precision: 5, scale: 2, default: "0.0", null: false
     t.decimal "km_rate", precision: 5, scale: 2
@@ -91,6 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_17_083419) do
     t.integer "duration_minutes", default: 0, null: false
     t.decimal "effective_km", precision: 5, scale: 2, default: "0.0", null: false
     t.datetime "end_time", null: false
+    t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88", null: false
     t.decimal "km_custom", precision: 5, scale: 2
     t.decimal "meal_allowance", precision: 5, scale: 2, default: "0.0", null: false
     t.boolean "meal_eligible", default: false, null: false

@@ -52,7 +52,7 @@ class ContractsController < ApplicationController
   def contract_params
     params.require(:contract).permit(
       :name, :agency, :contract_type, :start_date, :end_date,
-      :hourly_rate, :night_rate, :km_rate, :km_limit, :km_unlimited,
+      :night_rate, :km_rate, :km_limit, :km_unlimited,
       :ifm_rate, :cp_rate, :annex_minutes_per_hour, :annex_extra_minutes,
       :annex_threshold_hours, :notes
     )

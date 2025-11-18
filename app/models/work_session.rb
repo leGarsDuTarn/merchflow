@@ -14,7 +14,7 @@ class WorkSession < ApplicationRecord
   validates :start_time, presence: true
   validates :end_time, presence: true
   validate  :end_after_start
-
+  validates :hourly_rate, numericality: { greater_than: 0 }
   validates :break_minutes,
             numericality: { greater_than_or_equal_to: 0 }
 
@@ -111,7 +111,7 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # CALCUL BRUT (refactoré — RuboCop OK)
+  # CALCUL BRUT
   # ============================================================
 
   def brut
@@ -121,7 +121,7 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # TOTAL REMUNERATION (refactoré proprement)
+  # TOTAL REMUNERATION
   # ============================================================
 
   def total_payment
@@ -129,7 +129,7 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # MÉTHODES PRIVÉES (optimisation du code)
+  # MÉTHODES PRIVÉES
   # ============================================================
 
   private
@@ -145,11 +145,15 @@ class WorkSession < ApplicationRecord
 
   # ---- Paiement ----
   def day_pay
-    hours_day * contract.hourly_rate
+    hours_day * hourly_rate
+  end
+
+  def night_hourly_rate
+    hourly_rate * (1 + contract.night_rate)
   end
 
   def night_pay
-    hours_night * contract.night_hourly_rate
+    hours_night * night_hourly_rate
   end
 
   def meal_payment
