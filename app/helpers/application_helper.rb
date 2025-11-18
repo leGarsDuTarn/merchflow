@@ -4,6 +4,6 @@ module ApplicationHelper
     return unless resource.errors[field].present?
 
     content_tag(:div, resource.errors[field].first,
-                class: "text-orange small mt-1")
+                class: "text-flash-orange small mt-1")
   end
 end
