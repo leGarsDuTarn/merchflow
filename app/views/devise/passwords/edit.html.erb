@@ -1,25 +1,55 @@
-<h2>Change your password</h2>
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="row w-100 justify-content-center">
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-  <%= f.hidden_field :reset_password_token %>
+    <div class="col-md-5 col-lg-4">
 
-  <div class="field">
-    <%= f.label :password, "New password" %><br />
-    <% if @minimum_password_length %>
-      <em>(<%= @minimum_password_length %> characters minimum)</em><br />
-    <% end %>
-    <%= f.password_field :password, autofocus: true, autocomplete: "new-password" %>
+      <div class="card shadow-sm p-4 rounded-4">
+
+        <h1 class="fw-bold text-center text-orange mb-3">Nouveau mot de passe</h1>
+
+        <p class="text-muted text-center mb-4">
+          Choisissez un nouveau mot de passe pour accéder à votre compte.
+        </p>
+
+        <!-- Messages d'erreurs Devise -->
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+
+          <%= f.hidden_field :reset_password_token %>
+
+          <div class="mb-3">
+            <%= f.label :password, "Nouveau mot de passe", class: "form-label fw-semibold" %>
+            <% if @minimum_password_length %>
+              <small class="text-muted">
+                (<%= @minimum_password_length %> caractères minimum)
+              </small>
+            <% end %>
+            <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "form-control" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password_confirmation, "Confirmation du mot de passe", class: "form-label fw-semibold" %>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control" %>
+          </div>
+
+          <div class="d-grid mt-3">
+            <%= f.submit "Changer mon mot de passe", class: "btn btn-orange btn-lg fw-bold" %>
+          </div>
+
+        <% end %>
+
+        <div class="text-center mt-3">
+          <%= link_to "Retour à la connexion", new_user_session_path, class: "text-decoration-none text-muted" %>
+        </div>
+
+      </div>
+
+    </div>
   </div>
+</div>
 
-  <div class="field">
-    <%= f.label :password_confirmation, "Confirm new password" %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
+<footer class="text-center text-muted mt-2 mb-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
 
-  <div class="actions">
-    <%= f.submit "Change my password" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>

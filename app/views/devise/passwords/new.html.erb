@@ -1,16 +1,48 @@
-<h2>Forgot your password?</h2>
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="row w-100 justify-content-center">
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+    <div class="col-md-5 col-lg-4">
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+      <div class="card shadow-sm p-4 rounded-4">
+
+        <h1 class="fw-bold text-center text-orange mb-3">Mot de passe oublié ?</h1>
+
+        <p class="text-muted text-center mb-4">
+          Pas d’inquiétude. Entrez votre adresse email et nous vous enverrons
+          un lien pour réinitialiser votre mot de passe.
+        </p>
+
+        <!-- Messages d'erreurs Devise -->
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+
+          <div class="mb-3">
+            <%= f.label :email, "Adresse email", class: "form-label fw-semibold" %>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control" %>
+          </div>
+
+          <div class="d-grid">
+            <%= f.submit "Envoyer les instructions", class: "btn btn-orange btn-lg fw-bold" %>
+          </div>
+
+        <% end %>
+
+        <div class="text-center mt-3">
+          <%= link_to "Retour à la connexion", new_user_session_path, class: "text-decoration-none text-muted" %>
+        </div>
+
+        <div class="text-center mt-1">
+          <%= link_to "Créer un compte", new_user_registration_path, class: "text-decoration-none text-orange" %>
+        </div>
+
+      </div>
+
+    </div>
   </div>
+</div>
 
-  <div class="actions">
-    <%= f.submit "Send me reset password instructions" %>
-  </div>
-<% end %>
+<footer class="text-center text-muted mt-2 mb-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
 
-<%= render "devise/shared/links" %>
