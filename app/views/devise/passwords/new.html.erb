@@ -12,28 +12,38 @@
           un lien pour réinitialiser votre mot de passe.
         </p>
 
-        <!-- Messages d'erreurs Devise -->
-        <%= render "devise/shared/error_messages", resource: resource %>
-
-        <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+        <%= form_for(resource,
+                     as: resource_name,
+                     url: password_path(resource_name),
+                     html: { method: :post }) do |f| %>
 
           <div class="mb-3">
             <%= f.label :email, "Adresse email", class: "form-label fw-semibold" %>
-            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control" %>
+            <%= f.email_field :email,
+                  autofocus: true,
+                  autocomplete: "email",
+                  class: "form-control" %>
+
+            <%= inline_error_for(resource, :email) %>
           </div>
 
           <div class="d-grid">
-            <%= f.submit "Envoyer les instructions", class: "btn btn-orange btn-lg fw-bold" %>
+            <%= f.submit "Envoyer les instructions",
+                  class: "btn btn-orange btn-lg fw-bold" %>
           </div>
 
         <% end %>
 
         <div class="text-center mt-3">
-          <%= link_to "Retour à la connexion", new_user_session_path, class: "text-decoration-none text-muted" %>
+          <%= link_to "Retour à la connexion",
+              new_user_session_path,
+              class: "text-decoration-none text-muted" %>
         </div>
 
         <div class="text-center mt-1">
-          <%= link_to "Créer un compte", new_user_registration_path, class: "text-decoration-none text-orange" %>
+          <%= link_to "Créer un compte",
+              new_user_registration_path,
+              class: "text-decoration-none text-orange" %>
         </div>
 
       </div>
