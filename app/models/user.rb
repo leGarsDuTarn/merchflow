@@ -32,20 +32,20 @@ class User < ApplicationRecord
             format:     { with: URI::MailTo::EMAIL_REGEXP, message: "exemple : john@gmail.com" },
             uniqueness: { message: "Cette adresse email est déjà utilisée" }
 
-  validates :address, presence: { message: "Vous devez renseigner une adresse" }, unless: :new_record?
-  validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }, unless: :new_record?
-  validates :city,    presence: { message: "Vous devez renseigner une ville" }, unless: :new_record?
+  validates :address, presence: { message: "Vous devez renseigner une adresse" }
+  validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }
+  validates :city,    presence: { message: "Vous devez renseigner une ville" }
 
   # ============================================================
   # MOT DE PASSE FORT
   # ============================================================
 
   VALID_PASSWORD_REGEX = /\A
-    (?=.{8,})          # Minimum 8 caractères
-    (?=.*\d)           # Chiffre
-    (?=.*[a-z])        # Minuscule
-    (?=.*[A-Z])        # Majuscule
-    (?=.*[[:^alnum:]]) # Caractère spécial
+    (?=.*[a-z])        # Au moins une minuscule
+    (?=.*[A-Z])        # Au moins une majuscule
+    (?=.*\d)           # Au moins un chiffre
+    (?=.*[[:^alnum:]]) # Au moins un caractère spécial
+    .{8,}              # PUIS on consomme 8+ caractères
   \z/x
 
   validates :password,
@@ -69,8 +69,8 @@ class User < ApplicationRecord
   before_validation :generate_username, on: :create
 
   def normalize_names
-    self.firstname = firstname.to_s.squish.titleize if firstname.present?
-    self.lastname  = lastname.to_s.squish.titleize  if lastname.present?
+    self.firstname = firstname.strip.downcase.capitalize if firstname.present?
+    self.lastname  = lastname.strip.downcase.capitalize if lastname.present?
   end
 
   def normalize_username

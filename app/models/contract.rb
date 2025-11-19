@@ -7,7 +7,7 @@ class Contract < ApplicationRecord
   # AGENCIES ENUM + LABELS
   # ============================================================
 
-  enum agency: {
+  enum :agency, {
     actiale: "actiale",
     rma: "rma",
     edelvi: "edelvi",
@@ -26,7 +26,7 @@ class Contract < ApplicationRecord
     idal: "idal",
     armada: "armada",
     sellbytel: "sellbytel",
-    other: "other"
+    other_agency: "other_agency"
   }
 
   AGENCY_LABELS = {
@@ -48,7 +48,7 @@ class Contract < ApplicationRecord
     "idal" => "iDal",
     "armada" => "Armada",
     "sellbytel" => "Sellbytel",
-    "other" => "Autre"
+    "other_agency" => "Autre"
   }.freeze
 
   def agency_label
@@ -63,18 +63,18 @@ class Contract < ApplicationRecord
   # CONTRACT TYPE ENUM + LABELS
   # ============================================================
 
-  enum contract_type: {
+  enum :contract_type, {
     cdd: "cdd",
     interim: "interim",
     cdi: "cdi",
-    other: "other"
+    other_contract: "other_contract"
   }
 
   CONTRACT_TYPE_LABELS = {
     "cdd" => "CDD",
     "interim" => "Intérim",
     "cdi" => "CDI",
-    "other" => "Autre"
+    "other_contract" => "Autre"
   }.freeze
 
   def contract_type_label
