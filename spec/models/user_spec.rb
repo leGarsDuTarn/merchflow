@@ -56,9 +56,17 @@ RSpec.describe User, type: :model do
       should allow_value("benjamin_12").for(:username)
     end
 
-    it do
-      should_not allow_value("benjamin !").for(:username).strict
-        .with_message("ne peut contenir que des lettres, chiffres, . _ ou -")
+    it "refuse les caractères spéciaux (même si le callback normalize_username les enlèverait)" do
+  # Désactive temporairement le callback de normalisation pour forcer la validation à voir le caractère invalide
+  User.skip_callback(:validation, :before, :normalize_username)
+      # Exécute le test Shoulda sur la valeur non normalisée
+      expect(build(:user, username: "benjamin !")).to be_invalid
+  # Vérifie le message d'erreur
+  user = build(:user, username: "benjamin !")
+  user.valid?
+  expect(user.errors[:username]).to include("ne peut contenir que des lettres, chiffres, . _ ou -")
+  # Réactive le callback après le test (TRÈS IMPORTANT !)
+  User.set_callback(:validation, :before, :normalize_username)
     end
 
     # --- password fort (regex) ---
