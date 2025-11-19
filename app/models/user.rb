@@ -122,7 +122,7 @@ class User < ApplicationRecord
   # ============================================================
 
   def total_minutes_worked
-    work_sessions.sum(:duration_minutes)
+    work_sessions.sum(&:duration_minutes)
   end
 
   def total_hours_worked
