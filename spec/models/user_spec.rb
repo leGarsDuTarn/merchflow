@@ -168,27 +168,27 @@ RSpec.describe User, type: :model do
       allow(contract).to receive(:km_payment).and_return(5)
     end
 
-    it '#total_minutes_worked retourne la somme' do
+    it 'Methode total_minutes_worked retourne la somme' do
       expect(user.total_minutes_worked).to eq(180)
     end
 
-    it '#total_hours_worked retourne le total en heures' do
+    it 'Methode total_hours_worked retourne le total en heures' do
       expect(user.total_hours_worked).to eq(3.0)
     end
 
-    it '#total_brut' do
+    it 'Methode total_brut' do
       expect(user.total_brut).to eq(115)
     end
 
-    it '#total_ifm_cp' do
+    it 'Methode total_ifm_cp' do
       expect(user.total_ifm_cp).to eq(20)
     end
 
-    it '#total_km' do
+    it 'Methode total_km' do
       expect(user.total_km).to eq(15)
     end
 
-    it '#total_km_payment' do
+    it 'Methode total_km_payment' do
       expect(user.total_km_payment).to eq(10)
     end
   end
