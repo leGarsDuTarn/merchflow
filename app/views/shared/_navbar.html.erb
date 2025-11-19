@@ -1,0 +1,68 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
+  <div class="container">
+
+    <!-- Logo -->
+    <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
+      <%= image_tag "LogoTransparent.png", alt: "MerchFlow", height: 40, class: "me-2" %>
+      <span class="fw-bold text-orange fs-4">MerchFlow</span>
+    <% end %>
+
+    <!-- Burger -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarMain">
+
+      <!-- Gauche -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <% if user_signed_in? %>
+          <li class="nav-item">
+            <%= link_to "Dashboard", dashboard_path, class: "nav-link fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Contrats", contracts_path, class: "nav-link fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Missions", work_sessions_path, class: "nav-link fw-semibold" %>
+          </li>
+        <% end %>
+      </ul>
+
+      <!-- Droite -->
+      <ul class="navbar-nav ms-auto">
+        <% if user_signed_in? %>
+
+          <!-- Nom + Menu -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle me-1"></i>
+              <%= current_user.firstname %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li><%= link_to "Mon compte", edit_user_registration_path, class: "dropdown-item" %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <%= link_to "Déconnexion",
+                            destroy_user_session_path,
+                            method: :delete,
+                            class: "dropdown-item text-danger fw-semibold" %>
+              </li>
+            </ul>
+          </li>
+
+        <% else %>
+
+          <li class="nav-item me-2">
+            <%= link_to "Connexion", new_user_session_path, class: "btn btn-orange-outline fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-orange fw-semibold" %>
+          </li>
+
+        <% end %>
+      </ul>
+    </div>
+
+  </div>
+</nav>

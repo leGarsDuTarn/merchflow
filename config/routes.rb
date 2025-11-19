@@ -24,6 +24,8 @@ Rails.application.routes.draw do
     resources :declarations, only: %i[index create]
   end
 
+  resources :work_sessions, only: [:index]
+
   # ============================================================
   # KILOMETER LOGS (lié à une work_session)
   # ============================================================

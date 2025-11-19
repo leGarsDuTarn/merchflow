@@ -1,0 +1,26 @@
+.navbar {
+  border-bottom: 1px solid #f3f3f3;
+
+  .nav-link {
+    color: #555;
+    transition: color .2s;
+
+    &:hover {
+      color: #ff6b00; // orange
+    }
+  }
+
+  .dropdown-menu {
+    border-radius: 1rem;
+    padding: 0.5rem;
+  }
+
+  .dropdown-item {
+    border-radius: 0.5rem;
+
+    &:hover {
+      background: rgba(255, 140, 0, 0.1);
+      color: #ff6b00;
+    }
+  }
+}
