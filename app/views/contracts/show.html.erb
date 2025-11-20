@@ -1,2 +1,113 @@
-<h1>Contracts#show</h1>
-<p>Find me in app/views/contracts/show.html.erb</p>
+<div class="container my-5">
+
+  <%# Titre + actions %>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange m-0"><%= @contract.name.presence || "Contrat" %></h1>
+
+    <div class="d-flex gap-2">
+
+      <%# Modifier %>
+      <%= link_to edit_contract_path(@contract),
+                  class: "btn btn-orange d-flex justify-content-center align-items-center",
+                  style: "width: 42px; height: 42px; padding: 0;",
+                  title: "Modifier le contrat",
+                  aria: { label: "Modifier le contrat" } do %>
+        <i class="fa-solid fa-pen-to-square"></i>
+      <% end %>
+
+      <%# Supprimer %>
+      <%= link_to contract_path(@contract),
+                  data: {
+                    turbo_method: :delete,
+                    turbo_confirm: "Supprimer ce contrat ?"
+                  },
+                  class: "btn btn-orange d-flex justify-content-center align-items-center",
+                  style: "width: 42px; height: 42px; padding: 0;",
+                  title: "Supprimer le contrat",
+                  aria: { label: "Supprimer le contrat" } do %>
+        <i class="fa-solid fa-trash-can"></i>
+      <% end %>
+    </div>
+  </div>
+
+  <%# CARTE INFORMATIONS DU CONTRAT %>
+  <div class="card shadow-sm rounded-4 p-4 mb-4">
+
+    <h4 class="fw-bold text-orange mb-3">Informations générales</h4>
+
+    <p class="mb-1">
+      <i class="fa-solid fa-building me-1"></i>
+      <strong>Agence :</strong> <%= @contract.agency_label %>
+    </p>
+
+    <p class="mb-3">
+      <i class="fa-solid fa-file-contract me-1"></i>
+      <strong>Type :</strong> <%= @contract.contract_type_label %>
+    </p>
+
+    <div class="bg-light p-3 rounded-3 small">
+      <p class="mb-1"><strong>Majoration nuit :</strong> <%= (@contract.night_rate * 100).round(1) %>%</p>
+      <p class="mb-1"><strong>Taux IFM :</strong> <%= (@contract.ifm_rate * 100).round(1) %>%</p>
+      <p class="mb-0"><strong>Taux CP :</strong> <%= (@contract.cp_rate * 100).round(1) %>%</p>
+    </div>
+
+    <% if @contract.notes.present? %>
+      <div class="mt-3">
+        <h6 class="fw-semibold text-orange">Notes</h6>
+        <p class="text-muted"><%= @contract.notes %></p>
+      </div>
+    <% end %>
+
+  </div>
+
+  <%# LISTE DES MISSIONS %>
+  <h2 class="fw-bold text-orange mb-3">Missions du contrat</h2>
+
+  <% if @contract.work_sessions.empty? %>
+
+    <div class="text-center text-muted mt-4">
+      <i class="fa-solid fa-clipboard-list fa-3x mb-3 text-orange"></i>
+      <h5 class="fw-semibold">Aucune mission enregistrée</h5>
+      <p>Ajoutez votre première mission à ce contrat.</p>
+
+      <%= link_to "Ajouter une mission",
+                  new_contract_work_session_path(@contract),
+                  class: "btn btn-orange btn-lg fw-bold" %>
+    </div>
+
+  <% else %>
+
+    <div class="list-group rounded-4 shadow-sm">
+
+      <% @contract.work_sessions.order(date: :desc).each do |ws| %>
+        <%= link_to work_session_path(ws),
+                    class: "list-group-item list-group-item-action py-3" do %>
+
+          <div class="d-flex justify-content-between">
+            <div>
+              <strong><%= ws.date.strftime("%d/%m/%Y") %></strong>
+              <br>
+              <span class="text-muted small"><%= ws.store %></span>
+            </div>
+
+            <div class="text-end">
+              <span class="fw-bold text-orange"><%= sprintf("%.2f €", ws.total_payment) %></span>
+              <br>
+              <span class="text-muted small"><%= (ws.duration_minutes / 60.0).round(2) %> h</span>
+            </div>
+          </div>
+
+        <% end %>
+      <% end %>
+
+    </div>
+
+    <div class="mt-4 text-center">
+      <%= link_to "Ajouter une mission",
+                  new_contract_work_session_path(@contract),
+                  class: "btn btn-orange fw-bold" %>
+    </div>
+
+  <% end %>
+
+</div>
