@@ -27,7 +27,7 @@
 
           <%# DATE %>
           <div class="mb-3">
-            <%= f.label :date, "Date", class: "form-label fw-semibold" %>
+            <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
             <%= f.date_field :date, class: "form-control" %>
           </div>
 
@@ -35,12 +35,12 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <%= f.label :start_time, "Début", class: "form-label fw-semibold" %>
-              <%= f.datetime_field :start_time, class: "form-control" %>
+              <%= f.time_field :start_time, class: "form-control" %>
             </div>
 
             <div class="col-md-6 mb-3">
               <%= f.label :end_time, "Fin", class: "form-label fw-semibold" %>
-              <%= f.datetime_field :end_time, class: "form-control" %>
+              <%= f.time_field :end_time, class: "form-control" %>
             </div>
           </div>
 
@@ -61,8 +61,8 @@
             <%= f.label :store_full_address, "Adresse complète du magasin", class: "form-label fw-semibold" %>
             <%= f.text_field :store_full_address,
                              class: "form-control",
-                             placeholder: "Ex. 2 Route de Cordes, 81400 Carmaux" %>
-            <small class="text-muted">Utilisée pour calcul KM automatique</small>
+                             placeholder: "Ex. Bd Flandres, 81400 Carmaux" %>
+            <small class="text-muted">Utilisée pour calculer les KM automatiquement</small>
           </div>
 
           <%# KM CUSTOM %>
