@@ -1,0 +1,16 @@
+<% flash.each do |key, value| %>
+  <%# Classes Bootstrap dynamiques %>
+  <% alert_class =
+      case key.to_sym
+      when :notice then "alert-success"
+      when :alert  then "alert-danger"
+      else "alert-info"
+      end
+  %>
+
+  <div class="container mt-3">
+    <div class="alert <%= alert_class %> shadow-sm rounded-3 fw-semibold py-3 px-4">
+      <%= value %>
+    </div>
+  </div>
+<% end %>

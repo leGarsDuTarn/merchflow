@@ -7,21 +7,21 @@
 
         <h1 class="fw-bold text-center text-orange mb-4">Nouvelle mission</h1>
 
-        <!-- Messages d’erreurs -->
-        <%= render "devise/shared/error_messages", resource: @work_session %>
+        <%# Messages d’erreurs globales %>
+        <%# <%= render "shared/errors", object: @work_session %>
 
         <%= form_with model: @work_session, local: true do |f| %>
 
-
-          <%# SELECTION CONTRAT (uniquement si pas de contract_id) %>
+          <%# SELECTION CONTRAT %>
           <% if @contracts.nil? %>
             <div class="mb-3">
-              <%= f.label :contracts_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
-              <%= f.collection_select :contracts_id,
+              <%= f.label :contract_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
+              <%= f.collection_select :contract_id,
                             current_user.contracts.order(created_at: :desc),
                             :id, :agency_label,
                             { prompt: "Choisir un contrat" },
                             class: "form-select" %>
+              <%= inline_error_for(@work_session, :contract_id) %>
             </div>
           <% end %>
 
@@ -29,6 +29,7 @@
           <div class="mb-3">
             <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
             <%= f.date_field :date, class: "form-control" %>
+            <%= inline_error_for(@work_session, :date) %>
           </div>
 
           <%# HORAIRES %>
@@ -36,11 +37,13 @@
             <div class="col-md-6 mb-3">
               <%= f.label :start_time, "Début", class: "form-label fw-semibold" %>
               <%= f.time_field :start_time, class: "form-control" %>
+              <%= inline_error_for(@work_session, :start_time) %>
             </div>
 
             <div class="col-md-6 mb-3">
               <%= f.label :end_time, "Fin", class: "form-label fw-semibold" %>
               <%= f.time_field :end_time, class: "form-control" %>
+              <%= inline_error_for(@work_session, :end_time) %>
             </div>
           </div>
 
@@ -49,12 +52,14 @@
             <%= f.label :hourly_rate, "Taux horaire (€)", class: "form-label fw-semibold" %>
             <%= f.number_field :hourly_rate, step: 0.01, class: "form-control" %>
             <small class="text-muted">Par défaut : SMIC (11.88€)</small>
+            <%= inline_error_for(@work_session, :hourly_rate) %>
           </div>
 
           <%# MAGASIN %>
           <div class="mb-3">
             <%= f.label :store, "Nom du magasin", class: "form-label fw-semibold" %>
             <%= f.text_field :store, class: "form-control", placeholder: "Ex. Intermarché Carmaux" %>
+            <%= inline_error_for(@work_session, :store) %>
           </div>
 
           <div class="mb-3">
@@ -63,6 +68,7 @@
                              class: "form-control",
                              placeholder: "Ex. Bd Flandres, 81400 Carmaux" %>
             <small class="text-muted">Utilisée pour calculer les KM automatiquement</small>
+            <%= inline_error_for(@work_session, :store_full_address) %>
           </div>
 
           <%# KM CUSTOM %>
@@ -70,6 +76,7 @@
             <%= f.label :km_custom, "Kilomètres (optionnel)", class: "form-label fw-semibold" %>
             <%= f.number_field :km_custom, step: 0.1, class: "form-control" %>
             <small class="text-muted">Laissez vide pour utiliser le calcul auto via l'adresse</small>
+            <%= inline_error_for(@work_session, :km_custom) %>
           </div>
 
           <%# MISSION RECOMMANDÉE %>
@@ -83,6 +90,7 @@
             <%= f.label :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
             <%= f.text_area :notes, rows: 3, class: "form-control",
                              placeholder: "Détails de la mission…" %>
+            <%= inline_error_for(@work_session, :notes) %>
           </div>
 
           <%# SUBMIT %>

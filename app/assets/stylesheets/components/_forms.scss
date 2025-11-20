@@ -1,0 +1,21 @@
+/* ===========================
+   STYLE POUR LES ERREURS
+   =========================== */
+
+.is-invalid-orange {
+  border: 2px solid #ff6c2f !important;   // orange MerchFlow
+  box-shadow: 0 0 0 0.15rem rgba(255, 108, 47, 0.25);
+  border-radius: 0.5rem !important;
+}
+
+.field-with-errors input,
+.field-with-errors textarea,
+.field-with-errors select {
+  border-color: #ff6c2f !important;
+}
+
+.error-text {
+  color: #ff6c2f !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

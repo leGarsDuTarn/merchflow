@@ -8,7 +8,7 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # VALIDATIONS
   # ============================================================
-  validates :date, :start_time, :end_time, presence: true
+  validates :date, :start_time, :end_time, presence: { message: 'Ce champ est requis' }
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
 
