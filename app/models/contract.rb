@@ -89,7 +89,7 @@ class Contract < ApplicationRecord
   validates :agency, presence: { message: 'Vous devez sélectionner une agence' }
   validates :night_rate, :ifm_rate, :cp_rate,
             numericality: { greater_than_or_equal_to: 0 }
-  validates :km_rate, numericality: true, allow_nil: true
+  validates :km_rate, presence: true, numericality: true
   validates :km_limit,
             numericality: { greater_than_or_equal_to: 0 }
 

@@ -2,29 +2,26 @@
 
 Rails.application.routes.draw do
   # ============================================================
-  # DEVISE AUTHENTICATION
+  # DEVISE AUTH
   # ============================================================
   devise_for :users
 
   # ============================================================
-  # DASHBOARD
+  # HOME & DASHBOARD
   # ============================================================
-
-  # Landing page publique -> pas de before_action :authenticate_user!
   root 'home#index'
-  # Dashboard après login
   get 'dashboard', to: 'dashboard#index'
 
   # ============================================================
   # CONTRATS + WORKSESSIONS (shallow routing)
   # ============================================================
   resources :contracts do
-    # Shallow = évite les URL trop longues pour les actions qui n’ont pas besoin du parent.
     resources :work_sessions, shallow: true
     resources :declarations, only: %i[index create]
   end
 
-  resources :work_sessions, only: [:index]
+  # ➜ Permet /work_sessions/new (création depuis dashboard)
+  resources :work_sessions, only: [:new, :create, :index]
 
   # ============================================================
   # KILOMETER LOGS (lié à une work_session)
@@ -39,7 +36,7 @@ Rails.application.routes.draw do
   get 'france_travail', to: 'declarations#france_travail'
 
   # ============================================================
-  # API Google Distance (optionnel)
+  # API Google Distance
   # ============================================================
   get 'km/calc', to: 'km_api#calculate'
 end

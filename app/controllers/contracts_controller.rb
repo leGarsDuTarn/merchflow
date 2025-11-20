@@ -7,7 +7,6 @@ class ContractsController < ApplicationController
   end
 
   def show
-    # Déjà défini avec :set_contract
   end
 
   def new
@@ -26,7 +25,6 @@ class ContractsController < ApplicationController
   end
 
   def edit
-    # Déjà défini avec :set_contract
   end
 
   def update
@@ -54,11 +52,10 @@ class ContractsController < ApplicationController
       :name, :agency, :contract_type,
       :night_rate, :km_rate, :km_limit, :km_unlimited,
       :ifm_rate, :cp_rate, :notes
-    ).tap do |whitelisted|
-    # Conversion % → décimal
-    whitelisted[:ifm_rate]       = whitelisted[:ifm_rate].to_f / 100 if whitelisted[:ifm_rate]
-    whitelisted[:cp_rate]        = whitelisted[:cp_rate].to_f / 100 if whitelisted[:cp_rate]
-    whitelisted[:night_rate]     = whitelisted[:night_rate].to_f / 100 if whitelisted[:night_rate]
+    ).tap do |w|
+      w[:ifm_rate]   = w[:ifm_rate].to_f   / 100 if w[:ifm_rate].present?
+      w[:cp_rate]    = w[:cp_rate].to_f    / 100 if w[:cp_rate].present?
+      w[:night_rate] = w[:night_rate].to_f / 100 if w[:night_rate].present?
     end
   end
 end

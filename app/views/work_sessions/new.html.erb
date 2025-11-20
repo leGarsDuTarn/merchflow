@@ -1,2 +1,108 @@
-<h1>WorkSessions#new</h1>
-<p>Find me in app/views/work_sessions/new.html.erb</p>
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="row w-100 justify-content-center">
+
+    <div class="col-md-6 col-lg-5">
+
+      <div class="card shadow-sm p-4 rounded-4 mt-4">
+
+        <h1 class="fw-bold text-center text-orange mb-4">Nouvelle mission</h1>
+
+        <!-- Messages d’erreurs -->
+        <%= render "devise/shared/error_messages", resource: @work_session %>
+
+        <%= form_with model: @work_session, local: true do |f| %>
+
+
+          <%# SELECTION CONTRAT (uniquement si pas de contract_id) %>
+          <% if @work_session.contract_id.nil? %>
+            <div class="mb-3">
+              <%= f.label :contract_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
+              <%= f.collection_select :contract_id,
+                                      current_user.contracts.order(created_at: :desc),
+                                      :id, :name,
+                                      { prompt: "Choisir un contrat" },
+                                      class: "form-select" %>
+            </div>
+          <% end %>
+
+          <%# DATE %>
+          <div class="mb-3">
+            <%= f.label :date, "Date", class: "form-label fw-semibold" %>
+            <%= f.date_field :date, class: "form-control" %>
+          </div>
+
+          <%# HORAIRES %>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :start_time, "Début", class: "form-label fw-semibold" %>
+              <%= f.datetime_field :start_time, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :end_time, "Fin", class: "form-label fw-semibold" %>
+              <%= f.datetime_field :end_time, class: "form-control" %>
+            </div>
+          </div>
+
+          <%# TAUX HORAIRE %>
+          <div class="mb-3">
+            <%= f.label :hourly_rate, "Taux horaire (€)", class: "form-label fw-semibold" %>
+            <%= f.number_field :hourly_rate, step: 0.01, class: "form-control" %>
+            <small class="text-muted">Par défaut : SMIC (11.88€)</small>
+          </div>
+
+          <%# MAGASIN %>
+          <div class="mb-3">
+            <%= f.label :store, "Nom du magasin", class: "form-label fw-semibold" %>
+            <%= f.text_field :store, class: "form-control", placeholder: "Ex. Intermarché Carmaux" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :store_full_address, "Adresse complète du magasin", class: "form-label fw-semibold" %>
+            <%= f.text_field :store_full_address,
+                             class: "form-control",
+                             placeholder: "Ex. 2 Route de Cordes, 81400 Carmaux" %>
+            <small class="text-muted">Utilisée pour calcul KM automatique</small>
+          </div>
+
+          <%# KM CUSTOM %>
+          <div class="mb-3">
+            <%= f.label :km_custom, "Kilomètres (optionnel)", class: "form-label fw-semibold" %>
+            <%= f.number_field :km_custom, step: 0.1, class: "form-control" %>
+            <small class="text-muted">Laissez vide pour utiliser le calcul auto via l'adresse</small>
+          </div>
+
+          <%# MISSION RECOMMANDÉE %>
+          <div class="form-check mb-3">
+            <%= f.check_box :recommended, class: "form-check-input" %>
+            <%= f.label :recommended, "Mission recommandée (km illimités)", class: "form-check-label fw-semibold" %>
+          </div>
+
+          <%# NOTES %>
+          <div class="mb-3">
+            <%= f.label :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
+            <%= f.text_area :notes, rows: 3, class: "form-control",
+                             placeholder: "Détails de la mission…" %>
+          </div>
+
+          <%# SUBMIT %>
+          <div class="d-grid mt-3">
+            <%= f.submit "Enregistrer la mission", class: "btn btn-orange btn-lg fw-bold" %>
+          </div>
+
+        <% end %>
+
+        <div class="text-center mt-3">
+          <%= link_to "Retour", (@contract ? contract_path(@contract) : dashboard_path),
+                      class: "text-decoration-none text-muted" %>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-muted mt-2 mb-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
