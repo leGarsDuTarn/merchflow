@@ -1,2 +1,130 @@
-<h1>Contracts#new</h1>
-<p>Find me in app/views/contracts/new.html.erb</p>
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="row w-100 justify-content-center">
+
+    <div class="col-md-6 col-lg-5">
+
+      <div class="card shadow-sm p-4 rounded-4 mt-4">
+
+        <h1 class="fw-bold text-center text-orange mb-4">Nouveau contrat</h1>
+
+        <!-- Messages d’erreurs -->
+        <% if @contract.errors.any? %>
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              <% @contract.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= form_with model: @contract, local: true do |f| %>
+
+          <!-- NOM DU CONTRAT -->
+          <div class="mb-3">
+            <%= f.label :name, "Nom du contrat", class: "form-label fw-semibold" %>
+            <%= f.text_field :name, placeholder: "Ex. Bonduelle Octobre", class: "form-control" %>
+          </div>
+
+          <!-- AGENCE -->
+          <div class="mb-3">
+            <%= f.label :agency, "Agence", class: "form-label fw-semibold" %>
+            <%= f.select :agency,
+                Contract.agencies.keys.map { |k| [Contract::AGENCY_LABELS[k], k] },
+                { prompt: "Sélectionnez une agence" },
+                class: "form-select" %>
+          </div>
+
+          <!-- TYPE DE CONTRAT -->
+          <div class="mb-3">
+            <%= f.label :contract_type, "Type de contrat", class: "form-label fw-semibold" %>
+            <%= f.select :contract_type,
+                Contract.contract_types.keys.map { |k| [k.upcase, k] },
+                { prompt: "Sélectionnez un type" },
+                class: "form-select" %>
+          </div>
+
+          <!-- MAJORATION NUIT (%) -->
+          <div class="mb-3">
+            <%= f.label :night_rate, "Majoration nuit (%)", class: "form-label fw-semibold" %>
+            <%= f.number_field :night_rate, value: (@contract.night_rate.to_f * 100), step: 0.1, min: 0, class: "form-control" %>
+          </div>
+
+          <!-- KM -->
+          <h5 class="fw-bold text-orange mt-3 mb-2">Indemnités kilométriques</h5>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :km_rate, "Indemnité (€/km)", class: "form-label fw-semibold" %>
+              <%= f.number_field :km_rate, step: 0.01, min: 0, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :km_limit, "Plafond km (total A/R)", class: "form-label fw-semibold" %>
+              <%= f.number_field :km_limit, step: 0.1, min: 0, class: "form-control" %>
+            </div>
+          </div>
+
+          <!-- IFM & CP -->
+          <h5 class="fw-bold text-orange mt-3 mb-2">Primes (%)</h5>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :ifm_rate, "Taux IFM (%)", class: "form-label fw-semibold" %>
+              <%= f.number_field :ifm_rate, value: (@contract.ifm_rate.to_f * 100), step: 0.1, min: 0, class: "form-control" %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :cp_rate, "Taux CP (%)", class: "form-label fw-semibold" %>
+              <%= f.number_field :cp_rate, value: (@contract.cp_rate.to_f * 100), step: 0.1, min: 0, class: "form-control" %>
+            </div>
+          </div>
+
+          <!-- ANNEXES -->
+          <h5 class="fw-bold text-orange mt-4 mb-2">Minutes annexes</h5>
+
+          <div class="row">
+
+            <div class="col-md-4 mb-3">
+              <%= f.label :annex_minutes_per_hour, "Minutes/heure", class: "form-label fw-semibold" %>
+              <%= f.number_field :annex_minutes_per_hour, step: 1, min: 0, class: "form-control" %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= f.label :annex_threshold_hours, "Seuil (h)", class: "form-label fw-semibold" %>
+              <%= f.number_field :annex_threshold_hours, step: 0.1, min: 0, class: "form-control" %>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <%= f.label :annex_extra_minutes, "Minutes fixes", class: "form-label fw-semibold" %>
+              <%= f.number_field :annex_extra_minutes, step: 1, min: 0, class: "form-control" %>
+            </div>
+
+          </div>
+
+          <!-- NOTES -->
+          <div class="mb-3">
+            <%= f.label :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
+            <%= f.text_area :notes, rows: 3, class: "form-control" %>
+          </div>
+
+          <!-- BOUTON -->
+          <div class="d-grid mt-3">
+            <%= f.submit "Créer le contrat", class: "btn btn-orange btn-lg fw-bold" %>
+          </div>
+
+        <% end %>
+
+        <div class="text-center mt-3">
+          <%= link_to "Retour", contracts_path, class: "text-decoration-none text-muted" %>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-muted mt-2 mb-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>

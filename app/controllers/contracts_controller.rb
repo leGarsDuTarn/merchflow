@@ -51,10 +51,14 @@ class ContractsController < ApplicationController
 
   def contract_params
     params.require(:contract).permit(
-      :name, :agency, :contract_type, :start_date, :end_date,
+      :name, :agency, :contract_type,
       :night_rate, :km_rate, :km_limit, :km_unlimited,
-      :ifm_rate, :cp_rate, :annex_minutes_per_hour, :annex_extra_minutes,
-      :annex_threshold_hours, :notes
-    )
+      :ifm_rate, :cp_rate, :notes
+    ).tap do |whitelisted|
+    # Conversion % → décimal
+    whitelisted[:ifm_rate]       = whitelisted[:ifm_rate].to_f / 100 if whitelisted[:ifm_rate]
+    whitelisted[:cp_rate]        = whitelisted[:cp_rate].to_f / 100 if whitelisted[:cp_rate]
+    whitelisted[:night_rate]     = whitelisted[:night_rate].to_f / 100 if whitelisted[:night_rate]
+    end
   end
 end

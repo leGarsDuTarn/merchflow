@@ -10,19 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_18_083639) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_20_102424) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "contracts", force: :cascade do |t|
     t.string "agency", default: "other", null: false
-    t.integer "annex_extra_minutes", default: 0, null: false
-    t.integer "annex_minutes_per_hour", default: 0, null: false
-    t.decimal "annex_threshold_hours", precision: 4, scale: 2, default: "0.0", null: false
     t.string "contract_type"
     t.decimal "cp_rate", precision: 4, scale: 2, default: "0.1", null: false
     t.datetime "created_at", null: false
-    t.date "end_date"
     t.decimal "ifm_rate", precision: 4, scale: 2, default: "0.1", null: false
     t.decimal "km_limit", precision: 5, scale: 2, default: "0.0", null: false
     t.decimal "km_rate", precision: 5, scale: 2
@@ -30,7 +26,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_18_083639) do
     t.string "name", default: "", null: false
     t.decimal "night_rate", precision: 4, scale: 2, default: "0.5", null: false
     t.text "notes"
-    t.date "start_date"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_contracts_on_user_id"
@@ -92,9 +87,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_18_083639) do
     t.datetime "end_time", null: false
     t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88", null: false
     t.decimal "km_custom", precision: 5, scale: 2
-    t.decimal "meal_allowance", precision: 5, scale: 2, default: "0.0", null: false
-    t.boolean "meal_eligible", default: false, null: false
-    t.integer "meal_hours_required", default: 5, null: false
     t.integer "night_minutes", default: 0, null: false
     t.text "notes"
     t.boolean "recommended", default: false, null: false

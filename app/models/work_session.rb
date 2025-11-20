@@ -2,43 +2,34 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # RELATIONS
   # ============================================================
-
   belongs_to :contract
   has_many :kilometer_logs, dependent: :destroy
 
   # ============================================================
   # VALIDATIONS
   # ============================================================
-
-  validates :date, presence: true
-  validates :start_time, presence: true
-  validates :end_time, presence: true
+  validates :date, :start_time, :end_time, presence: true
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
-  validates :break_minutes,
-            numericality: { greater_than_or_equal_to: 0 }
+  validates :break_minutes, numericality: { greater_than_or_equal_to: 0 }
 
   # ============================================================
   # CONSTANTES
   # ============================================================
-
   NIGHT_START = 21 # 21h
   NIGHT_END   = 6  # 6h
 
   # ============================================================
   # CALLBACKS : recalcul complet avant sauvegarde
   # ============================================================
-
   before_validation :ensure_end_time_is_on_correct_day
   before_validation :compute_duration
   before_validation :compute_night_minutes
-  before_validation :check_meal_eligibility
   before_validation :compute_effective_km
 
   # ============================================================
   # VALIDATION LOGIQUE
   # ============================================================
-
   def end_after_start
     return if start_time.blank? || end_time.blank?
     return if end_time > start_time
@@ -49,19 +40,14 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # GESTION DES MISSIONS PASSANT MINUIT
   # ============================================================
-
   def ensure_end_time_is_on_correct_day
     return if start_time.blank? || end_time.blank?
-
-    if end_time <= start_time
-      self.end_time = end_time + 1.day
-    end
+    self.end_time += 1.day if end_time <= start_time
   end
 
   # ============================================================
   # CALCUL DUREE
   # ============================================================
-
   def compute_duration
     return if start_time.blank? || end_time.blank?
 
@@ -72,7 +58,6 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # CALCUL HEURES DE NUIT
   # ============================================================
-
   def compute_night_minutes
     return if start_time.blank? || end_time.blank?
 
@@ -88,53 +73,35 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # MEAL CHECK
-  # ============================================================
-
-  def check_meal_eligibility
-    return if duration_minutes.blank?
-
-    self.meal_eligible = duration_minutes >= meal_hours_required * 60
-  end
-
-  # ============================================================
   # KM EFFECTIFS
   # ============================================================
-
   def compute_effective_km
-    self.effective_km =
-      if km_custom.present?
-        km_custom
-      else
-        kilometer_logs.sum(:distance)
-      end
+    self.effective_km = km_custom.presence || kilometer_logs.sum(:distance)
   end
 
   # ============================================================
   # CALCUL BRUT
   # ============================================================
-
   def brut
     return 0 if duration_minutes.zero?
-
     day_pay + night_pay
   end
 
   # ============================================================
   # TOTAL REMUNERATION
   # ============================================================
-
   def total_payment
-    brut + contract.ifm(brut) + contract.cp(brut) + km_payment_final + meal_payment
+    brut +
+      contract.ifm(brut) +
+      contract.cp(brut) +
+      km_payment_final
   end
 
   # ============================================================
   # MÉTHODES PRIVÉES
   # ============================================================
-
   private
 
-  # ---- Heures ----
   def hours_day
     ((duration_minutes - night_minutes) / 60.0).round(2)
   end
@@ -143,7 +110,6 @@ class WorkSession < ApplicationRecord
     (night_minutes / 60.0).round(2)
   end
 
-  # ---- Paiement ----
   def day_pay
     hours_day * hourly_rate
   end
@@ -154,10 +120,6 @@ class WorkSession < ApplicationRecord
 
   def night_pay
     hours_night * night_hourly_rate
-  end
-
-  def meal_payment
-    meal_eligible ? meal_allowance.to_f : 0
   end
 
   def km_payment_final

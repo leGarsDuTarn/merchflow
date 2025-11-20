@@ -65,6 +65,7 @@ class Contract < ApplicationRecord
 
   enum :contract_type, {
     cdd: "cdd",
+    cidd: "cidd",
     interim: "interim",
     cdi: "cdi",
     other_contract: "other_contract"
@@ -72,6 +73,7 @@ class Contract < ApplicationRecord
 
   CONTRACT_TYPE_LABELS = {
     "cdd" => "CDD",
+    "cidd" => "CIDD",
     "interim" => "Intérim",
     "cdi" => "CDI",
     "other_contract" => "Autre"
@@ -85,30 +87,11 @@ class Contract < ApplicationRecord
   # VALIDATIONS
   # ============================================================
 
-  validates :name, presence: true
   validates :night_rate, :ifm_rate, :cp_rate,
             numericality: { greater_than_or_equal_to: 0 }
   validates :km_rate, numericality: true, allow_nil: true
-  validates :km_limit, :annex_minutes_per_hour, :annex_threshold_hours,
+  validates :km_limit,
             numericality: { greater_than_or_equal_to: 0 }
-  validate :dates_coherent
-
-  # Vérification cohérence dates
-  def dates_coherent
-    return if start_date.blank? || end_date.blank?
-    return unless end_date < start_date
-
-    errors.add(:end_date, "ne peut pas être avant la date de début")
-  end
-
-  # ============================================================
-  # SCOPES
-  # ============================================================
-
-  scope :active_on, ->(date) do
-    where("start_date <= ?", date)
-      .where("end_date IS NULL OR end_date >= ?", date)
-  end
 
   # ============================================================
   # MÉTHODES MÉTIER

@@ -111,15 +111,15 @@
     <!-- Créer un contrat -->
     <%= link_to "Créer un contrat",
                 new_contract_path,
-                class: "btn btn-orange btn-lg fw-bold px-4 me-3" %>
+                class: "btn btn-orange btn-lg fw-bold px-4 me-3 mt-2" %>
 
     <!-- Créer une mission (si au moins 1 contrat) -->
     <% if current_user.contracts.exists? %>
       <%= link_to "Créer une mission",
                   new_contract_work_session_path(current_user.contracts.first),
-                  class: "btn btn-orange-outline btn-lg fw-bold px-4" %>
+                  class: "btn btn-orange-outline btn-lg fw-bold px-4 mt-2 m-2" %>
     <% else %>
-      <button class="btn btn-orange-outline btn-lg fw-bold px-4" disabled>
+      <button class="btn btn-orange-outline btn-lg fw-bold mt-2 px-4" disabled>
         Créer une mission
       </button>
       <p class="text-muted mt-2 small">
@@ -134,4 +134,3 @@
 <footer class="text-center text-muted mt-4">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>
-
