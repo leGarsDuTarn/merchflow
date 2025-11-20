@@ -11,7 +11,6 @@ class WorkSession < ApplicationRecord
   validates :date, :start_time, :end_time, presence: true
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
-  validates :break_minutes, numericality: { greater_than_or_equal_to: 0 }
 
   # ============================================================
   # CONSTANTES
@@ -52,7 +51,7 @@ class WorkSession < ApplicationRecord
     return if start_time.blank? || end_time.blank?
 
     total = ((end_time - start_time) / 60).to_i
-    self.duration_minutes = [total - break_minutes, 0].max
+    self.duration_minutes = total
   end
 
   # ============================================================
@@ -76,8 +75,23 @@ class WorkSession < ApplicationRecord
   # KM EFFECTIFS
   # ============================================================
   def compute_effective_km
-    self.effective_km = km_custom.presence || kilometer_logs.sum(:distance)
+  # 1) KM renseigné manuellement par l'utilisateur
+  if km_custom.present?
+    self.effective_km = km_custom.to_f
+    return
   end
+
+  # 2) KM provenant des logs (si l’API a écrit dedans)
+  api_km = kilometer_logs.sum(:distance).to_f
+  if api_km.positive?
+    self.effective_km = api_km
+    return
+  end
+
+  # 3) Fallback si rien du tout (l’API fera une MAJ après création)
+  self.effective_km = 0.0
+  end
+
 
   # ============================================================
   # CALCUL BRUT
