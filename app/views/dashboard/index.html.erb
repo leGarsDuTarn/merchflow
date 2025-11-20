@@ -111,7 +111,7 @@
     <!-- Créer un contrat -->
     <%= link_to "Créer un contrat",
                 new_contract_path,
-                class: "btn btn-orange btn-lg fw-bold px-4 me-3 mt-2" %>
+                class: "btn btn-orange btn-lg fw-bold px-4 me-3" %>
 
     <!-- Créer une mission (si au moins 1 contrat) -->
     <% if current_user.contracts.exists? %>

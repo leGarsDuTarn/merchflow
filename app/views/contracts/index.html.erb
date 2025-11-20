@@ -1,2 +1,104 @@
-<h1>Contracts#index</h1>
-<p>Find me in app/views/contracts/index.html.erb</p>
+<div class="container my-5">
+
+  <%# Titre + bouton %>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange m-0">Mes contrats</h1>
+
+    <%= link_to new_contract_path,
+                class: "btn btn-orange d-flex justify-content-center align-items-center rounded-circle",
+                style: "width: 42px; height: 42px; padding: 0;",
+                title: "Créer un nouveau contrat",
+                aria: { label: "Créer un nouveau contrat" } do %>
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    <% end %>
+  </div>
+
+
+  <% if @contracts.empty? %>
+
+    <%# État vide  %>
+    <div class="text-center text-muted mt-5">
+      <i class="fa-solid fa-file-circle-plus fa-3x mb-3 text-orange" aria-hidden="true"></i>
+      <h4 class="fw-semibold">Aucun contrat enregistré</h4>
+      <p class="mb-3">Créez votre premier contrat pour commencer à ajouter des missions.</p>
+
+      <%= link_to "Créer un contrat",
+                  new_contract_path,
+                  class: "btn btn-orange btn-lg fw-bold" %>
+    </div>
+
+  <% else %>
+
+    <div class="row g-4">
+
+      <% @contracts.each do |contract| %>
+        <div class="col-md-6 col-lg-4">
+
+          <div class="card shadow-sm rounded-4 p-3 h-100">
+
+            <h5 class="fw-bold text-orange"><%= contract.name.presence || "Sans nom" %></h5>
+
+            <p class="text-muted mb-1">
+              <i class="fa-solid fa-building me-1"></i>
+              <%= contract.agency_label %>
+            </p>
+
+            <p class="text-muted mb-3">
+              <i class="fa-solid fa-file-contract me-1"></i>
+              <%= contract.contract_type_label %>
+            </p>
+
+            <%# Infos %>
+            <div class="bg-light p-3 rounded-3 small mb-3">
+              <p class="mb-1"><strong>Majoration nuit :</strong> <%= (contract.night_rate * 100).round(1) %>%</p>
+              <p class="mb-1"><strong>Taux IFM :</strong> <%= (contract.ifm_rate * 100).round(1) %>%</p>
+              <p class="mb-0"><strong>Taux CP :</strong> <%= (contract.cp_rate * 100).round(1) %>%</p>
+            </div>
+
+            <%# Actions %>
+            <div class="d-flex justify-content-around mt-auto">
+
+              <%# Voir %>
+              <%= link_to contract_path(contract),
+                          class: "btn btn-orange d-flex justify-content-center align-items-center",
+                          style: "width: 42px; height: 42px; padding: 0;",
+                          title: "Voir le contrat",
+                          aria: { label: "Voir le contrat" } do %>
+                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+              <% end %>
+
+              <%# Éditer %>
+              <%= link_to edit_contract_path(contract),
+                          class: "btn btn-orange d-flex justify-content-center align-items-center",
+                          style: "width: 42px; height: 42px; padding: 0;",
+                          title: "Modifier le contrat",
+                          aria: { label: "Modifier le contrat" } do %>
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+              <% end %>
+
+              <%# Supprimer %>
+              <%= link_to contract_path(contract),
+                          data: {
+                          turbo_method: :delete,
+                          turbo_confirm: "Supprimer ce contrat ?"
+                          },
+                          class: "btn btn-orange d-flex justify-content-center align-items-center",
+                          style: "width: 42px; height: 42px; padding: 0;",
+                          title: "Supprimer le contrat",
+                          aria: { label: "Supprimer le contrat" } do %>
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+              <% end %>
+
+
+            </div>
+
+          </div>
+
+        </div>
+      <% end %>
+
+    </div><!-- row -->
+
+  <% end %>
+
+</div>
