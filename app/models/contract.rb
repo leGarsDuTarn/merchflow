@@ -86,13 +86,17 @@ class Contract < ApplicationRecord
   # ============================================================
   # VALIDATIONS
   # ============================================================
-
+  validates :agency, presence: { message: 'Vous devez sélectionner une agence' }
   validates :night_rate, :ifm_rate, :cp_rate,
             numericality: { greater_than_or_equal_to: 0 }
   validates :km_rate, numericality: true, allow_nil: true
   validates :km_limit,
             numericality: { greater_than_or_equal_to: 0 }
 
+  # ============================================================
+  # CALLBACK
+  # ============================================================
+  before_validation :normalize_decimal_fields
   # ============================================================
   # MÉTHODES MÉTIER
   # ============================================================
@@ -123,5 +127,18 @@ class Contract < ApplicationRecord
   def km_payment(distance_km, recommended: false)
     km = compute_km(distance_km, recommended: recommended)
     (km * km_rate).round(2)
+  end
+
+  # ============================================================
+  # PRIVATE
+  # ============================================================
+
+  def normalize_decimal_fields
+    %i[km_custom hourly_rate].each do |field|
+      value = self[field]
+      next if value.blank?
+
+      self[field] = value.to_s.tr(',', '.')
+    end
   end
 end
