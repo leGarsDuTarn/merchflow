@@ -14,16 +14,16 @@
 
 
           <%# SELECTION CONTRAT (uniquement si pas de contract_id) %>
-          <% if @work_session.contract_id.nil? %>
-            <div class="mb-3">
-              <%= f.label :contract_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
-              <%= f.collection_select :contract_id,
-                                      current_user.contracts.order(created_at: :desc),
-                                      :id, :name,
-                                      { prompt: "Choisir un contrat" },
-                                      class: "form-select" %>
-            </div>
-          <% end %>
+          <% if @contracts.nil? %>
+  <div class="mb-3">
+    <%= f.label :contracts_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
+    <%= f.collection_select :contracts_id,
+                            current_user.contracts.order(created_at: :desc),
+                            :id, :name,
+                            { prompt: "Choisir un contrat" },
+                            class: "form-select" %>
+  </div>
+<% end %>
 
           <%# DATE %>
           <div class="mb-3">
