@@ -67,7 +67,6 @@ class Contract < ApplicationRecord
     cdd: "cdd",
     cidd: "cidd",
     interim: "interim",
-    cdi: "cdi",
     other_contract: "other_contract"
   }
 

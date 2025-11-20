@@ -15,15 +15,15 @@
 
           <%# SELECTION CONTRAT (uniquement si pas de contract_id) %>
           <% if @contracts.nil? %>
-  <div class="mb-3">
-    <%= f.label :contracts_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
-    <%= f.collection_select :contracts_id,
+            <div class="mb-3">
+              <%= f.label :contracts_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
+              <%= f.collection_select :contracts_id,
                             current_user.contracts.order(created_at: :desc),
-                            :id, :name,
+                            :id, :agency_label,
                             { prompt: "Choisir un contrat" },
                             class: "form-select" %>
-  </div>
-<% end %>
+            </div>
+          <% end %>
 
           <%# DATE %>
           <div class="mb-3">
@@ -75,7 +75,7 @@
           <%# MISSION RECOMMANDÉE %>
           <div class="form-check mb-3">
             <%= f.check_box :recommended, class: "form-check-input" %>
-            <%= f.label :recommended, "Mission recommandée (km illimités)", class: "form-check-label fw-semibold" %>
+            <%= f.label :recommended, "Êtes-vous recommandé pour cette mission ?", class: "form-check-label fw-semibold" %>
           </div>
 
           <%# NOTES %>

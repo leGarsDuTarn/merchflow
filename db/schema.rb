@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_20_103854) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_20_175247) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,14 +89,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_20_103854) do
     t.integer "night_minutes", default: 0, null: false
     t.text "notes"
     t.boolean "recommended", default: false, null: false
-    t.string "shift", default: "unknown", null: false
     t.datetime "start_time", null: false
-    t.string "store", default: "Unknown", null: false
+    t.string "store"
     t.string "store_full_address"
     t.datetime "updated_at", null: false
     t.index ["contract_id"], name: "index_work_sessions_on_contract_id"
     t.index ["date"], name: "index_work_sessions_on_date"
-    t.index ["shift"], name: "index_work_sessions_on_shift"
   end
 
   add_foreign_key "contracts", "users"
