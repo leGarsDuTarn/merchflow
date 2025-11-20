@@ -80,28 +80,6 @@
             </div>
           </div>
 
-          <!-- ANNEXES -->
-          <h5 class="fw-bold text-orange mt-4 mb-2">Minutes annexes</h5>
-
-          <div class="row">
-
-            <div class="col-md-4 mb-3">
-              <%= f.label :annex_minutes_per_hour, "Minutes/heure", class: "form-label fw-semibold" %>
-              <%= f.number_field :annex_minutes_per_hour, step: 1, min: 0, class: "form-control" %>
-            </div>
-
-            <div class="col-md-4 mb-3">
-              <%= f.label :annex_threshold_hours, "Seuil (h)", class: "form-label fw-semibold" %>
-              <%= f.number_field :annex_threshold_hours, step: 0.1, min: 0, class: "form-control" %>
-            </div>
-
-            <div class="col-md-4 mb-3">
-              <%= f.label :annex_extra_minutes, "Minutes fixes", class: "form-label fw-semibold" %>
-              <%= f.number_field :annex_extra_minutes, step: 1, min: 0, class: "form-control" %>
-            </div>
-
-          </div>
-
           <!-- NOTES -->
           <div class="mb-3">
             <%= f.label :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
