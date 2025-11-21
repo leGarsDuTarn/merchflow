@@ -124,15 +124,20 @@ class WorkSession < ApplicationRecord
   end
 
   def net_total
-    # On passe 'brut' pour calculer les primes
-    amount_ifm = contract.ifm(brut)
-    amount_cp  = contract.cp(brut)
+    # Assurez-vous que amount_ifm et amount_cp sont arrondis
+    amount_ifm = contract.ifm(brut).round(2)
+    amount_cp  = contract.cp(brut).round(2)
 
     # On passe 'effective_km' pour calculer les frais kilométriques
-    amount_km  = contract.km_payment(effective_km)
+    amount_km  = contract.km_payment(effective_km).round(2)
+
+    # Net = montant × 0.78
+    net_ifm = (amount_ifm * 0.78).round(2)
+    net_cp  = (amount_cp  * 0.78).round(2)
 
     # On additionne tout
-    (net + amount_ifm + amount_cp + amount_km).round(2)
+    # S'assurer que 'net' est également arrondi si ce n'est pas déjà le cas
+    (net.round(2) + net_ifm + net_cp + amount_km).round(2)
   end
 
   # ============================================================

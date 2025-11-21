@@ -169,32 +169,36 @@ RSpec.describe WorkSession, type: :model do
 
     # spec/models/work_session_spec.rb
 
-    it 'calcule net + ifm + cp + km_payment_final' do
-      # Contrat neutre
-      contract = build(:contract, night_rate: 0, ifm_rate: 0, cp_rate: 0, km_rate: 0)
+   it 'calcule net + ifm + cp + km_payment_final' do
+  # 1. Définir 'contract'
+  contract = build(:contract, night_rate: 0, ifm_rate: 0, cp_rate: 0, km_rate: 0)
 
-      ws = build(:work_session,
-                 contract: contract,
-                 start_time: Time.zone.parse("10:00"),
-                 end_time: Time.zone.parse("12:00"),
-                 night_minutes: 0,
-                 hourly_rate: 10,
-                 effective_km: 10)
+  # 2. Définir 'ws' en utilisant 'contract'
+  ws = build(:work_session,
+             contract: contract,
+             start_time: Time.zone.parse("10:00"),
+             end_time: Time.zone.parse("12:00"),
+             night_minutes: 0,
+             hourly_rate: 10,
+             effective_km: 10)
 
-      allow(contract).to receive(:ifm).and_return(5)
-      allow(contract).to receive(:cp).and_return(5)
-      allow(contract).to receive(:km_payment).and_return(7)
+  # 3. Simuler les méthodes sur l'objet 'contract'
+  allow(contract).to receive(:ifm).and_return(5.0) # Le 'contract' est maintenant défini
+  allow(contract).to receive(:cp).and_return(5.0)
+  allow(contract).to receive(:km_payment).and_return(7.0)
 
-      # CORRECTION : On lance la validation D'ABORD pour déclencher
-      # les callbacks (calcul de la durée, etc.)
-      ws.valid?
+  # Le reste du test (validation et vérification)
+  ws.valid?
 
-      # MAINTENANT on peut calculer le total attendu avec les valeurs mises à jour
-      expected_total = ws.net + 5 + 5 + 7
+  # Calcul des montants NETS pour l'expected_total (selon la correction précédente)
+  net_ifm = 5.0 * 0.78 # 3.9
+  net_cp  = 5.0 * 0.78 # 3.9
 
-      expect(ws.net_total).to eq(expected_total)
-    end
+  expected_total = (ws.net + net_ifm + net_cp + 7.0).round(2)
+
+  expect(ws.net_total).to eq(expected_total)
   end
+end
 
   # ------------------------------------------------------------
   # total_payment
