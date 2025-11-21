@@ -7,13 +7,10 @@
 
         <h1 class="fw-bold text-center text-orange mb-4">Nouvelle mission</h1>
 
-        <%# Messages d’erreurs globales %>
-        <%# <%= render "shared/errors", object: @work_session %>
-
         <%= form_with model: @work_session, local: true do |f| %>
 
           <%# SELECTION CONTRAT %>
-          <% if @contracts.nil? %>
+          <% if @contract.present? %>
             <div class="mb-3">
               <%= f.label :contract_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
               <%= f.collection_select :contract_id,
