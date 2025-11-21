@@ -75,29 +75,29 @@ class WorkSession < ApplicationRecord
   # KM EFFECTIFS
   # ============================================================
   def compute_effective_km
-  # 1) KM renseigné manuellement par l'utilisateur
-  if km_custom.present?
-    self.effective_km = km_custom.to_f
-    return
-  end
+    # 1) KM renseigné manuellement par l'utilisateur
+    if km_custom.present?
+      self.effective_km = km_custom.to_f
+      return
+    end
 
-  # 2) KM provenant des logs (si l’API a écrit dedans)
-  api_km = kilometer_logs.sum(:distance).to_f
-  if api_km.positive?
-    self.effective_km = api_km
-    return
-  end
+    # 2) KM provenant des logs (si l’API a écrit dedans)
+    api_km = kilometer_logs.sum(:distance).to_f
+    if api_km.positive?
+      self.effective_km = api_km
+      return
+    end
 
-  # 3) Fallback si rien du tout (l’API fera une MAJ après création)
-  self.effective_km = 0.0
+    # 3) Fallback si rien du tout (l’API fera une MAJ après création)
+    self.effective_km = 0.0
   end
-
 
   # ============================================================
   # CALCUL BRUT
   # ============================================================
   def brut
     return 0 if duration_minutes.zero?
+
     day_pay + night_pay
   end
 
@@ -113,6 +113,26 @@ class WorkSession < ApplicationRecord
 
   def km_payment_final
     contract.km_payment(effective_km.to_f, recommended: recommended)
+  end
+
+  # ============================================================
+  # NET & NET TOTAL (public)
+  # ============================================================
+  def net
+    # On retire 22% du salaire brut
+    (brut * (1 - 0.22)).round(2)
+  end
+
+  def net_total
+    # On passe 'brut' pour calculer les primes
+    amount_ifm = contract.ifm(brut)
+    amount_cp  = contract.cp(brut)
+
+    # On passe 'effective_km' pour calculer les frais kilométriques
+    amount_km  = contract.km_payment(effective_km)
+
+    # On additionne tout
+    (net + amount_ifm + amount_cp + amount_km).round(2)
   end
 
   # ============================================================
