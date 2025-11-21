@@ -14,7 +14,7 @@
 
   <div class="card shadow-sm rounded-4 p-4">
 
-    <!-- Magasin -->
+    <!-- Infos principales -->
     <h4 class="fw-bold text-orange mb-3">
       <i class="fa-solid fa-store me-2"></i>
       <%= @work_session.store.presence || "Magasin non renseigné" %>
@@ -33,35 +33,41 @@
     <h5 class="fw-semibold mb-2"><i class="fa-solid fa-clock me-2"></i>Horaires</h5>
     <div class="bg-light rounded-3 p-3 mb-3">
       <p class="mb-1"><strong>Début :</strong> <%= l @work_session.start_time, format: :short %></p>
-      <p class="mb-1"><strong>Fin :</strong> <%= l @work_session.end_time, format: :short %></p>
-
-      <p class="mb-1">
-        <strong>Durée totale :</strong>
-        <%= (@work_session.duration_minutes.to_f / 60).round(2) %> h
-      </p>
-
-      <p class="mb-0">
-        <strong>Dont heures de nuit :</strong>
-        <%= (@work_session.night_minutes.to_f / 60).round(2) %> h
-      </p>
+      <p class="mb-1"><strong>Fin :</strong>   <%= l @work_session.end_time, format: :short %></p>
+      <p class="mb-1"><strong>Durée totale :</strong> <%= (@work_session.duration_minutes.to_f / 60).round(2) %> h</p>
+      <p class="mb-0"><strong>Temps de nuit :</strong> <%= (@work_session.night_minutes.to_f / 60).round(2) %> h</p>
     </div>
 
     <!-- DÉTAIL CALCUL NUIT -->
-    <% if @work_session.night_minutes > 0 %>
-      <h5 class="fw-semibold mb-2">
-        <i class="fa-solid fa-moon me-2"></i>Détail du calcul de nuit
-      </h5>
-      <div class="bg-light rounded-3 p-3 mb-3 small">
-        <% h_day   = (@work_session.duration_minutes - @work_session.night_minutes) / 60.0 %>
-        <% h_night = @work_session.night_minutes / 60.0 %>
-        <% night_rate = @work_session.contract.night_rate %>
-        <% night_hourly = @work_session.hourly_rate * (1 + night_rate) %>
+<% if @work_session.night_minutes > 0 %>
+  <h5 class="fw-semibold mb-2">
+    <i class="fa-solid fa-moon me-2"></i>Détail du calcul de nuit
+  </h5>
 
-        <p class="mb-1"><strong>Heures de jour :</strong> <%= h_day.round(2) %> h × <%= number_to_currency(@work_session.hourly_rate) %></p>
-        <p class="mb-1"><strong>Heures de nuit :</strong> <%= h_night.round(2) %> h × <%= number_to_currency(night_hourly) %></p>
-        <p class="mb-0 fw-bold"><strong>Majoration nuit :</strong> +<%= (night_rate * 100).round(1) %>%</p>
-      </div>
-    <% end %>
+  <% h_day   = (@work_session.duration_minutes - @work_session.night_minutes) / 60.0 %>
+  <% h_night = @work_session.night_minutes / 60.0 %>
+  <% night_rate = @work_session.contract.night_rate %>
+  <% night_hourly = @work_session.hourly_rate * (1 + night_rate) %>
+
+  <div class="bg-light rounded-3 p-3 mb-3">
+
+    <p class="mb-1">
+      <strong>Heures de jour :</strong>
+      <%= h_day.round(2) %> h × <%= number_to_currency(@work_session.hourly_rate, unit: "€") %>
+    </p>
+
+    <p class="mb-1">
+      <strong>Heures de nuit :</strong>
+      <%= h_night.round(2) %> h × <%= number_to_currency(night_hourly, unit: "€") %>
+    </p>
+
+    <p class="mb-0 fw-bold">
+      <strong>Majoration nuit :</strong> +<%= (night_rate * 100).round(1) %>%
+    </p>
+
+  </div>
+<% end %>
+
 
     <!-- KM -->
     <h5 class="fw-semibold mb-2"><i class="fa-solid fa-road me-2"></i>Déplacements</h5>
@@ -72,30 +78,45 @@
       </p>
     </div>
 
-    <!-- Rémunération brute -->
-    <h5 class="fw-semibold mb-2"><i class="fa-solid fa-euro-sign me-2"></i>Rémunération</h5>
+    <!-- Paiements BRUT -->
+    <h5 class="fw-semibold mb-2"><i class="fa-solid fa-euro-sign me-2"></i>Rémunération (Brut)</h5>
     <div class="bg-light rounded-3 p-3 mb-3">
-
       <p class="mb-1"><strong>Brut mission :</strong>
         <%= number_to_currency(@work_session.brut, unit: "€") %>
       </p>
 
-      <p class="mb-1"><strong>IFM :</strong>
-        <%= number_to_currency(@work_session.contract.ifm(@work_session.brut), unit: "€") %>
-      </p>
+      <% brut = @work_session.brut %>
+      <% ifm_brut = @work_session.contract.ifm(brut).round(2) %>
+      <% cp_brut  = @work_session.contract.cp(brut).round(2) %>
 
-      <p class="mb-1"><strong>CP :</strong>
-        <%= number_to_currency(@work_session.contract.cp(@work_session.brut), unit: "€") %>
-      </p>
+      <p class="mb-1"><strong>IFM (brut) :</strong> <%= number_to_currency(ifm_brut, unit: "€") %></p>
+      <p class="mb-1"><strong>CP (brut) :</strong> <%= number_to_currency(cp_brut, unit: "€") %></p>
 
-      <p class="mb-1"><strong>Net estimé :</strong>
-        <%= number_to_currency(@work_session.net, unit: "€") %>
-        <small class="text-muted">(estimé à 22%)</small>
+      <p class="mb-0 fw-bold text-orange">Total brut :
+        <%= number_to_currency(brut + ifm_brut + cp_brut, unit: "€") %>
       </p>
+    </div>
 
-      <p class="fw-bold text-orange mb-0">
-        Total net + km :
-        <%= number_to_currency(@work_session.net_total, unit: "€") %>
+    <!-- Paiement NET estimé -->
+    <% net_estime = @work_session.net %>
+    <% ifm_net = (ifm_brut * 0.78).round(2) %>
+    <% cp_net  = (cp_brut  * 0.78).round(2) %>
+    <% km_net  = @work_session.km_payment_final %>
+    <% total_net = (net_estime + ifm_net + cp_net + km_net).round(2) %>
+
+    <h5 class="fw-semibold mb-2"><i class="fa-solid fa-wallet me-2"></i>Rémunération (Net estimé)</h5>
+    <div class="bg-light rounded-3 p-3 mb-3">
+      <p class="mb-1"><strong>Net mission :</strong>
+        <%= number_to_currency(net_estime, unit: "€") %>
+      </p>
+      <p class="mb-1"><strong>IFM (net estimé) :</strong> <%= number_to_currency(ifm_net, unit: "€") %></p>
+      <p class="mb-1"><strong>CP (net estimé) :</strong> <%= number_to_currency(cp_net, unit: "€") %></p>
+
+      <p class="mb-1"><strong>KM (non imposable) :</strong> <%= number_to_currency(km_net, unit: "€") %></p>
+
+      <p class="mb-0 fw-bold text-orange fs-5">
+        TOTAL NET estimé :
+        <%= number_to_currency(total_net, unit: "€") %>
       </p>
     </div>
 

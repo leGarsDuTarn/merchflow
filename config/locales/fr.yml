@@ -17,3 +17,8 @@ fr:
       default: "%d/%m/%Y"
       long: "%A %d %B %Y"
       short: "%d %b"
+  number:
+    currency:
+      format:
+        unit: "€"
+        format: "%n %u"
