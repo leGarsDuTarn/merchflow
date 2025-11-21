@@ -19,7 +19,10 @@
 
   <body>
     <%# Navbar %>
-    <%= render "shared/navbar" %>
+    <% if user_signed_in? %>
+      <%= render "shared/navbar" %>
+    <% end %>
+
     <%# Flash messages %>
     <%= render "shared/flash_messages" %>
     <%= yield %>
