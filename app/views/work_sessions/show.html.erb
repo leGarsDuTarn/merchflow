@@ -1,2 +1,115 @@
-<h1>WorkSessions#show</h1>
-<p>Find me in app/views/work_sessions/show.html.erb</p>
+<div class="container my-5">
+
+  <!-- Titre + bouton retour -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange m-0">
+      Mission du <%= l @work_session.date, format: :long %>
+    </h1>
+
+    <%= link_to contract_path(@work_session.contract),
+                class: "btn btn-orange-outline fw-semibold" do %>
+      <i class="fa-solid fa-arrow-left me-2"></i> Retour au contrat
+    <% end %>
+  </div>
+
+  <div class="card shadow-sm rounded-4 p-4">
+
+    <!-- Infos principales -->
+    <h4 class="fw-bold text-orange mb-3">
+      <i class="fa-solid fa-store me-2"></i>
+      <%= @work_session.store.presence || "Magasin non renseigné" %>
+    </h4>
+
+    <% if @work_session.store_full_address.present? %>
+      <p class="text-muted mb-3">
+        <i class="fa-solid fa-location-dot me-1"></i>
+        <%= @work_session.store_full_address %>
+      </p>
+    <% end %>
+
+    <hr>
+
+    <!-- Horaires -->
+    <h5 class="fw-semibold mb-2"><i class="fa-solid fa-clock me-2"></i>Horaires</h5>
+    <div class="bg-light rounded-3 p-3 mb-3">
+      <p class="mb-1">
+        <strong>Début :</strong>
+        <%= l @work_session.start_time, format: :short %>
+      </p>
+      <p class="mb-1">
+        <strong>Fin :</strong>
+        <%= l @work_session.end_time, format: :short %>
+      </p>
+      <p class="mb-0">
+        <strong>Durée totale :</strong>
+        <%= (@work_session.duration_minutes.to_f / 60).round(2) %> h
+      </p>
+    </div>
+
+    <!-- KM -->
+    <h5 class="fw-semibold mb-2"><i class="fa-solid fa-road me-2"></i>Déplacements</h5>
+    <div class="bg-light rounded-3 p-3 mb-3">
+      <p class="mb-1">
+        <strong>Kilomètres comptés :</strong>
+        <%= @work_session.effective_km %> km
+      </p>
+
+      <p class="mb-0">
+        <strong>Indemnités km :</strong>
+        <%= number_to_currency(@work_session.km_payment_final, unit: "€") %>
+      </p>
+    </div>
+
+    <!-- Paiements -->
+    <h5 class="fw-semibold mb-2"><i class="fa-solid fa-euro-sign me-2"></i>Rémunération</h5>
+    <div class="bg-light rounded-3 p-3 mb-3">
+
+      <p class="mb-1">
+        <strong>Brut mission :</strong>
+        <%= number_to_currency(@work_session.brut, unit: "€") %>
+      </p>
+
+      <p class="mb-1">
+        <strong>IFM :</strong>
+        <%= number_to_currency(@work_session.contract.ifm(@work_session.brut), unit: "€") %>
+      </p>
+
+      <p class="mb-1">
+        <strong>CP :</strong>
+        <%= number_to_currency(@work_session.contract.cp(@work_session.brut), unit: "€") %>
+      </p>
+
+      <p class="mb-0 fw-bold text-orange">
+        Total : <%= number_to_currency(@work_session.total_payment, unit: "€") %>
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <% if @work_session.notes.present? %>
+      <h5 class="fw-semibold mb-2"><i class="fa-solid fa-note-sticky me-2"></i>Notes</h5>
+      <div class="bg-light rounded-3 p-3 mb-3">
+        <%= simple_format(@work_session.notes) %>
+      </div>
+    <% end %>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-between mt-4">
+      <%= link_to edit_work_session_path(@work_session),
+                  class: "btn btn-orange fw-semibold" do %>
+        <i class="fa-solid fa-pen-to-square me-2"></i> Modifier
+      <% end %>
+
+      <%= link_to work_session_path(@work_session),
+                  data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
+                  class: "btn btn-danger fw-semibold" do %>
+        <i class="fa-solid fa-trash me-2"></i> Supprimer
+      <% end %>
+    </div>
+
+  </div>
+</div>
+
+<footer class="text-center text-muted my-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
+

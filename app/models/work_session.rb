@@ -111,6 +111,10 @@ class WorkSession < ApplicationRecord
       km_payment_final
   end
 
+  def km_payment_final
+    contract.km_payment(effective_km.to_f, recommended: recommended)
+  end
+
   # ============================================================
   # MÉTHODES PRIVÉES
   # ============================================================
@@ -134,9 +138,5 @@ class WorkSession < ApplicationRecord
 
   def night_pay
     hours_night * night_hourly_rate
-  end
-
-  def km_payment_final
-    contract.km_payment(effective_km.to_f, recommended: recommended)
   end
 end

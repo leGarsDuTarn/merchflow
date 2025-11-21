@@ -1,2 +1,122 @@
-<h1>WorkSessions#index</h1>
-<p>Find me in app/views/work_sessions/index.html.erb</p>
+<div class="container my-5">
+
+  <!-- Titre + bouton -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange m-0">Mes missions</h1>
+
+    <%= link_to new_work_session_path,
+                class: "btn btn-orange d-flex justify-content-center align-items-center rounded-circle",
+                style: "width: 42px; height: 42px; padding: 0;",
+                title: "Ajouter une mission",
+                aria: { label: "Ajouter une mission" } do %>
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    <% end %>
+  </div>
+
+  <% if @work_sessions.empty? %>
+
+    <!-- État vide -->
+    <div class="text-center text-muted mt-5">
+      <i class="fa-solid fa-circle-plus fa-3x mb-3 text-orange"></i>
+      <h4 class="fw-semibold">Aucune mission enregistrée</h4>
+      <p class="mb-3">Créez votre première mission depuis un contrat ou depuis ici.</p>
+
+      <%= link_to "Nouvelle mission",
+                  new_work_session_path,
+                  class: "btn btn-orange btn-lg fw-bold" %>
+    </div>
+
+  <% else %>
+
+    <!-- Liste des missions -->
+    <div class="row g-4">
+
+      <% @work_sessions.each do |ws| %>
+        <div class="col-md-6 col-lg-4">
+
+          <div class="card shadow-sm rounded-4 p-3 h-100">
+
+            <!-- Date -->
+            <h5 class="fw-bold text-orange">
+              <i class="fa-solid fa-calendar-day me-2"></i>
+              <%= l ws.date, format: :long %>
+            </h5>
+
+            <!-- Magasin -->
+            <p class="text-muted mb-1">
+              <i class="fa-solid fa-store me-1"></i>
+              <%= ws.store.presence || "Magasin non renseigné" %>
+            </p>
+
+            <!-- Contrat -->
+            <p class="text-muted mb-3 small">
+              <i class="fa-solid fa-file-contract me-1"></i>
+              <%= ws.contract.agency_label %>
+            </p>
+
+            <!-- Bloc infos -->
+            <div class="bg-light p-3 rounded-3 small mb-3">
+              <p class="mb-1">
+                <strong>Heures :</strong>
+                <%= (ws.duration_minutes.to_f / 60).round(2) %> h
+              </p>
+              <p class="mb-1">
+                <strong>KM :</strong>
+                <%= ws.effective_km %> km
+              </p>
+              <p class="mb-0 fw-bold text-orange">
+                Total : <%= number_to_currency(ws.total_payment, unit: "€") %>
+              </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-around mt-auto">
+
+              <!-- Voir -->
+              <%= link_to work_session_path(ws),
+                          class: "btn btn-orange d-flex justify-content-center align-items-center",
+                          style: "width: 42px; height: 42px; padding: 0;",
+                          title: "Voir la mission",
+                          aria: { label: "Voir la mission" } do %>
+                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+              <% end %>
+
+              <!-- Modifier -->
+              <%= link_to edit_work_session_path(ws),
+                          class: "btn btn-orange d-flex justify-content-center align-items-center",
+                          style: "width: 42px; height: 42px; padding: 0;",
+                          title: "Modifier la mission",
+                          aria: { label: "Modifier la mission" } do %>
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+              <% end %>
+
+              <!-- Supprimer -->
+              <%= link_to work_session_path(ws),
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "Supprimer cette mission ?"
+                          },
+                          class: "btn btn-orange d-flex justify-content-center align-items-center",
+                          style: "width: 42px; height: 42px; padding: 0;",
+                          title: "Supprimer la mission",
+                          aria: { label: "Supprimer la mission" } do %>
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+              <% end %>
+
+            </div>
+
+          </div><!-- card -->
+
+        </div>
+      <% end %>
+
+    </div><!-- row -->
+
+  <% end %>
+
+</div>
+
+<footer class="text-center text-muted my-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
+

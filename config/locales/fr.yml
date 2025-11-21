@@ -1,0 +1,19 @@
+fr:
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      long: "%A %d %B %Y"   # Exemple : "vendredi 21 novembre 2025"
+  time:
+    formats:
+      default: "%H:%M"
+      short: "%H:%M"
+      long: "%H:%M:%S"
+  date:
+    day_names: [dimanche, lundi, mardi, mercredi, jeudi, vendredi, samedi]
+    abbr_day_names: [dim., lun., mar., mer., jeu., ven., sam.]
+    month_names: ["", janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
+    abbr_month_names: ["", janv., févr., mars, avr., mai, juin, juil., août, sept., oct., nov., déc.]
+    formats:
+      default: "%d/%m/%Y"
+      long: "%A %d %B %Y"
+      short: "%d %b"
