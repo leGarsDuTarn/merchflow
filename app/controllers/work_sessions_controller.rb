@@ -38,6 +38,12 @@ class WorkSessionsController < ApplicationController
       # Cas 2 : Dashboard, pas de contrat fixé
       @work_session = WorkSession.new
     end
+
+    # Si on vient du calendrier (paramètre ?date=2023-11-26)
+    # On pré-remplit le champ date
+    if params[:date].present?
+      @work_session.date = params[:date]
+    end
   end
 
   # ============================================================

@@ -1,5 +1,5 @@
 // ==========================================
-// 1. STYLE MOBILE
+// 1. STYLE MOBILE (BASE - MOBILE FIRST)
 // ==========================================
 
 .calendar-grid {
@@ -9,7 +9,6 @@
 }
 
 .calendar-row {
-  // Sur mobile, une "semaine" devient une colonne verticale de jours
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -17,28 +16,44 @@
 
 .calendar-cell {
   background: #ffffff;
-  border: 1px solid #eaeaea;
+  border: 1px solid darken($light-gray, 5%);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  // MOBILE : Hauteur automatique selon le contenu
   min-height: 80px;
-  height: auto;
-
   padding: 1rem;
   border-radius: 12px;
-  position: relative;
 
+  // MOBILE LOGIC : hide available days
   &.cell-available {
-     display: none; // Cache les jours vides sur mobile pour gagner de la place
+    display: none;
   }
+
   &.cell-busy {
-     display: block; // Affiche seulement s'il y a du travail
+    display: block;
   }
-  // Si c'est aujourd'hui, on l'affiche toujours même si vide
+
   &.today {
     display: block;
-    background: #fff8f0;
-    border: 2px solid #ff8a00;
+    background: rgba($orange, 0.05);
+    border: 2px solid $orange;
   }
+
+  &:hover {
+    background-color: #fafafa;
+    border-color: darken($light-gray, 15%);
+
+    .add-icon {
+      opacity: 1 !important;
+      color: $orange !important;
+    }
+  }
+}
+
+.add-icon {
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .date-number {
@@ -47,27 +62,50 @@
   color: $gray;
 }
 
-.session-badge {
-  background: linear-gradient(135deg, #ff8a00, #ff3d00);
-  color: white;
-  font-size: 0.85rem;
-  padding: 8px 12px;
-  margin-top: 5px;
-  border-radius: 6px;
+// ==========================================
+// 2. MISSIONS STYLE (MOBILE)
+// ==========================================
 
+.sessions-container {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.session-item {
+  display: block;
+  background: $light-gray;
+  border-left: 4px solid $orange;
+  border-radius: 4px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
+
+  .fw-bold {
+    font-size: 0.95rem;
+    color: $gray;
+  }
+
+  .text-muted {
+    font-size: 0.85rem;
+    color: lighten($gray, 20%) !important;
+  }
+
+  &:hover {
+    background: rgba($orange, 0.15);
+    border-left-color: $flash-orange;
+    text-decoration: none;
+  }
 }
 
 // ==========================================
-// 2. STYLE DESKTOP (ÉCRANS > 992px)
+// 3. DESKTOP (> 992px)
 // ==========================================
+
 @media (min-width: 992px) {
 
   .calendar-grid {
-    display: flex;
-    flex-direction: column;
     gap: 0.5rem;
   }
 
@@ -80,18 +118,23 @@
   .calendar-cell {
     min-height: 130px;
     height: 130px;
-    overflow: hidden;
+
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 
-    // Si c'est vide, on affiche quand même la case verte
+    padding: 4px 6px;       // compact
+    border-radius: 6px;
+
     &.cell-available {
       display: block;
       border: 2px solid $available-green !important;
     }
+
     &.cell-busy {
       border: 2px solid $orange !important;
     }
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -99,36 +142,35 @@
   }
 
   .date-number {
-    font-size: 0.9rem;
-    margin-bottom: 4px;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
   }
 
   .sessions-container {
-    display: flex;
-    flex-direction: column;
     gap: 2px;
-    overflow-y: auto; // Ajoute un scroll si > 3 missions
-
+    overflow-y: auto;
+    height: 100%;
     scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
-  }
 
-  .session-badge {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-    border-radius: 4px;
-    line-height: 1.2;
-    margin: 0;
-
-    span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    &::-webkit-scrollbar {
+      display: none;
     }
   }
 
-  .session-time {
-  font-size: 0.7rem;
-  opacity: 0.9; // léger effet adouci
+  .session-item {
+    padding: 3px 6px;
+    border-left-width: 3px;
+
+    .fw-bold {
+      font-size: 0.7rem;
+      line-height: 1.1;
+      margin-bottom: 0;
+    }
+
+    .text-muted {
+      font-size: 0.65rem;
+      line-height: 1;
+      margin-top: 0;
+    }
   }
 }
