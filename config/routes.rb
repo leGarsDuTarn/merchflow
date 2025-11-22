@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   get 'dashboard', to: 'dashboard#index'
 
   # ============================================================
-  # 1. ROUTES SPÉCIFIQUES 
+  # 1. ROUTES SPÉCIFIQUES
   # ============================================================
   # Cette route attrape /work_sessions/new AVANT que le 'show' ne s'active
   resources :work_sessions, only: %i[new create index]
@@ -28,4 +28,5 @@ Rails.application.routes.draw do
 
   get 'france_travail', to: 'declarations#france_travail'
   get 'km/calc', to: 'km_api#calculate'
+  get 'planning', to: 'planning#index'
 end

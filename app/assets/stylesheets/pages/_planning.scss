@@ -1,0 +1,40 @@
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar-cell {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  min-height: 110px;
+  position: relative;
+  transition: all 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+    transform: translateY(-2px);
+  }
+
+  &.today {
+    background: #fff8f0;
+    border-color: #ff8a00;
+  }
+}
+
+.date-number {
+  font-size: 1rem;
+}
+
+.session-badge {
+  background: linear-gradient(135deg, #ff8a00, #ff3d00);
+  color: white;
+  font-size: 0.75rem;
+  line-height: 1.1rem;
+}

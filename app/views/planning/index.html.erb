@@ -1,0 +1,88 @@
+<div class="container my-5">
+
+  <!-- Titre -->
+  <h1 class="fw-bold text-orange mb-4">Planning du mois</h1>
+
+  <!-- Navigation mois -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <%= link_to planning_path(year: @prev_year, month: @prev_month),
+                class: "btn btn-orange-outline rounded-3" do %>
+      <i class="fa-solid fa-chevron-left"></i>
+    <% end %>
+
+    <h3 class="fw-semibold m-0 text-capitalize">
+      <%= I18n.l Date.new(@year, @month), format: "%B %Y" %>
+    </h3>
+
+    <%= link_to planning_path(year: @next_year, month: @next_month),
+                class: "btn btn-orange-outline rounded-3" do %>
+      <i class="fa-solid fa-chevron-right"></i>
+    <% end %>
+  </div>
+
+  <!-- Calendrier -->
+  <div class="calendar-grid shadow-sm rounded-4 p-3">
+    <% @weeks.each do |week| %>
+      <div class="calendar-row d-flex">
+        <% week.each do |day| %>
+
+          <% sessions = @sessions_by_date[day] || [] %>
+
+          <div class="calendar-cell flex-grow-1 p-2 rounded-3 <%= 'today' if day == Date.today %>">
+
+            <!-- Numéro du jour -->
+            <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
+              <%= day.day %>
+            </div>
+
+            <!-- Sessions du jour -->
+            <% sessions.each do |ws| %>
+              <div class="session-badge mt-2 p-1 rounded-2">
+                <span class="fw-semibold d-block">
+                  <%= ws.contract.agency %>
+                </span>
+                <small class="text-white-50">
+                  <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
+                </small>
+              </div>
+            <% end %>
+
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Liste du mois -->
+  <hr class="my-5">
+
+  <h2 class="fw-bold text-orange mb-3">Vos missions du mois</h2>
+
+  <div class="list-group shadow-sm rounded-4">
+    <% @sessions.order(:date).each do |ws| %>
+      <div class="list-group-item p-3">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+          <div>
+            <h5 class="fw-semibold m-0">
+              <%= l ws.date, format: :long %>
+            </h5>
+
+            <p class="text-muted m-0">
+              <%= ws.contract.agency %> •
+              <%= ws.start_time.strftime("%H:%M") %> –
+              <%= ws.end_time.strftime("%H:%M") %>
+            </p>
+          </div>
+
+          <%= link_to "Voir",
+                      work_session_path(ws),
+                      class: "btn btn-orange-outline btn-sm rounded-3" %>
+        </div>
+
+      </div>
+    <% end %>
+  </div>
+
+</div>

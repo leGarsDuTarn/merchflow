@@ -13,6 +13,31 @@ class WorkSession < ApplicationRecord
   validates :hourly_rate, numericality: { greater_than: 0 }
 
   # ============================================================
+  # SCOPES - pour le planning
+  # ============================================================
+
+  scope :for_month, ->(year, month) {
+    where(date: Date.new(year, month).all_month)
+  }
+
+  scope :for_year, ->(year) {
+    where(date: Date.new(year).all_year)
+  }
+
+  scope :upcoming, -> {
+    where('date >= ?', Date.today).order(:date)
+  }
+
+  scope :past, -> {
+    where('date < ?', Date.today).order(date: :desc)
+  }
+
+  scope :for_user, ->(user) {
+    joins(:contract).where(contracts: { user_id: user.id })
+  }
+
+
+  # ============================================================
   # CONSTANTES
   # ============================================================
   NIGHT_START = 21 # 21h

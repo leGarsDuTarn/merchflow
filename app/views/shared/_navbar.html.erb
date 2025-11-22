@@ -19,11 +19,18 @@
           <li class="nav-item">
             <%= link_to "Dashboard", dashboard_path, class: "nav-link fw-semibold" %>
           </li>
+
           <li class="nav-item">
             <%= link_to "Contrats", contracts_path, class: "nav-link fw-semibold" %>
           </li>
+
           <li class="nav-item">
             <%= link_to "Missions", work_sessions_path, class: "nav-link fw-semibold" %>
+          </li>
+
+          <!-- 🔥 Planning ajouté -->
+          <li class="nav-item">
+            <%= link_to "Planning", planning_path, class: "nav-link fw-semibold" %>
           </li>
         <% end %>
       </ul>
@@ -43,12 +50,11 @@
               <li><hr class="dropdown-divider"></li>
               <li>
                 <%= link_to destroy_user_session_path,
-            data: { turbo_method: :delete },
-            class: "dropdown-item text-danger fw-semibold" do %>
-  <i class="fa-solid fa-right-from-bracket me-2"></i>
-  Déconnexion
-<% end %>
-
+                      data: { turbo_method: :delete },
+                      class: "dropdown-item text-danger fw-semibold" do %>
+                  <i class="fa-solid fa-right-from-bracket me-2"></i>
+                  Déconnexion
+                <% end %>
               </li>
             </ul>
           </li>
@@ -58,6 +64,7 @@
           <li class="nav-item me-2">
             <%= link_to "Connexion", new_user_session_path, class: "btn btn-orange-outline fw-semibold" %>
           </li>
+
           <li class="nav-item">
             <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-orange fw-semibold" %>
           </li>
