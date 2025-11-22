@@ -29,93 +29,65 @@
     </div>
   </div>
 
-  <!-- Calendrier -->
-  <div class="calendar-grid shadow-sm rounded-4 p-3">
-    <% @weeks.each do |week| %>
+  <!-- CALENDRIER SCROLLABLE -->
+  <div class="calendar-wrapper">
 
-      <div class="calendar-row">
+    <div class="calendar-grid shadow-sm rounded-4 p-3">
 
-        <% week.each do |day| %>
-          <%
-             raw_sessions = @sessions_by_date[day] || []
-             sessions = raw_sessions.sort_by(&:start_time)
-          %>
+      <% @weeks.each do |week| %>
+        <div class="calendar-row">
 
-          <div class="calendar-cell p-2 rounded-3 position-relative
-                      <%= 'today' if day == Date.today %>
-                      <%= sessions.any? ? 'cell-busy' : 'cell-available' %>">
+          <% week.each do |day| %>
+            <% raw_sessions = @sessions_by_date[day] || [] %>
+            <% sessions     = raw_sessions.sort_by(&:start_time) %>
 
-            <%= link_to "", new_work_session_path(date: day),
-                class: "stretched-link",
-                aria: { label: "Ajouter une mission le #{day}" } %>
+            <div class="calendar-cell rounded-3 position-relative
+                        <%= 'today' if day == Date.today %>
+                        <%= sessions.any? ? 'cell-busy' : 'cell-available' %>">
 
-            <div class="d-flex justify-content-between align-items-start">
-              <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
-                <%= day.day %>
+              <%= link_to "", new_work_session_path(date: day),
+                  class: "stretched-link",
+                  aria: { label: "Ajouter une mission le #{day}" } %>
+
+              <div class="d-flex justify-content-between align-items-start p-1">
+                <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
+                  <%= day.day %>
+                </div>
+
+                <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
               </div>
-              <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
+
+              <div class="sessions-container">
+                <% sessions.each do |ws| %>
+
+                  <%= link_to work_session_path(ws),
+                      class: "session-item text-decoration-none position-relative",
+                      style: "z-index: 2;" do %>
+
+                    <div class="d-flex flex-column justify-content-center">
+                      <span class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
+                        <%= ws.contract.agency %>
+                      </span>
+
+                      <span class="text-muted small">
+                        <%= ws.start_time.strftime("%H:%M") %>
+                        -
+                        <%= ws.end_time.strftime("%H:%M") %>
+                      </span>
+                    </div>
+
+                  <% end %>
+
+                <% end %>
+              </div>
+
             </div>
+          <% end %>
 
-            <div class="sessions-container">
-  <% sessions.each do |ws| %>
-
-    <%= link_to work_session_path(ws),
-        class: "session-item text-decoration-none position-relative",
-        style: "z-index: 2;" do %>
-
-      <div class="d-flex flex-column justify-content-center">
-        <span class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
-          <%= ws.contract.agency %>
-        </span>
-
-        <span class="text-muted small">
-          <%= ws.start_time.strftime("%H:%M") %>-<%= ws.end_time.strftime("%H:%M") %>
-        </span>
-      </div>
-
-    <% end %>
-
-  <% end %>
-</div>
-
-          </div>
-        <% end %>
-
-      </div>
-
-    <% end %>
-  </div>
-
-  <!-- Liste détaillée -->
-  <hr class="my-5">
-
-  <h2 class="fw-bold text-orange mb-3">Vos missions du mois</h2>
-
-  <div class="list-group shadow-sm rounded-4">
-    <% @sessions.order(:date, :start_time).each do |ws| %>
-      <div class="list-group-item p-3">
-
-        <div class="d-flex justify-content-between align-items-center">
-
-          <div>
-            <h5 class="fw-semibold m-0">
-              <%= l ws.date, format: :long %>
-            </h5>
-
-            <p class="text-muted m-0">
-              <%= ws.contract.agency %> •
-              <%= ws.start_time.strftime("%H:%M") %> –
-              <%= ws.end_time.strftime("%H:%M") %>
-            </p>
-          </div>
-
-          <%= link_to "Voir",
-                      work_session_path(ws),
-                      class: "btn btn-orange-outline btn-sm rounded-3" %>
         </div>
+      <% end %>
 
-      </div>
-    <% end %>
+    </div>
   </div>
 
 </div>
