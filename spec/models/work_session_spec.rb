@@ -144,8 +144,6 @@ RSpec.describe WorkSession, type: :model do
                  night_minutes: 60,
                  hourly_rate: 10)
 
-      # 60min de jour = 10€
-      # 60min de nuit = 10 * 1.2 = 12€
       expect(ws.brut).to eq(22)
     end
   end
@@ -156,49 +154,39 @@ RSpec.describe WorkSession, type: :model do
   describe 'Test des méthodes net et net_total' do
     it 'calcule correctement le net (brut - 22%)' do
       ws = build(:work_session,
-                 start_time: Time.zone.parse('10:00'), # On force 2h de durée
-                 end_time: Time.zone.parse('12:00'),   # pour correspondre au calcul
+                 start_time: Time.zone.parse('10:00'),
+                 end_time: Time.zone.parse('12:00'),
                  hourly_rate: 10)
 
-      # Le valid? va calculer duration_minutes = 120
-      # Brut = 20
-      # Net = 20 - (20 * 0.22) = 15.6
       ws.valid?
       expect(ws.net).to eq(15.6)
     end
 
-    # spec/models/work_session_spec.rb
+    it 'calcule net + ifm + cp + km_payment_final' do
+      contract = build(:contract, night_rate: 0, ifm_rate: 0, cp_rate: 0, km_rate: 0)
 
-   it 'calcule net + ifm + cp + km_payment_final' do
-  # 1. Définir 'contract'
-  contract = build(:contract, night_rate: 0, ifm_rate: 0, cp_rate: 0, km_rate: 0)
+      ws = build(:work_session,
+                 contract: contract,
+                 start_time: Time.zone.parse("10:00"),
+                 end_time: Time.zone.parse("12:00"),
+                 night_minutes: 0,
+                 hourly_rate: 10,
+                 effective_km: 10)
 
-  # 2. Définir 'ws' en utilisant 'contract'
-  ws = build(:work_session,
-             contract: contract,
-             start_time: Time.zone.parse("10:00"),
-             end_time: Time.zone.parse("12:00"),
-             night_minutes: 0,
-             hourly_rate: 10,
-             effective_km: 10)
+      allow(contract).to receive(:ifm).and_return(5.0)
+      allow(contract).to receive(:cp).and_return(5.0)
+      allow(contract).to receive(:km_payment).and_return(7.0)
 
-  # 3. Simuler les méthodes sur l'objet 'contract'
-  allow(contract).to receive(:ifm).and_return(5.0) # Le 'contract' est maintenant défini
-  allow(contract).to receive(:cp).and_return(5.0)
-  allow(contract).to receive(:km_payment).and_return(7.0)
+      ws.valid?
 
-  # Le reste du test (validation et vérification)
-  ws.valid?
+      net_ifm = 5.0 * 0.78
+      net_cp  = 5.0 * 0.78
 
-  # Calcul des montants NETS pour l'expected_total (selon la correction précédente)
-  net_ifm = 5.0 * 0.78 # 3.9
-  net_cp  = 5.0 * 0.78 # 3.9
+      expected_total = (ws.net + net_ifm + net_cp + 7.0).round(2)
 
-  expected_total = (ws.net + net_ifm + net_cp + 7.0).round(2)
-
-  expect(ws.net_total).to eq(expected_total)
+      expect(ws.net_total).to eq(expected_total)
+    end
   end
-end
 
   # ------------------------------------------------------------
   # total_payment
@@ -219,6 +207,70 @@ end
       allow(contract).to receive(:km_payment).and_return(7)
 
       expect(ws.total_payment).to eq(ws.brut + 5 + 5 + 7)
+    end
+  end
+
+  # ------------------------------------------------------------
+  # SCOPE for_month (PLANNING)
+  # ------------------------------------------------------------
+  context 'Test des scopes du planning -> .for_month' do
+    let(:user)     { create(:user) }
+    let(:contract) { create(:contract, user: user) }
+
+    let!(:ws1) do
+      create(:work_session,
+        contract: contract,
+        date: Date.new(2025, 2, 5),
+        start_time: '08:00',
+        end_time: '12:00'
+      )
+    end
+
+    let!(:ws2) do
+      create(:work_session,
+        contract: contract,
+        date: Date.new(2025, 2, 15),
+        start_time: '06:00',
+        end_time: '09:00'
+      )
+    end
+
+    let!(:previous_month) do
+      create(:work_session,
+        contract: contract,
+        date: Date.new(2025, 1, 20)
+      )
+    end
+
+    let!(:next_month) do
+      create(:work_session,
+        contract: contract,
+        date: Date.new(2025, 3, 2)
+      )
+    end
+
+    it 'retourne uniquement les missions du mois demandé' do
+      expect(WorkSession.for_month(2025, 2)).to contain_exactly(ws1, ws2)
+    end
+
+    it 'exclut les missions du mois précédent' do
+      expect(WorkSession.for_month(2025, 2)).not_to include(previous_month)
+    end
+
+    it 'exclut les missions du mois suivant' do
+      expect(WorkSession.for_month(2025, 2)).not_to include(next_month)
+    end
+
+    it 'trie les missions par date et start_time' do
+      expect(WorkSession.for_month(2025, 2)).to eq([ws1, ws2])
+    end
+
+    it 'gère correctement un changement d’année (décembre → janvier)' do
+      dec = create(:work_session, contract: contract, date: Date.new(2024, 12, 29))
+      jan = create(:work_session, contract: contract, date: Date.new(2025, 1, 5))
+
+      expect(WorkSession.for_month(2024, 12)).to include(dec)
+      expect(WorkSession.for_month(2024, 12)).not_to include(jan)
     end
   end
 end
