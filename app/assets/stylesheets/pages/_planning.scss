@@ -196,4 +196,14 @@
       line-height: 1;
     }
   }
+
+  .week-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: $gray;
+}
+
 }
