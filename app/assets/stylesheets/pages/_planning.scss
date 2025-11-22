@@ -1,5 +1,5 @@
 // ==========================================
-// 1. STYLE MOBILE (PAR DÉFAUT)
+// 1. STYLE MOBILE
 // ==========================================
 
 .calendar-grid {
@@ -19,16 +19,14 @@
   background: #ffffff;
   border: 1px solid #eaeaea;
 
-  // MOBILE : Hauteur automatique selon le contenu (pas de vide inutile)
+  // MOBILE : Hauteur automatique selon le contenu
   min-height: 80px;
   height: auto;
 
   padding: 1rem;
-  border-radius: 12px; // Plus arrondi sur mobile (style "carte")
+  border-radius: 12px;
   position: relative;
 
-  // MOBILE : On cache les cases vides (jours d'un autre mois ou sans activité)
-  // Optionnel : garde ça si tu veux éviter d'avoir des cases vides sur mobile
   &.cell-available {
      display: none; // Cache les jours vides sur mobile pour gagner de la place
   }
@@ -46,18 +44,17 @@
 .date-number {
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
-  color: #666;
+  color: $gray;
 }
 
 .session-badge {
   background: linear-gradient(135deg, #ff8a00, #ff3d00);
   color: white;
-  font-size: 0.85rem; // Un peu plus gros sur mobile
+  font-size: 0.85rem;
   padding: 8px 12px;
   margin-top: 5px;
   border-radius: 6px;
 
-  // Flex pour bien aligner l'agence et l'heure sur une ligne si besoin
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -68,44 +65,70 @@
 // ==========================================
 @media (min-width: 992px) {
 
+  .calendar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .calendar-row {
-    display: grid; // On repasse en grille
-    grid-template-columns: repeat(7, 1fr); // Les 7 jours alignés
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
     gap: 0.5rem;
   }
 
   .calendar-cell {
     min-height: 130px;
-    height: 130px;     // Hauteur fixe pour la régularité de la grille
+    height: 130px;
     overflow: hidden;
-    border-radius: 0.375rem; // Bootstrap rounded-3 standard
+    display: flex;
+    flex-direction: column;
 
-    // On réaffiche TOUTES les cellules sur PC (même les vides) pour la structure du calendrier
+    // Si c'est vide, on affiche quand même la case verte
     &.cell-available {
       display: block;
-      border: 2px solid #28a745 !important;
+      border: 2px solid $available-green !important;
     }
-
     &.cell-busy {
-      border: 2px solid #ff8a00 !important;
+      border: 2px solid $orange !important;
     }
-
     &:hover {
-      box-shadow: 0 4px 10px rgba(0,0,0,0.07);
       transform: translateY(-2px);
-      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
   }
 
+  .date-number {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+
+  .sessions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto; // Ajoute un scroll si > 3 missions
+
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+
   .session-badge {
-    font-size: 0.75rem;
-    padding: 4px;
-    display: block; // Retour à l'affichage bloc simple pour les petites cases
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    border-radius: 4px;
+    line-height: 1.2;
+    margin: 0;
 
     span {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+  }
+
+  .session-time {
+  font-size: 0.7rem;
+  opacity: 0.9; // léger effet adouci
   }
 }
