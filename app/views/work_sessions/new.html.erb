@@ -10,7 +10,7 @@
         <%= form_with model: @work_session, local: true do |f| %>
 
           <%# SELECTION CONTRAT %>
-          <% if @contract.present? %>
+          <% if @contracts.nil? %>
             <div class="mb-3">
               <%= f.label :contract_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
               <%= f.collection_select :contract_id,

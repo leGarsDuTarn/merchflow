@@ -1,2 +1,105 @@
-<h1>WorkSessions#edit</h1>
-<p>Find me in app/views/work_sessions/edit.html.erb</p>
+<div class="container my-5">
+
+  <!-- Titre + bouton retour -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange m-0">
+      Modifier la mission du <%= l @work_session.date, format: :long %>
+    </h1>
+
+    <%= link_to work_session_path(@work_session),
+                class: "btn btn-orange-outline fw-semibold" do %>
+      <i class="fa-solid fa-arrow-left me-2"></i> Retour
+    <% end %>
+  </div>
+
+  <div class="card shadow-sm rounded-4 p-4">
+
+    <%= form_with model: @work_session, local: true do |f| %>
+
+      <%# DATE %>
+      <div class="mb-3">
+        <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
+        <%= f.date_field :date, class: "form-control" %>
+        <%= inline_error_for(@work_session, :date) %>
+      </div>
+
+      <%# HORAIRES %>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <%= f.label :start_time, "Début", class: "form-label fw-semibold" %>
+          <%= f.time_field :start_time, class: "form-control" %>
+          <%= inline_error_for(@work_session, :start_time) %>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <%= f.label :end_time, "Fin", class: "form-label fw-semibold" %>
+          <%= f.time_field :end_time, class: "form-control" %>
+          <%= inline_error_for(@work_session, :end_time) %>
+        </div>
+      </div>
+
+      <%# TAUX HORAIRE %>
+      <div class="mb-3">
+        <%= f.label :hourly_rate, "Taux horaire (€)", class: "form-label fw-semibold" %>
+        <%= f.number_field :hourly_rate, step: 0.01, class: "form-control" %>
+        <small class="text-muted">Par défaut : SMIC (11.88€)</small>
+        <%= inline_error_for(@work_session, :hourly_rate) %>
+      </div>
+
+      <%# MAGASIN %>
+      <div class="mb-3">
+        <%= f.label :store, "Nom du magasin", class: "form-label fw-semibold" %>
+        <%= f.text_field :store, class: "form-control", placeholder: "Ex. Intermarché Carmaux" %>
+        <%= inline_error_for(@work_session, :store) %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :store_full_address, "Adresse complète du magasin", class: "form-label fw-semibold" %>
+        <%= f.text_field :store_full_address,
+                         class: "form-control",
+                         placeholder: "Ex. Bd Flandres, 81400 Carmaux" %>
+        <small class="text-muted">Utilisée pour le calcul automatique des KM</small>
+        <%= inline_error_for(@work_session, :store_full_address) %>
+      </div>
+
+      <%# KM CUSTOM %>
+      <div class="mb-3">
+        <%= f.label :km_custom, "Kilomètres (optionnel)", class: "form-label fw-semibold" %>
+        <%= f.number_field :km_custom, step: 0.1, class: "form-control" %>
+        <small class="text-muted">Laisser vide pour utiliser l’adresse</small>
+        <%= inline_error_for(@work_session, :km_custom) %>
+      </div>
+
+      <%# RECOMMENDED %>
+      <div class="form-check form-switch mb-3">
+        <%= f.check_box :recommended, class: "form-check-input" %>
+        <%= f.label :recommended, "Mission recommandée", class: "form-check-label fw-semibold" %>
+      </div>
+
+      <%# NOTES %>
+      <div class="mb-3">
+        <%= f.label :notes, "Notes", class: "form-label fw-semibold" %>
+        <%= f.text_area :notes, rows: 3, class: "form-control",
+                         placeholder: "Détails ou instructions…" %>
+        <%= inline_error_for(@work_session, :notes) %>
+      </div>
+
+      <%# SUBMIT %>
+      <div class="d-grid mt-3">
+        <%= f.submit "Mettre à jour", class: "btn btn-orange btn-lg fw-bold" %>
+      </div>
+
+    <% end %>
+
+  </div>
+
+  <div class="text-center mt-3">
+    <%= link_to "Retour", work_session_path(@work_session),
+                class: "text-decoration-none text-muted" %>
+  </div>
+
+</div>
+
+<footer class="text-center text-muted my-3">
+  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
+</footer>
