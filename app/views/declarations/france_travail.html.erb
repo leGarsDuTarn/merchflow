@@ -1,2 +1,91 @@
-<h1>Declarations#france_travail</h1>
-<p>Find me in app/views/declarations/france_travail.html.erb</p>
+<div class="container my-5">
+
+  <!-- Titre -->
+  <h1 class="fw-bold text-orange mb-4">Déclaration France Travail</h1>
+
+  <!-- BARRE DE RECHERCHE -->
+  <div class="card shadow-sm rounded-4 p-3 mb-4">
+    <%= form_with url: france_travail_path, method: :get, local: true, class: "row g-3 align-items-end" do %>
+
+      <div class="col-8">
+        <label class="fw-semibold mb-1">Rechercher un mois</label>
+        <%= month_field_tag :date,
+              "#{@year}-#{sprintf('%02d', @month)}",
+              class: "form-control" %>
+      </div>
+
+      <div class="col-4">
+        <button class="btn btn-orange w-100 fw-semibold">
+          Rechercher
+        </button>
+      </div>
+
+    <% end %>
+  </div>
+
+  <!-- Navigation mois -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <%= link_to france_travail_path(year: @year, month: @month - 1),
+                class: "btn btn-orange-outline rounded-3" do %>
+      <i class="fa-solid fa-chevron-left"></i>
+    <% end %>
+
+    <h3 class="fw-semibold text-capitalize m-0">
+      <%= I18n.l Date.new(@year, @month), format: "%B %Y" %>
+    </h3>
+
+    <%= link_to france_travail_path(year: @year, month: @month + 1),
+                class: "btn btn-orange-outline rounded-3" do %>
+      <i class="fa-solid fa-chevron-right"></i>
+    <% end %>
+  </div>
+
+  <% if @grouped.empty? %>
+    <p class="text-muted text-center mt-5">
+      Aucune mission pour ce mois.
+    </p>
+  <% end %>
+
+  <!-- CARDS PAR EMPLOYEUR -->
+  <% @grouped.each do |agency, sessions| %>
+
+    <% hours   = sessions.sum { |s| s.duration_minutes / 60.0 } %>
+    <% brut    = sessions.sum(&:brut) %>
+    <% cp      = brut * 0.10 %>
+    <% declare = brut + cp %>
+
+    <div class="card shadow-sm rounded-4 p-4 mb-4 bg-white">
+
+      <!-- Nom employeur -->
+      <h4 class="fw-bold text-orange mb-3"><%= agency.upcase %></h4>
+
+      <!-- Ligne heures -->
+      <div class="mb-3">
+        <p class="text-muted m-0">Heures effectuées</p>
+        <h4 class="fw-bold"><%= hours.round(2) %> h</h4>
+      </div>
+
+      <!-- Ligne Brut -->
+      <div class="mb-3">
+        <p class="text-muted m-0">Brut total</p>
+        <h4 class="fw-bold"><%= number_to_currency(brut) %></h4>
+      </div>
+
+      <!-- Ligne CP -->
+      <div class="mb-3">
+        <p class="text-muted m-0">CP (10%)</p>
+        <h4 class="fw-bold"><%= number_to_currency(cp) %></h4>
+      </div>
+
+      <!-- Total à déclarer -->
+      <div class="bg-light p-3 rounded-3 mt-3">
+        <p class="text-muted m-0">À déclarer (brut + CP)</p>
+        <h3 class="fw-bold text-orange m-0">
+          <%= number_to_currency(declare) %>
+        </h3>
+      </div>
+
+    </div>
+  <% end %>
+
+</div>

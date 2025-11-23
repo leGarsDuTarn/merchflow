@@ -1,14 +1,42 @@
 class DeclarationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_contract, only: %i[index create]
+  before_action :set_contract, only: %i[index create]  # <-- gardé pour ton système actuel
 
-  def index
-    @declarations = @contract.declarations.order(year: :desc, month: :desc)
+  # ============================================
+  # FRANCE TRAVAIL (global, tous employeurs)
+  # ============================================
+  def france_travail
+    # Si une date YYYY-MM a été envoyée par la barre de recherche
+    if params[:date].present?
+      parsed = Date.parse("#{params[:date]}-01")
+      @year  = parsed.year
+      @month = parsed.month
+    else
+      @year  = (params[:year]  || Date.today.year).to_i
+      @month = (params[:month] || Date.today.month).to_i
+    end
+
+    # NORMALISATION mois <1 ou >12
+    if @month < 1
+      @month = 12
+      @year -= 1
+    end
+
+    if @month > 12
+      @month = 1
+      @year += 1
+    end
+
+    # WORK SESSIONS pour le mois demandé
+    @sessions = current_user.work_sessions.for_month(@year, @month)
+    @grouped  = @sessions.group_by { |ws| ws.contract.agency }
   end
 
-  def france_travail
-    @user = current_user
-    @contracts = current_user.contracts.includes(:work_sessions)
+  # ============================================
+  # DÉCLARATIONS PAR CONTRAT (ton système actuel)
+  # ============================================
+  def index
+    @declarations = @contract.declarations.order(year: :desc, month: :desc)
   end
 
   def create
