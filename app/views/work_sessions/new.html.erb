@@ -64,15 +64,13 @@
             <%= f.text_field :store_full_address,
                              class: "form-control",
                              placeholder: "Ex. Bd Flandres, 81400 Carmaux" %>
-            <small class="text-muted">Utilisée pour calculer les KM automatiquement</small>
             <%= inline_error_for(@work_session, :store_full_address) %>
           </div>
 
           <%# KM CUSTOM %>
           <div class="mb-3">
-            <%= f.label :km_custom, "Kilomètres (optionnel)", class: "form-label fw-semibold" %>
+            <%= f.label :km_custom, "Kilomètres", class: "form-label fw-semibold" %>
             <%= f.number_field :km_custom, step: 0.1, class: "form-control" %>
-            <small class="text-muted">Laissez vide pour utiliser le calcul auto via l'adresse</small>
             <%= inline_error_for(@work_session, :km_custom) %>
           </div>
 
