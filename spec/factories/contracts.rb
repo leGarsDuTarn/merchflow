@@ -3,6 +3,7 @@ FactoryBot.define do
     association :user
 
     name { 'Contrat Test' }
+
     agency { :actiale }
     contract_type { :cdd }
 
