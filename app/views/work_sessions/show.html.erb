@@ -7,8 +7,8 @@
     </h1>
 
     <%= link_to contract_path(@work_session.contract),
-                class: "btn btn-orange-outline fw-semibold" do %>
-      <i class="fa-solid fa-arrow-left me-2"></i> Retour au contrat
+                class: "btn btn-orange fw-semibold" do %>
+      <i class="fa-solid fa-arrow-left"></i>
     <% end %>
   </div>
 
@@ -159,7 +159,7 @@
 
       <%= link_to work_session_path(@work_session),
                   data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
-                  class: "btn btn-danger fw-semibold" do %>
+                  class: "btn btn-orange fw-semibold" do %>
         <i class="fa-solid fa-trash me-2"></i> Supprimer
       <% end %>
     </div>
