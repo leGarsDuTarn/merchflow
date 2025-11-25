@@ -22,6 +22,14 @@
             </div>
           <% end %>
 
+          <div class="mb-3">
+            <%= f.label :company, "Entreprise", class: "form-label fw-semibold" %>
+            <%= f.text_field :company,
+            class: "form-control",
+            placeholder: "Ex : Lindt, Bonduelle, PepsiCo" %>
+            </div>
+
+
           <%# DATE %>
           <div class="mb-3">
             <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
