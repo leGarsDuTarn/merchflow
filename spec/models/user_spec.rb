@@ -6,7 +6,6 @@ RSpec.describe User, type: :model do
   # ------------------------------------------------------------
   context 'Test de la factory' do
     it 'La factory est valide' do
-      # On vérifie que la factory :user est valide en l'état
       expect(build(:user)).to be_valid
     end
   end
@@ -15,13 +14,8 @@ RSpec.describe User, type: :model do
   # RELATIONS
   # ------------------------------------------------------------
   context 'Test des associations' do
-    # has_many :contracts
     it { should have_many(:contracts).dependent(:destroy) }
-
-    # has_many :work_sessions via :contracts
     it { should have_many(:work_sessions).through(:contracts) }
-
-    # has_many :declarations
     it { should have_many(:declarations).dependent(:destroy) }
   end
 
@@ -32,44 +26,33 @@ RSpec.describe User, type: :model do
     # --- présence ---
     it { should validate_presence_of(:firstname).with_message('Vous devez renseigner votre prénom') }
     it { should validate_presence_of(:lastname).with_message('Vous devez renseigner votre nom') }
-
     it { should validate_presence_of(:username).with_message("Vous devez choisir un nom d'utilisateur") }
     it { should validate_presence_of(:email).with_message('Veuillez renseigner un email.') }
+    it { should validate_presence_of(:address).with_message('Vous devez renseigner une adresse') }
+    it { should validate_presence_of(:zipcode).with_message('Vous devez renseigner un code postal') }
+    it { should validate_presence_of(:city).with_message('Vous devez renseigner une ville') }
 
     # --- email ---
-    it do
-      should allow_value('test@example.com').for(:email)
-    end
+    it { should allow_value('test@example.com').for(:email) }
+    it { should_not allow_value('invalid-email').for(:email).with_message('exemple : john@gmail.com') }
 
-    it do
-      should_not allow_value('invalid-email').for(:email)
-        .with_message('exemple : john@gmail.com')
-    end
-
-    # unicité de l'email
-    subject { create(:user) } # Obligatoire pour les tests d’unicité Shoulda
+    # --- unicité ---
+    subject { create(:user) }
     it { should validate_uniqueness_of(:email).case_insensitive.with_message('Cette adresse email est déjà utilisée') }
     it { should validate_uniqueness_of(:username).case_insensitive.with_message("Ce nom d'utilisateur est déjà pris") }
 
-    # format de l'username
-    it do
-      should allow_value('benjamin_12').for(:username)
+    # --- format username ---
+    it { should allow_value('benjamin_12').for(:username) }
+
+    it 'Le test refuse les caractères spéciaux' do
+      User.skip_callback(:validation, :before, :normalize_username)
+      user = build(:user, username: 'benjamin !')
+      expect(user).to be_invalid
+      expect(user.errors[:username]).to include('ne peut contenir que des lettres, chiffres, . _ ou -')
+      User.set_callback(:validation, :before, :normalize_username)
     end
 
-    it 'Le test refuse les caractères spéciaux (même si le callback normalize_username les enlèverait)' do
-  # Désactive temporairement le callback de normalisation pour forcer la validation à voir le caractère invalide
-  User.skip_callback(:validation, :before, :normalize_username)
-  # Exécute le test Shoulda sur la valeur non normalisée
-  expect(build(:user, username: 'benjamin !')).to be_invalid
-  # Vérifie le message d'erreur
-  user = build(:user, username: 'benjamin !')
-  user.valid?
-  expect(user.errors[:username]).to include('ne peut contenir que des lettres, chiffres, . _ ou -')
-  # Réactive le callback après le test (TRÈS IMPORTANT !)
-  User.set_callback(:validation, :before, :normalize_username)
-    end
-
-    # --- password fort (regex) ---
+    # --- password fort ---
     context 'Test des validation du password' do
       it 'refuse un password trop faible' do
         user = build(:user, password: 'abc123')
@@ -145,7 +128,7 @@ RSpec.describe User, type: :model do
     end
 
     it 'renvoie false si un champ manque' do
-      user = build(:user, address: nil)
+      user = User.new(address: nil, zipcode: 'b', city: 'c')
       expect(user.address_complete?).to be false
     end
   end
@@ -153,43 +136,75 @@ RSpec.describe User, type: :model do
   # ------------------------------------------------------------
   # MÉTHODES DASHBOARD
   # ------------------------------------------------------------
-  context 'Test des methodes du dashboard ' do
+  context 'Test des methodes du dashboard' do
     let(:user) { create(:user) }
     let(:contract) { create(:contract, user: user) }
 
     before do
-      # On mock des work_sessions sans dépendre de la logique métier complète
-      allow(user).to receive(:work_sessions).and_return([
-        double(duration_minutes: 120, brut: 80, effective_km: 10, contract: contract, recommended: false),
-        double(duration_minutes: 60, brut: 35, effective_km: 5, contract: contract, recommended: true)
-      ])
-
-      allow(contract).to receive(:ifm_cp_total).and_return(10)
-      allow(contract).to receive(:km_payment).and_return(5)
+      allow_any_instance_of(Contract).to receive(:ifm_cp_total).and_return(10)
+      allow_any_instance_of(Contract).to receive(:ifm).and_return(5)
+      allow_any_instance_of(Contract).to receive(:cp).and_return(5)
+      allow_any_instance_of(Contract).to receive(:km_payment).and_return(10)
     end
 
-    it 'Methode total_minutes_worked retourne la somme' do
-      expect(user.total_minutes_worked).to eq(180)
+    let!(:session_current) do
+      create(:work_session,
+        contract: contract,
+        date: Date.current,
+        start_time: DateTime.current.change(hour: 9, min: 0),
+        end_time: DateTime.current.change(hour: 11, min: 0), # 2h
+        hourly_rate: 50.0, # ← C'est un attribut de WorkSession, pas de Contract
+        km_custom: 20
+      )
     end
 
-    it 'Methode total_hours_worked retourne le total en heures' do
+    let!(:session_old) do
+      create(:work_session,
+        contract: contract,
+        date: 2.months.ago,
+        start_time: 2.months.ago.change(hour: 9, min: 0),
+        end_time: 2.months.ago.change(hour: 10, min: 0), # 1h
+        hourly_rate: 50.0,
+        km_custom: 10
+    )
+    end
+
+    # --- TOTAUX GLOBAUX (Current + Old) ---
+
+    it 'total_hours_worked : somme de toutes les heures' do
       expect(user.total_hours_worked).to eq(3.0)
     end
 
-    it 'Methode total_brut' do
-      expect(user.total_brut).to eq(115)
+    it 'total_brut : somme de tout le brut' do
+     expect(user.total_brut).to eq(150.0)
     end
 
-    it 'Methode total_ifm_cp' do
-      expect(user.total_ifm_cp).to eq(20)
+    it 'total_km : somme des km' do
+      expect(user.total_km).to eq(30.0)
     end
 
-    it 'Methode total_km' do
-      expect(user.total_km).to eq(15)
+    # --- TOTAUX MOIS EN COURS (Current uniquement) ---
+
+    it 'sessions_this_month : ne récupère que la session du mois' do
+      expect(user.sessions_this_month).to include(session_current)
+      expect(user.sessions_this_month).not_to include(session_old)
     end
 
-    it 'Methode total_km_payment' do
-      expect(user.total_km_payment).to eq(10)
+    it 'total_hours_this_month : heures du mois courant' do
+      expect(user.total_hours_this_month).to eq(2.0)
+    end
+
+    it 'total_brut_this_month : brut du mois courant' do
+      expect(user.total_brut_this_month).to eq(100.0)
+    end
+
+    it 'net_estimated_this_month : calculé sur le mois courant (78% du brut)' do
+      # 100 * 0.78 = 78
+      expect(user.net_estimated_this_month).to eq(78.0)
+    end
+
+    it 'net_total_estimated_this_month : net estimé + frais km du mois' do
+      expect(user.net_total_estimated_this_month).to eq(88.0)
     end
   end
 end
