@@ -52,8 +52,11 @@ class Contract < ApplicationRecord
   }.freeze
 
   def agency_label
-    AGENCY_LABELS[agency] || agency.humanize
+    return "Agence inconnue" if agency.blank?
+
+    AGENCY_LABELS[agency] || agency.to_s.humanize
   end
+
 
   def self.agency_options
     agencies.keys.map { |key| [AGENCY_LABELS[key], key] }
