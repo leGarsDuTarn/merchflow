@@ -151,18 +151,25 @@
     <% end %>
 
     <!-- Actions -->
-    <div class="d-flex justify-content-between mt-4">
-      <%= link_to edit_work_session_path(@work_session),
-                  class: "btn btn-orange fw-semibold" do %>
-        <i class="fa-solid fa-pen-to-square me-2"></i> Modifier
-      <% end %>
+  <div class="d-flex justify-content-evenly mt-4">
 
-      <%= link_to work_session_path(@work_session),
-                  data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
-                  class: "btn btn-orange fw-semibold" do %>
-        <i class="fa-solid fa-trash me-2"></i> Supprimer
-      <% end %>
-    </div>
+    <!-- Modifier -->
+    <%= link_to edit_work_session_path(@work_session),
+              class: "btn btn-orange fw-semibold",
+              aria: { label: "Modifier la mission" } do %>
+    <i class="fa-solid fa-pen-to-square"></i>
+    <% end %>
+
+    <!-- Supprimer -->
+    <%= link_to work_session_path(@work_session),
+              data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
+              class: "btn btn-orange fw-semibold",
+              aria: { label: "Supprimer la mission" } do %>
+    <i class="fa-solid fa-trash"></i>
+    <% end %>
+
+  </div>
+
 
   </div>
 </div>
