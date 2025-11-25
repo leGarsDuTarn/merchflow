@@ -1,135 +1,157 @@
-<div class="container my-5">
+<div class="container my-4">
 
-  <!-- Titre + bouton -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold text-orange m-0">Mes missions</h1>
+  <!-- ===== HEADER : Titre + Recherche + Bouton ===== -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
 
-    <%= form_with url: work_sessions_path, method: :get, class: "d-flex", local: true do |f| %>
-    <%= f.text_field :query,
-      value: @query,
-      placeholder: "Rechercher : entreprise, magasin, date…",
-      class: "form-control me-2" %>
+    <!-- Titre -->
+    <h1 class="fw-bold text-orange m-0 text-center text-md-start">
+      Mes missions
+    </h1>
 
-    <%= f.submit "Rechercher", class: "btn btn-orange" %>
-  <% end %>
+    <!-- SEARCH + BUTTONS WRAPPER -->
+    <div class="d-flex align-items-center gap-2 flex-md-row flex-column">
 
-    <%= link_to new_work_session_path,
-                class: "btn btn-orange d-flex justify-content-center align-items-center rounded-circle",
-                style: "width: 42px; height: 42px; padding: 0;",
-                title: "Ajouter une mission",
-                aria: { label: "Ajouter une mission" } do %>
-      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      <%= form_with url: work_sessions_path,
+                    method: :get,
+                    class: "d-flex align-items-center gap-2",
+                    data: {
+                      controller: "search",
+                      "search-url-value": work_sessions_path
+                    },
+                    local: true do |f| %>
+
+        <!-- Champ de recherche -->
+        <div class="position-relative search-wrapper" style="max-width: 220px; width: 100%;">
+          <%= f.text_field :query,
+                value: @query,
+                placeholder: "Rechercher…",
+                class: "form-control pe-5",
+                data: {
+                  action: "input->search#search",
+                  "search-target": "input"
+                } %>
+
+          <!-- Clear -->
+          <span data-action="click->search#clear"
+                data-search-target="clearButton"
+                class="position-absolute top-50 end-0 translate-middle-y me-2"
+                style="cursor:pointer; display:none;">
+            <i class="fa-solid fa-xmark text-muted"></i>
+          </span>
+        </div>
+
+        <!-- Bouton recherche -->
+        <button class="btn btn-orange d-flex justify-content-center align-items-center"
+                style="width:42px; height:42px;">
+          <i class="fa-solid fa-search"></i>
+        </button>
+
+
+
+      <!-- Bouton ajouter mission -->
+      <%= link_to new_work_session_path,
+                  class: "btn btn-orange d-flex justify-content-center align-items-center",
+                  style: "width: 42px; height: 42px;",
+                  title: "Ajouter une mission" do %>
+        <i class="fa-solid fa-plus"></i>
+      <% end %>
     <% end %>
+    </div>
   </div>
 
-  <% if @work_sessions.empty? %>
 
-    <!-- État vide -->
-    <div class="text-center text-muted mt-5">
-      <i class="fa-solid fa-circle-plus fa-3x mb-3 text-orange"></i>
-      <h4 class="fw-semibold">Aucune mission enregistrée</h4>
-      <p class="mb-3">Créez votre première mission depuis un contrat ou depuis ici.</p>
+  <!-- Turbo Frame -->
+  <%= turbo_frame_tag "work_sessions_list" do %>
 
-      <%= link_to "Nouvelle mission",
-                  new_work_session_path,
-                  class: "btn btn-orange btn-lg fw-bold" %>
-    </div>
+    <% if @work_sessions.empty? %>
 
-  <% else %>
+      <!-- ===== AUCUNE MISSION ===== -->
+      <div class="text-center text-muted mt-5">
+        <i class="fa-solid fa-circle-plus fa-3x mb-3 text-orange"></i>
+        <h4 class="fw-semibold">Aucune mission enregistrée</h4>
+        <p class="mb-3">Créez votre première mission depuis un contrat ou depuis ici.</p>
 
-    <!-- Liste des missions -->
-    <div class="row g-4">
+        <%= link_to "Nouvelle mission",
+                    new_work_session_path,
+                    class: "btn btn-orange btn-lg fw-bold" %>
+      </div>
 
-      <% @work_sessions.each do |ws| %>
-        <div class="col-md-6 col-lg-4">
+    <% else %>
 
-          <div class="card shadow-sm rounded-4 p-3 h-100">
+      <!-- ===== LISTE DES MISSIONS ===== -->
+      <div class="row g-3 g-md-4">
 
-            <!-- Date -->
-            <h5 class="fw-bold text-orange">
-              <i class="fa-solid fa-calendar-day me-2"></i>
-              <%= l ws.date, format: :long %>
-            </h5>
+        <% @work_sessions.each do |ws| %>
+          <div class="col-12 col-sm-6 col-lg-4">
 
-            <!-- Magasin -->
-            <p class="text-muted mb-1">
-              <i class="fa-solid fa-store me-1"></i>
-              <%= ws.store.presence || "Magasin non renseigné" %>
-            </p>
+            <div class="card shadow-sm rounded-4 p-3 h-100 d-flex flex-column">
 
-            <!-- Contrat + entreprise -->
-            <p class="text-muted mb-3 small">
-              <i class="fa-solid fa-file-contract me-1"></i>
-              <%= ws.contract.agency_label %> - <%= ws.company.presence || "Entreprise non renseignée" %>
-            </p>
+              <!-- Date -->
+              <h5 class="fw-bold text-orange mb-2">
+                <i class="fa-solid fa-calendar-day me-2"></i>
+                <%= l ws.date, format: :long %>
+              </h5>
 
-            <!-- Bloc infos -->
-            <div class="bg-light p-3 rounded-3 small mb-3">
-              <p class="mb-1">
-                <strong>Heures :</strong>
-                <%= (ws.duration_minutes.to_f / 60).round(2) %> h
+              <!-- Magasin -->
+              <p class="text-muted small mb-1">
+                <i class="fa-solid fa-store me-1"></i>
+                <%= ws.store.presence || "Magasin non renseigné" %>
               </p>
-              <p class="mb-1">
-                <strong>KM :</strong>
-                <%= ws.effective_km %> km
+
+              <!-- Contrat -->
+              <p class="text-muted small mb-3">
+                <i class="fa-solid fa-file-contract me-1"></i>
+                <%= ws.contract.agency_label %> — <%= ws.company.presence || "Entreprise non renseignée" %>
               </p>
-              <p class="mb-0 fw-bold text-orange">
-                Total : <%= number_to_currency(ws.total_payment, unit: "€") %>
-              </p>
-            </div>
 
-            <!-- Actions -->
-            <div class="d-flex justify-content-around mt-auto">
+              <!-- Bloc infos -->
+              <div class="bg-light p-3 rounded-3 small mb-3">
+                <p class="mb-1"><strong>Heures :</strong> <%= (ws.duration_minutes.to_f / 60).round(2) %> h</p>
+                <p class="mb-1"><strong>KM :</strong> <%= ws.effective_km %> km</p>
+                <p class="mb-0 fw-bold text-orange">Total : <%= number_to_currency(ws.total_payment) %></p>
+              </div>
 
-              <!-- Voir -->
-              <%= link_to work_session_path(ws),
-                          class: "btn btn-orange d-flex justify-content-center align-items-center",
-                          style: "width: 42px; height: 42px; padding: 0;",
-                          title: "Voir la mission",
-                          aria: { label: "Voir la mission" } do %>
-                <i class="fa-solid fa-eye" aria-hidden="true"></i>
-              <% end %>
+              <!-- Actions -->
+              <div class="d-flex justify-content-between mt-auto">
 
-              <!-- Modifier -->
-              <%= link_to edit_work_session_path(ws),
-                          class: "btn btn-orange d-flex justify-content-center align-items-center",
-                          style: "width: 42px; height: 42px; padding: 0;",
-                          title: "Modifier la mission",
-                          aria: { label: "Modifier la mission" } do %>
-                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-              <% end %>
+                <%= link_to work_session_path(ws),
+                            class: "btn btn-orange btn-square",
+                            title: "Voir" do %>
+                  <i class="fa-solid fa-eye"></i>
+                <% end %>
 
-              <!-- Supprimer -->
-              <%= link_to work_session_path(ws),
-                          data: {
-                            turbo_method: :delete,
-                            turbo_confirm: "Supprimer cette mission ?"
-                          },
-                          class: "btn btn-orange d-flex justify-content-center align-items-center",
-                          style: "width: 42px; height: 42px; padding: 0;",
-                          title: "Supprimer la mission",
-                          aria: { label: "Supprimer la mission" } do %>
-                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-              <% end %>
+                <%= link_to edit_work_session_path(ws),
+                            class: "btn btn-orange btn-square",
+                            title: "Modifier" do %>
+                  <i class="fa-solid fa-pen-to-square"></i>
+                <% end %>
+
+                <%= link_to work_session_path(ws),
+                            data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
+                            class: "btn btn-orange btn-square",
+                            title: "Supprimer" do %>
+                  <i class="fa-solid fa-trash-can"></i>
+                <% end %>
+
+              </div>
 
             </div>
+          </div>
+        <% end %>
 
-          </div><!-- card -->
+      </div>
 
-        </div>
-      <% end %>
+      <!-- Pagination -->
+      <div class="mt-4">
+        <%= render "shared/nav", pagy: @pagy %>
+      </div>
 
-    </div><!-- row -->
-
-        <div class="mt-4">
-          <%= render "shared/nav", pagy: @pagy if @pagy %>
-        </div>
-
+    <% end %>
 
   <% end %>
 
 </div>
 
-<footer class="text-center text-muted my-3">
+<footer class="text-center text-muted my-4">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>

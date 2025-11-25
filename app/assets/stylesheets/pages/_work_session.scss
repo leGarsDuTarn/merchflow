@@ -1,0 +1,27 @@
+/* Boutons ronds uniformes */
+.btn-square {
+  width: 42px;
+  height: 42px;
+  padding: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Recherche */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 240px;
+}
+
+.search-clear {
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 20px;
+  display: none;
+}
+
+.search-input:not(:placeholder-shown) + .search-clear {
+  display: block;
+}

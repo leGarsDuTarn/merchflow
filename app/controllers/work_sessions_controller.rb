@@ -9,28 +9,30 @@ class WorkSessionsController < ApplicationController
   # INDEX
   # ============================================================
   def index
+    # Récupérer la query pour la repasser à la vue
+    @query = params[:query]
+
+    # 1. Définition du scope de base
     if @contract
-      # Cas 1 : /contracts/:id/work_sessions
       scope = @contract.work_sessions.order(date: :desc)
     else
-      # Cas 2 : /work_sessions (Dashboard global)
       scope = WorkSession.joins(:contract)
-                                  .where(contracts: { user_id: current_user.id })
-                                  .order(date: :desc)
+                       .where(contracts: { user_id: current_user.id })
+                       .order(date: :desc)
     end
-    # Ici, permet la recherche
+
+    # 2. Application de la recherche (si présente)
     if @query.present?
+      q = "%#{@query}%"
       scope = scope.where("
         work_sessions.company ILIKE :q
         OR work_sessions.store ILIKE :q
         OR TO_CHAR(work_sessions.date, 'YYYY-MM-DD') ILIKE :q
-        ", q: "%#{@query}%")
+      ", q: q)
     end
 
-    scope = scope.search(params[:query])
-
-    # Ici permet la pagination
-    @pagy, @work_sessions = pagy(scope)
+    # 3. Pagination Pagy
+    @pagy, @work_sessions = pagy(scope, items: 6)
   end
 
   # ============================================================
