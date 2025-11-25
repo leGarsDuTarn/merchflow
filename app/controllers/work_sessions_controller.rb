@@ -120,7 +120,7 @@ class WorkSessionsController < ApplicationController
 
   def work_session_params
     params.require(:work_session).permit(
-      :contract_id,
+      :contract_id, :company,
       :date, :start_time, :end_time, :shift, :store,
       :store_full_address, :notes,
       :recommended, :km_custom, :hourly_rate

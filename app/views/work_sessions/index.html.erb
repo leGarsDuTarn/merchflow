@@ -48,10 +48,10 @@
               <%= ws.store.presence || "Magasin non renseigné" %>
             </p>
 
-            <!-- Contrat -->
+            <!-- Contrat + entreprise -->
             <p class="text-muted mb-3 small">
               <i class="fa-solid fa-file-contract me-1"></i>
-              <%= ws.contract.agency_label %>
+              <%= ws.contract.agency_label %> - <%= ws.company.presence || "Entreprise non renseignée" %>
             </p>
 
             <!-- Bloc infos -->
@@ -119,4 +119,3 @@
 <footer class="text-center text-muted my-3">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>
-

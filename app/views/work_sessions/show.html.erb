@@ -30,7 +30,7 @@
     <!-- Entreprise -->
     <p class="text-muted mt-2 mb-4">
       <i class="fa-solid fa-building me-2"></i>
-      <small><%= @work_session.company.presence || "Entreprise non renseignée" %></small>
+      <%= @work_session.company.presence || "Entreprise non renseignée" %>
     </p>
 
     <hr>
