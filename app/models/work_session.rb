@@ -36,6 +36,16 @@ class WorkSession < ApplicationRecord
     joins(:contract).where(contracts: { user_id: user.id })
   }
 
+  scope :search, ->(query) {
+  return all if query.blank?
+
+  where(
+    "company ILIKE :q OR store ILIKE :q OR date::text ILIKE :q",
+    q: "%#{query}%"
+  )
+}
+
+
   # ============================================================
   # SCOPES - pour le dashboard
   # ============================================================

@@ -1,0 +1,47 @@
+<%# app/views/pagy/_nav.html.erb %>
+
+<% if pagy.pages > 1 %>
+  <nav class="pagy-nav d-flex justify-content-center mt-4" aria-label="Pagination">
+    <ul class="pagination shadow-sm rounded-4 overflow-hidden">
+
+      <%# PREVIOUS %>
+      <li class="page-item <%= 'disabled' if pagy.prev.nil? %>">
+        <%= link_to (pagy.prev ? pagy_url_for(pagy, pagy.prev) : "#"),
+          class: "page-link",
+          aria: { label: "Page précédente" } do %>
+          <i class="fa-solid fa-chevron-left"></i>
+        <% end %>
+      </li>
+
+      <%# NUMÉROS %>
+      <% pagy.series.each do |item| %>
+        <% if item.is_a?(Integer) %>
+          <li class="page-item <%= 'active' if item == pagy.page %>">
+            <%= link_to pagy_url_for(pagy, item), class: "page-link" do %>
+              <%= item %>
+            <% end %>
+          </li>
+        <% elsif item == :gap %>
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        <% end %>
+      <% end %>
+
+      <%# NEXT %>
+      <li class="page-item <%= 'disabled' if pagy.next.nil? %>">
+        <%= link_to (pagy.next ? pagy_url_for(pagy, pagy.next) : "#"),
+          class: "page-link",
+          aria: { label: "Page suivante" } do %>
+          <i class="fa-solid fa-chevron-right"></i>
+        <% end %>
+      </li>
+
+    </ul>
+  </nav>
+
+<% else %>
+  <%# OPTION : Afficher juste "Page 1" si tu veux %>
+  <div class="text-center text-muted small mt-4">
+    Page 1
+  </div>
+<% end %>
+

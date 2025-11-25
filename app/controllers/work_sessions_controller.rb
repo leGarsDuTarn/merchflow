@@ -11,13 +11,26 @@ class WorkSessionsController < ApplicationController
   def index
     if @contract
       # Cas 1 : /contracts/:id/work_sessions
-      @work_sessions = @contract.work_sessions.order(date: :desc)
+      scope = @contract.work_sessions.order(date: :desc)
     else
       # Cas 2 : /work_sessions (Dashboard global)
-      @work_sessions = WorkSession.joins(:contract)
+      scope = WorkSession.joins(:contract)
                                   .where(contracts: { user_id: current_user.id })
                                   .order(date: :desc)
     end
+    # Ici, permet la recherche
+    if @query.present?
+      scope = scope.where("
+        work_sessions.company ILIKE :q
+        OR work_sessions.store ILIKE :q
+        OR TO_CHAR(work_sessions.date, 'YYYY-MM-DD') ILIKE :q
+        ", q: "%#{@query}%")
+    end
+
+    scope = scope.search(params[:query])
+
+    # Ici permet la pagination
+    @pagy, @work_sessions = pagy(scope)
   end
 
   # ============================================================
