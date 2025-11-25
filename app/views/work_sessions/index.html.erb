@@ -115,21 +115,27 @@
               <div class="d-flex justify-content-around mt-auto">
 
                 <%= link_to work_session_path(ws),
-                            class: "btn btn-orange btn-square",
-                            title: "Voir" do %>
+                  class: "btn btn-orange btn-square",
+                  data: { turbo: false },
+                  title: "Voir" do %>
                   <i class="fa-solid fa-eye"></i>
                 <% end %>
 
                 <%= link_to edit_work_session_path(ws),
-                            class: "btn btn-orange btn-square",
-                            title: "Modifier" do %>
+                  class: "btn btn-orange btn-square",
+                  data: { turbo: false },
+                  title: "Modifier" do %>
                   <i class="fa-solid fa-pen-to-square"></i>
                 <% end %>
 
                 <%= link_to work_session_path(ws),
-                            data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
-                            class: "btn btn-orange btn-square",
-                            title: "Supprimer" do %>
+                  class: "btn btn-orange btn-square",
+                  data: {
+                    turbo: false,
+                    turbo_method: :delete,
+                    turbo_confirm: "Supprimer cette mission ?"
+                  },
+                  title: "Supprimer" do %>
                   <i class="fa-solid fa-trash-can"></i>
                 <% end %>
 

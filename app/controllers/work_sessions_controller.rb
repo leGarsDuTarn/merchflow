@@ -1,8 +1,6 @@
 class WorkSessionsController < ApplicationController
   before_action :authenticate_user!
-  # On set le contrat uniquement s'il est dans l'URL (routes imbriquées)
   before_action :set_contract, only: %i[index new create]
-  # On set la session pour les actions individuelles
   before_action :set_work_session, only: %i[show edit update destroy]
 
   # ============================================================
@@ -28,7 +26,7 @@ class WorkSessionsController < ApplicationController
         work_sessions.company ILIKE :q
         OR work_sessions.store ILIKE :q
         OR TO_CHAR(work_sessions.date, 'YYYY-MM-DD') ILIKE :q
-      ", q: q)
+        ", q: q)
     end
 
     # 3. Pagination Pagy

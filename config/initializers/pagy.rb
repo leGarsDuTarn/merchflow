@@ -1,5 +1,5 @@
-require 'pagy/extras/bootstrap'   # Pour un style Bootstrap propre
-require 'pagy/extras/overflow'    # Evite les erreurs quand on dépasse la dernière page
+require 'pagy/extras/bootstrap'
+require 'pagy/extras/overflow'
 
-Pagy::DEFAULT[:items] = 6 # Valeur par défaut (tu peux changer)
+Pagy::DEFAULT[:items] = 6
 Pagy::DEFAULT[:overflow] = :last_page
