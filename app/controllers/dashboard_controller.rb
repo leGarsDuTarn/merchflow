@@ -4,14 +4,16 @@ class DashboardController < ApplicationController
   def index
     @user = current_user
 
-    # Résumé global
-    @total_hours   = @user.total_hours_worked
-    @total_brut    = @user.total_brut
-    @total_ifm_cp  = @user.total_ifm_cp
-    @total_km      = @user.total_km
-    @total_km_pay  = @user.total_km_payment
+    # --- Données du mois en cours ---
+    @total_hours_month      = @user.total_hours_this_month
+    @total_brut_month       = @user.total_brut_this_month
+    @net_estimated_month    = @user.net_estimated_this_month
+    @net_total_estimated_month = @user.net_total_estimated_this_month
+    @km_month               = @user.total_km_this_month
+    @km_payment_month       = @user.total_km_payment_this_month
 
-    # Statistiques par employeur
-    @by_agency = @user.total_by_agency
+    # Répartition par agence (mois)
+    @by_agency = @user.total_by_agency_this_month
   end
 end
+

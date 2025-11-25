@@ -6,114 +6,128 @@
   </h1>
 
   <p class="text-center text-muted mb-5">
-    Votre activité merch, résumée en un coup d'œil.
+    Votre activité du mois en un coup d'œil.
   </p>
 
-  <!-- LIGNES DE STATS -->
+  <!-- LIGNE 1 : Heures / Brut / KM -->
   <div class="row g-4">
 
-    <!-- Heures totales -->
-    <div class="col-md-6 col-lg-3">
+    <!-- Heures -->
+    <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Heures travaillées</h5>
+        <h5 class="text-muted mb-0">Heures</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= current_user.total_hours_worked %> h
+          <%= current_user.total_hours_this_month %> h
         </p>
       </div>
     </div>
 
-    <!-- Brut total -->
-    <div class="col-md-6 col-lg-3">
+    <!-- Brut -->
+    <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Total Brut</h5>
+        <h5 class="text-muted mb-0">Brut</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(current_user.total_brut, unit: "€", format: "%n %u") %>
-        </p>
-      </div>
-    </div>
-
-    <!-- IFM + CP -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">IFM + CP</h5>
-        <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(current_user.total_ifm_cp, unit: "€", format: "%n %u") %>
+          <%= number_to_currency(current_user.total_brut_this_month, unit: "€", format: "%n %u") %>
         </p>
       </div>
     </div>
 
     <!-- Kilomètres -->
-    <div class="col-md-6 col-lg-3">
+    <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Kilomètres</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= current_user.total_km.to_i %> km
+          <%= current_user.total_km_this_month.to_i %> km
         </p>
       </div>
     </div>
 
   </div>
 
-  <!-- DEUXIÈME LIGNE -->
+  <!-- LIGNE 2 : Frais km / Net estimé / Net total estimé -->
   <div class="row g-4 mt-4">
 
-    <!-- Paiement KM -->
+    <!-- Frais km remboursés -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Frais kilomètres remboursés</h5>
+        <h5 class="text-muted mb-0">Frais km remboursés</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(current_user.total_km_payment, unit: "€", format: "%n %u") %>
+          <%= number_to_currency(current_user.total_km_payment_this_month, unit: "€", format: "%n %u") %>
         </p>
       </div>
     </div>
 
-    <!-- Répartition par agence -->
-    <div class="col-md-12 col-lg-8">
-      <div class="card shadow-sm p-4 rounded-4 h-100">
-        <h5 class="fw-bold text-orange mb-3 text-center">
-          Répartition par agence
-        </h5>
-
-        <% if current_user.total_by_agency.any? %>
-          <table class="table table-borderless align-middle mb-0">
-            <thead>
-              <tr class="text-muted">
-                <th>Agence</th>
-                <th>Heures</th>
-                <th>Brut</th>
-                <th>Km</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% current_user.total_by_agency.each do |stats| %>
-                <tr>
-                  <td><strong><%= stats[:agency] %></strong></td>
-                  <td><%= stats[:hours] %> h</td>
-                  <td><%= number_to_currency(stats[:brut], unit: "€", format: "%n %u") %></td>
-                  <td><%= stats[:km].to_i %> km</td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        <% else %>
-          <p class="text-center text-muted m-0">
-            Aucune donnée disponible pour l’instant.
-          </p>
-        <% end %>
+    <!-- Net estimé (ORANGE) -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h5 class="text-muted mb-0">Net estimé</h5>
+        <p class="display-6 fw-bold mt-2">
+          <%= number_to_currency(current_user.net_estimated_this_month, unit: "€", format: "%n %u") %>
+        </p>
       </div>
     </div>
 
+    <!-- Net total estimé (ORANGE) -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h5 class="text-muted mb-0">Net total estimé (km inclus)</h5>
+        <p class="display-6 fw-bold mt-2 text-orange">
+          <%= number_to_currency(current_user.net_total_estimated_this_month, unit: "€", format: "%n %u") %>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LIGNE 3 : Répartition par agence -->
+  <div class="row g-4 mt-4">
+    <div class="col-12">
+      <div class="card shadow-sm p-4 rounded-4">
+
+        <h5 class="fw-bold text-orange mb-3 text-center">
+          Répartition par agence (mois)
+        </h5>
+
+        <% if current_user.total_by_agency_this_month.any? %>
+          <div class="table-responsive">
+            <table class="table table-borderless align-middle mb-0">
+              <thead>
+                <tr class="text-muted">
+                  <th>Agence</th>
+                  <th>Heures</th>
+                  <th>Brut</th>
+                  <th>Km</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% current_user.total_by_agency_this_month.each do |stats| %>
+                  <tr>
+                    <td><strong><%= stats[:agency] %></strong></td>
+                    <td><%= stats[:hours] %> h</td>
+                    <td><%= number_to_currency(stats[:brut], unit: "€", format: "%n %u") %></td>
+                    <td><%= stats[:km].to_i %> km</td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-center text-muted m-0">
+            Aucune donnée disponible pour ce mois.
+          </p>
+        <% end %>
+
+      </div>
+    </div>
   </div>
 
   <!-- BOUTONS ACTION -->
   <div class="text-center mt-5">
 
-    <!-- Créer un contrat -->
     <%= link_to "Créer un contrat",
                 new_contract_path,
                 class: "btn btn-orange btn-lg fw-bold px-4 me-3" %>
 
-    <!-- Créer une mission (si au moins 1 contrat) -->
     <% if current_user.contracts.exists? %>
       <%= link_to "Créer une mission",
                   new_contract_work_session_path(current_user.contracts.first),

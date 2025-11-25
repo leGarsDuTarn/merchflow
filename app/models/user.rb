@@ -39,7 +39,6 @@ class User < ApplicationRecord
   # ============================================================
   # MOT DE PASSE FORT
   # ============================================================
-
   VALID_PASSWORD_REGEX = /\A
     (?=.*[a-z])        # Au moins une minuscule
     (?=.*[A-Z])        # Au moins une majuscule
@@ -62,7 +61,6 @@ class User < ApplicationRecord
   # ============================================================
   # NORMALISATION DES CHAMPS
   # ============================================================
-
   before_validation :normalize_names
   before_validation :normalize_username
   before_validation :normalize_email
@@ -77,7 +75,7 @@ class User < ApplicationRecord
     return if username.blank?
 
     cleaned = username.to_s.strip.downcase.gsub(/[^a-z0-9._-]/, "")
-    self.username = cleaned if cleaned.present? # 🔥 évite de casser le champ
+    self.username = cleaned if cleaned.present?
   end
 
   def normalize_email
@@ -85,10 +83,10 @@ class User < ApplicationRecord
   end
 
   def generate_username
-    return if username.present? # 🔥 important
+    return if username.present?
 
     base = "#{firstname}#{lastname}".downcase.gsub(/[^a-z0-9]/, "")
-    base = "user" if base.blank? # 🔥 fallback
+    base = "user" if base.blank?
 
     candidate = base
     counter = 1
@@ -104,7 +102,6 @@ class User < ApplicationRecord
   # ============================================================
   # MÉTHODES UTILITAIRES
   # ============================================================
-
   def full_name
     "#{firstname.to_s.titleize} #{lastname.to_s.titleize}"
   end
@@ -118,9 +115,8 @@ class User < ApplicationRecord
   end
 
   # ============================================================
-  # DASHBOARD
+  # DASHBOARD — TOTAUX GLOBAUX 
   # ============================================================
-
   def total_minutes_worked
     work_sessions.sum(&:duration_minutes)
   end
@@ -147,14 +143,65 @@ class User < ApplicationRecord
     end
   end
 
-  def total_by_agency
-    contracts.includes(:work_sessions).map do |contract|
-      {
-        agency: contract.agency_label,
-        brut: contract.work_sessions.sum(&:brut),
-        hours: (contract.work_sessions.sum(:duration_minutes) / 60.0).round(2),
-        km: contract.work_sessions.sum(&:effective_km)
-      }
-    end
+  # ============================================================
+  # DASHBOARD — TOTAUX DU MOIS EN COURS
+  # ============================================================
+
+  # Sessions du mois
+  def sessions_this_month
+    WorkSession
+      .joins(:contract)
+      .where(contracts: { user_id: id })
+      .current_month
+  end
+
+  # Heures du mois
+  def total_hours_this_month
+    (sessions_this_month.sum(&:duration_minutes) / 60.0).round(2)
+  end
+
+  # Brut du mois
+  def total_brut_this_month
+    sessions_this_month.sum(&:brut)
+  end
+
+  # IFM + CP du mois
+  def total_ifm_cp_this_month
+    sessions_this_month.sum { |ws| ws.contract.ifm(ws.brut) + ws.contract.cp(ws.brut) }
+  end
+
+  # KM du mois
+  def total_km_this_month
+    sessions_this_month.sum(&:effective_km)
+  end
+
+  # Frais km remboursés du mois
+  def total_km_payment_this_month
+    sessions_this_month.sum(&:km_payment_final)
+  end
+
+  # Net estimé hors km
+  def net_estimated_this_month
+    (total_brut_this_month * 0.78).round(2)
+  end
+
+  # Net total estimé avec km
+  def net_total_estimated_this_month
+    (net_estimated_this_month + total_km_payment_this_month).round(2)
+  end
+
+  # Répartition par agence (mois)
+  def total_by_agency_this_month
+    sessions_this_month
+      .includes(:contract)
+      .group_by { |ws| ws.contract }
+      .map do |contract, sessions|
+        {
+          agency: contract.agency_label,
+          brut: sessions.sum(&:brut),
+          hours: (sessions.sum(&:duration_minutes) / 60.0).round(2),
+          km: sessions.sum(&:effective_km)
+        }
+      end
   end
 end

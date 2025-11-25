@@ -36,6 +36,13 @@ class WorkSession < ApplicationRecord
     joins(:contract).where(contracts: { user_id: user.id })
   }
 
+  # ============================================================
+  # SCOPES - pour le dashboard
+  # ============================================================
+
+  scope :current_month, -> {
+    where(date: Date.current.beginning_of_month..Date.current.end_of_month)
+  }
 
   # ============================================================
   # CONSTANTES
