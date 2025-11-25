@@ -122,8 +122,9 @@
     </div><!-- row -->
 
         <div class="mt-4">
-          <%= pagy_nav(@pagy) if defined?(@pagy) && @pagy %>
+          <%= render "shared/nav", pagy: @pagy if @pagy %>
         </div>
+
 
   <% end %>
 

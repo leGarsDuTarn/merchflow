@@ -1,0 +1,28 @@
+.pagination {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+
+  .page-item {
+    .page-link {
+      color: $orange;
+      border: none;
+      padding: 0.6rem 1rem;
+
+      &:hover {
+        background: rgba(255, 106, 0, 0.1);
+      }
+    }
+
+    &.active .page-link {
+      background: $orange;
+      color: white;
+      font-weight: bold;
+    }
+
+    &.disabled .page-link {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
