@@ -5,17 +5,23 @@ class Admin::UsersController < ApplicationController
 
   # GET /admin/users
   def index
+    authorize [:admin, User]
     @users = User.order(:firstname)
   end
 
   # GET /admin/users/:id
-  def show; end
+  def show
+    authorize [:admin, @user]
+  end
 
   # GET /admin/users/:id/edit
-  def edit; end
+  def edit
+    authorize [:admin, @user]
+  end
 
   # PATCH /admin/users/:id
   def update
+    authorize [:admin, @user]
     if @user.update(user_params)
       redirect_to admin_user_path(@user), notice: 'Utilisateur mis à jour avec succès.'
     else
@@ -25,6 +31,7 @@ class Admin::UsersController < ApplicationController
 
   # DELETE /admin/users/:id
   def destroy
+    authorize [:admin, @user]
     if @user == current_user
       redirect_back fallback_location: admin_users_path,
                     alert: 'Vous ne pouvez pas supprimer votre propre compte admin.'
@@ -37,6 +44,7 @@ class Admin::UsersController < ApplicationController
 
   # PATCH /admin/users/:id/toggle_premium
   def toggle_premium
+    authorize [:admin, @user]
     @user.update(premium: !@user.premium?)
 
     redirect_back fallback_location: admin_users_path,
