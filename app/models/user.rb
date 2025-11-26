@@ -16,17 +16,11 @@ class User < ApplicationRecord
   # RÔLE
   # ============================================================
 
-  enum role: { merch: 0, fve: 1, admin: 2 }
+  enum :role, { merch: 0, fve: 1, admin: 2 }, default: :merch
 
-# ============================================================
-# PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM
-# ============================================================
-
-  # Attributs déclarés en DB (pas obligatoire mais utile pour clarity)
-  attribute :allow_email, :boolean, default: false
-  attribute :allow_phone, :boolean, default: false
-  attribute :allow_identity, :boolean, default: false
-  attribute :premium, :boolean, default: false
+  # ============================================================
+  # PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM
+  # ============================================================
 
   # Conditions d'accès aux informations sensibles
   def can_view_contact?(viewer)

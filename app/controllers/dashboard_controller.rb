@@ -15,5 +15,21 @@ class DashboardController < ApplicationController
     # Répartition par agence (mois)
     @by_agency = @user.total_by_agency_this_month
   end
-end
 
+  def update_privacy
+    if current_user.update(user_params)
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to dashboard_path, notice: 'Modifié' }
+      end
+    else
+      render :index, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:allow_email, :allow_phone, :allow_identity)
+  end
+end
