@@ -3,6 +3,8 @@ class Admin::DashboardController < ApplicationController
   before_action :require_admin!
 
   def index
+    authorize %i[admin dashboard]
+
     # === STATISTIQUES GLOBALES ===
     @total_users        = User.count
     @total_merch        = User.merch.count
@@ -24,7 +26,6 @@ class Admin::DashboardController < ApplicationController
 
   def require_admin!
     unless current_user&.admin?
-
       redirect_to root_path, alert: "Accès réservé à l'administration."
     end
   end
