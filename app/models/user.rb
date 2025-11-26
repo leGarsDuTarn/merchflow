@@ -16,7 +16,7 @@ class User < ApplicationRecord
   # RÔLE
   # ============================================================
 
-  enum role: { merch: 0, fve: 1 }
+  enum role: { merch: 0, fve: 1, admin: 2 }
 
 # ============================================================
 # PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM

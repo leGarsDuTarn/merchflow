@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_26_113837) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_26_142224) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,6 +45,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_113837) do
     t.index ["contract_id"], name: "index_declarations_on_contract_id"
     t.index ["user_id", "year", "month"], name: "index_declarations_on_user_id_and_year_and_month"
     t.index ["user_id"], name: "index_declarations_on_user_id"
+  end
+
+  create_table "fve_invitations", force: :cascade do |t|
+    t.string "agency"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "expires_at"
+    t.boolean "premium", default: false, null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "used", default: false, null: false
+    t.index ["token"], name: "index_fve_invitations_on_token", unique: true
   end
 
   create_table "kilometer_logs", force: :cascade do |t|

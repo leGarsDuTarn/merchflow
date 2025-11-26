@@ -1,0 +1,2 @@
+module Fve::DashboardHelper
+end

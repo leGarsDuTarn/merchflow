@@ -1,0 +1,2 @@
+module Fve::PlanningsHelper
+end
