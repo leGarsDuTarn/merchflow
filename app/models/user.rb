@@ -13,28 +13,41 @@ class User < ApplicationRecord
   has_many :declarations, dependent: :destroy
 
   # ============================================================
+  # RÔLE
+  # ============================================================
+
+  enum role: { merch: 0, fve: 1 }
+
+  # ============================================================
   # VALIDATIONS
   # ============================================================
 
-  validates :firstname, presence: { message: "Vous devez renseigner votre prénom" }
-  validates :lastname,  presence: { message: "Vous devez renseigner votre nom" }
+  validates :firstname, presence: { message: 'Vous devez renseigner votre prénom' }
+  validates :lastname,  presence: { message: 'Vous devez renseigner votre nom' }
 
   validates :username,
-            presence:   { message: "Vous devez choisir un nom d'utilisateur" },
+            presence: { message: "Vous devez choisir un nom d'utilisateur" },
             uniqueness: { message: "Ce nom d'utilisateur est déjà pris" },
             format: {
               with: /\A[a-zA-Z0-9._-]+\z/,
-              message: "ne peut contenir que des lettres, chiffres, . _ ou -"
+              message: 'ne peut contenir que des lettres, chiffres, . _ ou -'
             }
 
   validates :email,
-            presence:   { message: "Veuillez renseigner un email." },
-            format:     { with: URI::MailTo::EMAIL_REGEXP, message: "exemple : john@gmail.com" },
-            uniqueness: { message: "Cette adresse email est déjà utilisée" }
+            presence: { message: 'Veuillez renseigner un email.' },
+            format: { with: URI::MailTo::EMAIL_REGEXP, message: 'exemple : john@gmail.com' },
+            uniqueness: { message: 'Cette adresse email est déjà utilisée' }
 
-  validates :address, presence: { message: "Vous devez renseigner une adresse" }
-  validates :zipcode, presence: { message: "Vous devez renseigner un code postal" }
-  validates :city,    presence: { message: "Vous devez renseigner une ville" }
+  validates :phone_number,
+            allow_blank: true,
+            format: {
+              with: /\A0[67]\d{8}\z/,
+              message: 'Numéro invalide, ex 0612233614'
+            }
+
+  validates :address, presence: { message: 'Vous devez renseigner une adresse' }
+  validates :zipcode, presence: { message: 'Vous devez renseigner un code postal' }
+  validates :city,    presence: { message: 'Vous devez renseigner une ville' }
 
   # ============================================================
   # MOT DE PASSE FORT
@@ -50,7 +63,7 @@ class User < ApplicationRecord
   validates :password,
             format: {
               with: VALID_PASSWORD_REGEX,
-              message: "Doit contenir au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial."
+              message: 'Doit contenir au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial.'
             },
             if: :password_required?
 
@@ -65,6 +78,7 @@ class User < ApplicationRecord
   before_validation :normalize_username
   before_validation :normalize_email
   before_validation :generate_username, on: :create
+  before_validation :normalize_phone_number
 
   def normalize_names
     self.firstname = firstname.strip.downcase.capitalize if firstname.present?
@@ -74,7 +88,7 @@ class User < ApplicationRecord
   def normalize_username
     return if username.blank?
 
-    cleaned = username.to_s.strip.downcase.gsub(/[^a-z0-9._-]/, "")
+    cleaned = username.to_s.strip.downcase.gsub(/[^a-z0-9._-]/, '')
     self.username = cleaned if cleaned.present?
   end
 
@@ -85,8 +99,8 @@ class User < ApplicationRecord
   def generate_username
     return if username.present?
 
-    base = "#{firstname}#{lastname}".downcase.gsub(/[^a-z0-9]/, "")
-    base = "user" if base.blank?
+    base = "#{firstname}#{lastname}".downcase.gsub(/[^a-z0-9]/, '')
+    base = 'user' if base.blank?
 
     candidate = base
     counter = 1
@@ -99,6 +113,12 @@ class User < ApplicationRecord
     self.username = candidate
   end
 
+  def normalize_phone_number
+    return if phone_number.blank?
+
+    self.phone_number = phone_number.strip.gsub(/\D/, '') # garde que les chiffres
+  end
+
   # ============================================================
   # MÉTHODES UTILITAIRES
   # ============================================================
@@ -107,7 +127,7 @@ class User < ApplicationRecord
   end
 
   def full_address
-    [address, zipcode, city].compact.join(", ")
+    [address, zipcode, city].compact.join(', ')
   end
 
   def address_complete?
@@ -115,7 +135,7 @@ class User < ApplicationRecord
   end
 
   # ============================================================
-  # DASHBOARD — TOTAUX GLOBAUX 
+  # DASHBOARD — TOTAUX GLOBAUX
   # ============================================================
   def total_minutes_worked
     work_sessions.sum(&:duration_minutes)
