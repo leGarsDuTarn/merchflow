@@ -18,6 +18,47 @@ class User < ApplicationRecord
 
   enum role: { merch: 0, fve: 1 }
 
+# ============================================================
+# PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM
+# ============================================================
+
+  # Attributs déclarés en DB (pas obligatoire mais utile pour clarity)
+  attribute :allow_email, :boolean, default: false
+  attribute :allow_phone, :boolean, default: false
+  attribute :allow_identity, :boolean, default: false
+  attribute :premium, :boolean, default: false
+
+  # Conditions d'accès aux informations sensibles
+  def can_view_contact?(viewer)
+    return false unless viewer.present?
+    return false unless viewer.fve?
+    return false unless viewer.premium?
+
+    true
+  end
+
+  # Affichage du nom
+  def displayable_name(viewer)
+    # Visible seulement si : identité autorisée + viewer premium FVE
+    return username unless can_view_contact?(viewer) && allow_identity
+
+    full_name
+  end
+
+  # Affichage de l'email
+  def displayable_email(viewer)
+    return nil unless can_view_contact?(viewer) && allow_email
+
+    email
+  end
+
+  # Affichage du numéro
+  def displayable_phone(viewer)
+    return nil unless can_view_contact?(viewer) && allow_phone
+
+    phone_number
+  end
+
   # ============================================================
   # VALIDATIONS
   # ============================================================
@@ -116,7 +157,12 @@ class User < ApplicationRecord
   def normalize_phone_number
     return if phone_number.blank?
 
-    self.phone_number = phone_number.strip.gsub(/\D/, '') # garde que les chiffres
+    cleaned = phone_number.gsub(/\D/, '') # supprime tout sauf les chiffres
+
+    # Transforme +33 en 0
+    cleaned = cleaned.sub(/\A33/, '0') if cleaned.start_with?("33")
+
+    self.phone_number = cleaned
   end
 
   # ============================================================
