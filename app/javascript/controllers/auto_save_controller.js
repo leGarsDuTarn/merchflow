@@ -3,13 +3,22 @@ import { Controller } from "@hotwired/stimulus";
 export default class extends Controller {
   static targets = ["flash"];
 
-  submit() {
-    // auto submit du formulaire
-    this.element.requestSubmit();
+  submit(event) {
+    // Trouve le formulaire parent
+    const form = event.target.closest("form");
+
+    if (form) {
+      // Utilise requestSubmit si disponible, sinon submit()
+      if (form.requestSubmit) {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    }
   }
 
   showFlash() {
-    if (!this.flashTarget) return;
+    if (!this.hasFlashTarget) return;
 
     this.flashTarget.classList.remove("d-none");
     setTimeout(() => {

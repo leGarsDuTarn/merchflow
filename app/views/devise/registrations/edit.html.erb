@@ -32,6 +32,32 @@
             <%= inline_error_for(resource, :email) %>
           </div>
 
+          <div class="mb-3">
+            <%= f.label :phone_number, "Numéro de téléphone", class: "form-label fw-semibold" %>
+            <%= f.text_field :phone_number, class: "form-control" %>
+            <%= inline_error_for(resource, :phone_number) %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :address, "Adresse", class: "form-label fw-semibold" %>
+            <%= f.text_field :address, class: "form-control" %>
+            <%= inline_error_for(resource, :address) %>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :zipcode, "Code postal", class: "form-label fw-semibold" %>
+              <%= f.text_field :zipcode, class: "form-control" %>
+              <%= inline_error_for(resource, :zipcode) %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :city, "Ville", class: "form-label fw-semibold" %>
+              <%= f.text_field :city, class: "form-control" %>
+              <%= inline_error_for(resource, :city) %>
+            </div>
+          </div>
+
           <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
             <p class="text-orange small">
               En attente de confirmation pour : <%= resource.unconfirmed_email %>
@@ -62,25 +88,7 @@
             <%= inline_error_for(resource, :current_password) %>
           </div>
 
-          <div class="mb-3">
-            <%= f.label :address, "Adresse", class: "form-label fw-semibold" %>
-            <%= f.text_field :address, class: "form-control" %>
-            <%= inline_error_for(resource, :address) %>
-          </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :zipcode, "Code postal", class: "form-label fw-semibold" %>
-              <%= f.text_field :zipcode, class: "form-control" %>
-              <%= inline_error_for(resource, :zipcode) %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= f.label :city, "Ville", class: "form-label fw-semibold" %>
-              <%= f.text_field :city, class: "form-control" %>
-              <%= inline_error_for(resource, :city) %>
-            </div>
-          </div>
 
           <div class="d-grid mt-3">
             <%= f.submit "Mettre à jour", class: "btn btn-orange btn-lg fw-bold" %>
@@ -113,4 +121,3 @@
 <footer class="text-center text-muted mt-2 mb-3">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>
-

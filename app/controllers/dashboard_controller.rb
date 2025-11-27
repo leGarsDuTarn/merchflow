@@ -23,19 +23,16 @@ class DashboardController < ApplicationController
   end
 
   def update_privacy
-    if current_user.update(user_params)
-      respond_to do |format|
-        format.turbo_stream
-        format.html { redirect_to dashboard_path, notice: 'Modifié' }
-      end
+    if current_user.update(privacy_params)
+      head :ok # Statut 200 - succès
     else
-      render :index, status: :unprocessable_entity
+      head :unprocessable_entity # Statut 422 - erreur
     end
   end
 
   private
 
-  def user_params
+  def privacy_params
     params.require(:user).permit(:allow_email, :allow_phone, :allow_identity)
   end
 end

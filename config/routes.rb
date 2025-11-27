@@ -4,8 +4,7 @@ Rails.application.routes.draw do
   # HOME + DASHBOARD
   root 'home#index'
   get 'dashboard', to: 'dashboard#index'
-  patch 'dashboard/privacy', to: 'dashboard#update_privacy'
-
+  patch 'dashboard/privacy', to: 'dashboard#update_privacy', as: 'dashboard_privacy'
   # ============================================================
   # WORK SESSIONS (création globale)
   # ============================================================

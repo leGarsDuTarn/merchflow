@@ -124,7 +124,6 @@
   <!-- ============================
      CONFIDENTIALITÉ TURBO FRAME
      ============================ -->
-<turbo-frame id="privacy_settings">
   <div class="card shadow-sm rounded-4 p-4 mt-5"
        data-controller="auto-save">
 
@@ -144,7 +143,7 @@
     </div>
 
     <%= form_with model: current_user,
-                  url: "/dashboard/privacy",
+                  url: dashboard_privacy_path,
                   method: :patch,
                   data: { action: "turbo:submit-end->auto-save#showFlash" } do |f| %>
 
@@ -188,7 +187,6 @@
     <% end %>
 
   </div>
-</turbo-frame>
 
 
   <!-- BOUTONS ACTION -->
