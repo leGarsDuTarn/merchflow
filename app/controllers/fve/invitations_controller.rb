@@ -53,8 +53,7 @@ class Fve::InvitationsController < ApplicationController
       :password,
       :password_confirmation,
       :firstname,
-      :lastname,
-      :username
+      :lastname
     )
   end
 end

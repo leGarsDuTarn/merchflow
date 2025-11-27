@@ -1,0 +1,83 @@
+<div class="container mt-5 mb-5" style="max-width: 600px;">
+
+  <!-- Titre -->
+  <h1 class="fw-bold text-center text-orange mb-4">
+    Invitation FVE
+  </h1>
+
+  <div class="card shadow-sm p-4 rounded-4">
+
+    <h5 class="fw-semibold mb-3 text-center">
+      Bienvenue !
+    </h5>
+
+    <p class="text-muted text-center">
+      Vous avez été invité en tant que membre de la force de vente externalisée (FVE).
+      <br>Veuillez créer votre compte pour activer votre accès.
+    </p>
+
+    <!-- Formulaire -->
+    <%= form_with url: fve_complete_invitation_path(@invitation.token),
+                  method: :post,
+                  scope: :user,
+                  local: true do |f| %>
+
+      <!-- Email pré-rempli -->
+      <div class="mb-3">
+        <%= f.label :email, "Email", class: "form-label fw-semibold" %>
+        <%= f.email_field :email,
+              value: @invitation.email,
+              class: "form-control",
+              readonly: true %>
+      </div>
+
+      <!-- Agence pré-remplie -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Agence</label>
+        <input type="text"
+               class="form-control"
+               value="<%= @invitation.agency.presence || 'Non renseignée' %>"
+               readonly>
+      </div>
+
+      <!-- Prénom -->
+      <div class="mb-3">
+        <%= f.label :firstname, "Prénom", class: "form-label fw-semibold" %>
+        <%= f.text_field :firstname, class: "form-control", required: true %>
+      </div>
+
+      <!-- Nom -->
+      <div class="mb-3">
+        <%= f.label :lastname, "Nom", class: "form-label fw-semibold" %>
+        <%= f.text_field :lastname, class: "form-control", required: true %>
+      </div>
+
+      <!-- Mot de passe -->
+      <div class="mb-3">
+        <%= f.label :password, "Mot de passe", class: "form-label fw-semibold" %>
+        <%= f.password_field :password, class: "form-control", required: true %>
+        <small class="text-muted">
+          8 caractères min., 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial.
+        </small>
+      </div>
+
+      <!-- Confirmation -->
+      <div class="mb-4">
+        <%= f.label :password_confirmation, "Confirmer le mot de passe", class: "form-label fw-semibold" %>
+        <%= f.password_field :password_confirmation, class: "form-control", required: true %>
+      </div>
+
+      <!-- Bouton -->
+      <div class="d-grid">
+        <%= f.submit "Créer mon compte FVE",
+              class: "btn btn-orange fw-bold py-2" %>
+      </div>
+
+    <% end %>
+
+  </div>
+
+  <p class="text-center mt-3">
+    <%= link_to "Retour à l'accueil", root_path, class: "text-decoration-none text-muted" %>
+  </p>
+</div>

@@ -33,7 +33,8 @@ Rails.application.routes.draw do
   # ============================================================
   namespace :fve do
     resources :merch, only: %i[index show]
-    get  'planning/:id', to: 'plannings#show', as: 'planning'
+    get 'planning/:id', to: 'plannings#show', as: 'planning'
+    get 'dashboard', to: 'dashboard#index'
 
     # Invitations FVE
     get  'invitations/:token', to: 'invitations#accept',   as: 'accept_invitation'

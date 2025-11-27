@@ -34,8 +34,9 @@
           <div class="mt-3">
             <%= link_to "Supprimer",
                         admin_fve_invitation_path(inv),
-                        method: :delete,
-                        data: { confirm: "Supprimer cette invitation ?" },
+                        data: {
+                        turbo_method: :delete,
+                        turbo_confirm: "Supprimer cette invitation ?" },
                         class: "btn btn-sm btn-danger" %>
           </div>
 

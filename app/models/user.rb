@@ -15,6 +15,7 @@ class User < ApplicationRecord
   # ============================================================
   # RÔLE
   # ============================================================
+  after_initialize :set_default_role, if: :new_record?
 
   enum :role, { merch: 0, fve: 1, admin: 2 }, default: :merch
 
@@ -66,7 +67,8 @@ class User < ApplicationRecord
             format: {
               with: /\A[a-zA-Z0-9._-]+\z/,
               message: 'ne peut contenir que des lettres, chiffres, . _ ou -'
-            }
+            },
+            unless: :fve?
 
   validates :email,
             presence: { message: 'Veuillez renseigner un email.' },
@@ -80,9 +82,9 @@ class User < ApplicationRecord
               message: 'Numéro invalide, ex 0612233614'
             }
 
-  validates :address, presence: { message: 'Vous devez renseigner une adresse' }
-  validates :zipcode, presence: { message: 'Vous devez renseigner un code postal' }
-  validates :city,    presence: { message: 'Vous devez renseigner une ville' }
+  validates :address, presence: { message: 'Vous devez renseigner une adresse' }, unless: :fve?
+  validates :zipcode, presence: { message: 'Vous devez renseigner un code postal' }, unless: :fve?
+  validates :city,    presence: { message: 'Vous devez renseigner une ville' }, unless: :fve?
 
   # ============================================================
   # MOT DE PASSE FORT
@@ -263,5 +265,11 @@ class User < ApplicationRecord
           km: sessions.sum(&:effective_km)
         }
       end
+  end
+
+  private
+
+  def set_default_role
+    self.role ||= :merch
   end
 end
