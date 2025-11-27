@@ -1,117 +1,159 @@
-puts "🌱 Reset de la base..."
-User.destroy_all
-Contract.destroy_all
-WorkSession.destroy_all
+# ============================================================
+# 🔥 RESET DES DONNÉES MERCH UNIQUEMENT
+# ============================================================
+puts "🔥 Suppression des données merchandisers..."
 
-# ============================================
-# 👤 1 — Création de l'utilisateur principal
-# ============================================
-puts "👤 Création de l'utilisateur…"
+# Supprimer dans l'ordre pour respecter les dépendances
+WorkSession.joins(contract: :user).where(users: { role: :merch }).delete_all
+puts "  ✓ Missions supprimées"
 
-user = User.create!(
-  firstname: "Benjamin",
-  lastname: "Grassiano",
-  username: "benji",
-  email: "benjamin@example.com",
-  address: "11 route d'Albi",
-  zipcode: "81350",
-  city: "Valderiès",
-  password: "Password1!",
-  password_confirmation: "Password1!"
-)
+Contract.joins(:user).where(users: { role: :merch }).delete_all
+puts "  ✓ Contrats supprimés"
 
-puts "   ➜ Utilisateur créé : #{user.full_name}"
+User.where(role: :merch).delete_all
+puts "  ✓ Merchandisers supprimés"
 
-# ============================================
-# 📄 2 — Contrats
-# ============================================
-puts "📄 Création des contrats…"
+puts "  ℹ️  Admins et FVE préservés\n\n"
 
-contract1 = Contract.create!(
-  user: user,
-  name: "Contrat Actiale",
-  agency: :actiale,
-  contract_type: :cdd,
-  night_rate: 0.5,
-  ifm_rate: 0.1,
-  cp_rate: 0.1,
-  km_rate: 0.29,
-  km_limit: 40,
-  km_unlimited: false
-)
+# ============================================================
+# 📋 DONNÉES DE RÉFÉRENCE
+# ============================================================
 
-contract2 = Contract.create!(
-  user: user,
-  name: "Contrat CPM",
-  agency: :cpm,
-  contract_type: :interim,
-  night_rate: 0.5,
-  ifm_rate: 0.1,
-  cp_rate: 0.1,
-  km_rate: 0.32,
-  km_limit: 35,
-  km_unlimited: false
-)
+CITIES_FR = [
+  ["Paris", "75000"], ["Lyon", "69000"], ["Marseille", "13000"],
+  ["Nice", "06000"], ["Bordeaux", "33000"], ["Toulouse", "31000"],
+  ["Nantes", "44000"], ["Lille", "59000"], ["Rennes", "35000"],
+  ["Montpellier", "34000"], ["Strasbourg", "67000"], ["Grenoble", "38000"],
+  ["Dijon", "21000"], ["Angers", "49000"], ["Rouen", "76000"],
+  ["Reims", "51100"], ["Metz", "57000"], ["Caen", "14000"]
+].freeze
 
-puts "   ➜ Contrats créés."
+AGENCIES = %w[actiale rma edelvi].freeze
 
-# ============================================
-# 🏬 Magasins + Entreprises
-# ============================================
+FIRSTNAMES = %w[
+  Lucas Hugo Adam Léo Tom Nathan Louis Enzo Nolan Raphaël
+  Emma Léa Chloé Manon Jade Inès Zoé Lola Sarah Anaïs
+  Paul Julien Maxime Arthur Noa Ethan Alice Camille Claire
+].freeze
 
-magasins = [
-  ["Carrefour Albi", "Route de Castres, 81000 Albi"],
-  ["Leclerc Les Portes d'Albi", "Avenue de St Juéry, 81000 Albi"],
-  ["Intermarché Valderiès", "Rue du Stade, 81350 Valderiès"],
-  ["Lidl Carmaux", "Route de Rodez, 81400 Carmaux"],
-  ["Auchan Cap Découverte", "81390 Monestiés"]
-]
+LASTNAMES = %w[
+  Martin Bernard Dubois Laurent Robert Petit Moreau Simon Michel
+  Garcia Leroy Roux Fontaine Rousseau Vincent Muller Lefèvre
+  Faure André Mercier Boyer Blanchet Garnier Lefort Roger
+].freeze
 
-entreprises = [
-  "PepsiCo",
-  "Lindt & Sprüngli",
-  "Carambar & Co",
-  "Danone",
-  "Ferrero",
-  "Nestlé",
-  "Red Bull",
-  "Bonduelle"
-]
-
-# ============================================
-# 🕒 Création 20 missions réalistes
-# ============================================
-puts "🕒 Création de 20 missions…"
-
-def random_times
-  start_hour = [7, 8, 9, 14].sample
-  start_time = Time.zone.now.change(hour: start_hour, min: 0)
-  end_time = start_time + [3.hours, 4.hours, 5.hours].sample
-  [start_time, end_time]
+# Génération de numéro de téléphone français valide
+def generate_phone
+  "0#{[6, 7].sample}#{8.times.map { rand(0..9) }.join}"
 end
 
-20.times do
-  store, store_addr = magasins.sample
-  company = entreprises.sample
+# ============================================================
+# 👷‍♂️ CRÉATION DES MERCHANDISERS
+# ============================================================
 
-  contract = [contract1, contract2].sample
+nb_users = rand(50..80)
+puts "👤 Création de #{nb_users} merchandisers...\n"
 
-  start_t, end_t = random_times
+nb_users.times do |i|
+  firstname = FIRSTNAMES.sample
+  lastname = LASTNAMES.sample
+  city, zipcode = CITIES_FR.sample
 
-  WorkSession.create!(
-    contract: contract,
-    date: rand(30).days.ago.to_date,
-    start_time: start_t,
-    end_time: end_t,
-    hourly_rate: 11.88,
-    km_custom: rand(5..40),
-    store: store,
-    store_full_address: store_addr,
-    company: company,
-    notes: ["Mise en rayon", "TG à installer", "Réassort rayon", "Inventaire", nil].sample,
-    recommended: [true, false].sample
-  )
+  # Nettoyer les accents pour l'email
+  email_firstname = firstname.downcase.unicode_normalize(:nfkd).gsub(/[^\x00-\x7F]/, '')
+  email_lastname = lastname.downcase.unicode_normalize(:nfkd).gsub(/[^\x00-\x7F]/, '')
+
+  begin
+    user = User.create!(
+      firstname: firstname,
+      lastname: lastname,
+      email: "#{email_firstname}.#{email_lastname}#{rand(1000..9999)}@merch.fr",
+      password: "Merch2025!",
+      password_confirmation: "Merch2025!",
+      address: "#{rand(1..200)} rue du Commerce",
+      zipcode: zipcode,
+      city: city,
+      phone_number: generate_phone,
+      role: :merch,
+
+      # Confidentialité : mix réaliste
+      allow_email: [true, false].sample,
+      allow_phone: [true, false].sample,
+      allow_identity: [true, true, false].sample # 2/3 acceptent
+    )
+  rescue ActiveRecord::RecordInvalid => e
+    puts "\n❌ ERREUR lors de la création de l'utilisateur #{firstname} #{lastname}:"
+    puts e.record.errors.full_messages.join(", ")
+    raise
+  end
+
+  print "." if (i + 1) % 10 == 0
+
+  # ============================================================
+  # 📄 CRÉATION DES CONTRATS (2 à 4 par merch)
+  # ============================================================
+
+  rand(2..4).times do
+    agency = AGENCIES.sample
+
+    contract = Contract.create!(
+      user: user,
+      name: "Contrat #{agency.capitalize} - #{city}",
+      agency: agency,
+      contract_type: :cdd,
+      night_rate: 0.50,
+      ifm_rate: 0.10,
+      cp_rate: 0.10,
+      km_rate: [0.29, 0.35].sample,
+      km_limit: [40, 50, 60].sample,
+      km_unlimited: [true, false, false].sample # 1/3 illimité
+    )
+
+    # ============================================================
+    # 📅 CRÉATION DES MISSIONS (8 à 15 par contrat)
+    # ============================================================
+
+    rand(8..15).times do
+      # Date aléatoire dans les 90 derniers jours
+      date = rand(90.days.ago.to_date..Date.today)
+
+      # Heures de début réalistes
+      start_hour = [7, 8, 9, 13, 14].sample
+      start_minute = [0, 15, 30].sample
+
+      # Durée réaliste (3h à 7h)
+      duration_hours = rand(3..7)
+
+      start_time = Time.zone.parse("#{date} #{start_hour}:#{start_minute}")
+      end_time = start_time + duration_hours.hours
+
+      WorkSession.create!(
+        contract: contract,
+        date: date,
+        start_time: start_time,
+        end_time: end_time,
+        hourly_rate: [12.50, 13.00, 13.50, 14.00, 15.00].sample,
+        effective_km: rand(5..80),
+        store: "Magasin #{['Carrefour', 'Auchan', 'Leclerc', 'Casino', 'Intermarché'].sample}",
+        company: agency.capitalize,
+        recommended: [true, false].sample,
+        notes: ["Mission standard", "Mise en rayon", "Inventaire", nil].sample
+      )
+    end
+  end
 end
 
-puts "✅ 20 missions créées !"
-puts "🎉 SEEDING TERMINE 🎉"
+# ============================================================
+# 📊 RÉSUMÉ
+# ============================================================
+
+puts "\n\n✅ SEED TERMINÉ AVEC SUCCÈS !\n"
+puts "=" * 50
+puts "👥 Merchandisers créés : #{User.merch.count}"
+puts "📄 Contrats créés : #{Contract.count}"
+puts "📅 Missions créées : #{WorkSession.count}"
+puts "💼 FVE existants : #{User.fve.count}"
+puts "🔐 Admins existants : #{User.admin.count}"
+puts "=" * 50
+puts "\n💡 Mot de passe par défaut : Merch2025!"
+puts "📧 Format email : prenom.nom####@merch.fr\n\n"
