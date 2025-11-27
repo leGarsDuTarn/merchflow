@@ -1,40 +1,79 @@
 <div class="container mt-4">
 
-  <h1 class="fw-bold text-orange mb-4 text-center">Gestion des utilisateurs</h1>
+  <!-- TITRE -->
+  <h1 class="fw-bold text-orange mb-4 text-center">
+    Gestion des utilisateurs
+  </h1>
 
+  <!-- LISTE DES USERS -->
   <div class="row g-4">
     <% @users.each do |user| %>
       <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4 p-3 h-100">
+        <div class="card shadow-sm rounded-4 p-4 h-100 d-flex flex-column">
 
+          <!-- HEADER -->
           <h5 class="fw-bold text-orange mb-1">
             <%= user.full_name %>
           </h5>
 
-          <p class="text-muted mb-2">
-            <%= user.email %><br>
-            <span class="badge bg-secondary"><%= user.role %></span>
+          <p class="text-muted small mb-3">
+            <i class="fa-solid fa-envelope me-1"></i>
+            <%= user.email %>
+            <br>
+
+            <!-- BADGE ROLE -->
+            <span class="badge rounded-pill
+                         <%=
+                            case user.role
+                            when 'admin' then 'bg-dark'
+                            when 'fve' then 'bg-primary'
+                            else 'bg-secondary'
+                            end
+                         %>">
+              <%= user.role.upcase %>
+            </span>
+
+            <!-- BADGE PREMIUM -->
             <% if user.premium? %>
-              <span class="badge bg-warning text-dark">Premium</span>
+              <span class="badge bg-gold text-dark rounded-pill ms-1">
+                ★ Premium
+              </span>
+            <% else %>
+              <span class="badge bg-blue text-dark rounded-pill ms-1">
+                Standard
+              </span>
+
             <% end %>
           </p>
 
-          <div class="d-flex justify-content-between mt-auto">
-            <%= link_to "Voir",
-                        admin_user_path(user),
-                        class: "btn btn-sm btn-outline-primary" %>
+          <!-- FOOTER ACTIONS -->
+          <div class="mt-4 d-flex gap-2 justify-content-around">
 
-            <%= link_to "Modifier",
-                        edit_admin_user_path(user),
-                        class: "btn btn-sm btn-primary" %>
+            <!-- VOIR -->
+            <%= link_to admin_user_path(user),
+              class: "btn btn-sm btn-orange-outline fw-semibold",
+              aria: { label: "Modifier l'abonnement #{user.full_name}" } do %>
+              <i class="fa-solid fa-pen me-1"></i>
+            <% end %>
 
-            <%= link_to "Supprimer",
-                        admin_user_path(user),
-                        class: "btn btn-sm btn-danger",
-                        data: {
-                        turbo_method: :delete,
-                        turbo_confirm: "Supprimer cette mission ?"}
-                        %>
+            <!-- EDIT (readonly mais laissé pour usage support) -->
+            <%= link_to edit_admin_user_path(user),
+              class: "btn btn-sm btn-orange-outline fw-semibold",
+              aria: { label: "Voir l'utilisateur #{user.full_name}" } do %>
+              <i class="fa-solid fa-eye me-1"></i>
+            <% end %>
+
+            <!-- DELETE -->
+            <%= link_to admin_user_path(user),
+              data: {
+              turbo_method: :delete,
+              turbo_confirm: "Supprimer cet utilisateur ?"
+              },
+              class: "btn btn-sm btn-orange-outline fw-semibold",
+              aria: { label: "Supprimer l'utilisateur #{user.full_name}" } do %>
+              <i class="fa-solid fa-trash me-1"></i>
+            <% end %>
+
 
           </div>
 
