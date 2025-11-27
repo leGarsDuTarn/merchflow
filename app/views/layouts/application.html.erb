@@ -20,8 +20,16 @@
   <body>
     <%# Navbar %>
     <% if user_signed_in? %>
-      <%= render "shared/navbar" %>
+      <% if current_user&.admin? %>
+        <%= render 'shared/navbar_admin' %>
+      <% elsif current_user&.fve? %>
+        <%= render 'shared/navbar_fve' %>
+      <% else current_user&.merch? %>
+        <%= render 'shared/navbar_merch' %>
+      <% end %>
     <% end %>
+
+
 
     <%# Flash messages %>
     <%= render "shared/flash_messages" %>

@@ -1,0 +1,33 @@
+<div class="container mt-4">
+
+  <h1 class="fw-bold text-orange mb-4 text-center">
+    Créer une invitation FVE
+  </h1>
+
+  <div class="card shadow-sm rounded-4 p-4">
+
+    <%= form_with model: [:admin, @invitation], local: true do |f| %>
+
+      <div class="mb-3">
+        <%= f.label :email, "Email du futur FVE", class: "form-label fw-semibold" %>
+        <%= f.email_field :email, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :agency, "Agence", class: "form-label fw-semibold" %>
+        <%= f.text_field :agency, class: "form-control" %>
+      </div>
+
+      <div class="form-check mb-3">
+        <%= f.check_box :premium, class: "form-check-input" %>
+        <%= f.label :premium, "Accès Premium", class: "form-check-label" %>
+      </div>
+
+      <%= f.submit "Créer l’invitation",
+                  class: "btn btn-orange btn-lg w-100 fw-bold" %>
+
+    <% end %>
+
+  </div>
+
+</div>

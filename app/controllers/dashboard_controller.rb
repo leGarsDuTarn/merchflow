@@ -2,6 +2,12 @@ class DashboardController < ApplicationController
   before_action :authenticate_user!
 
   def index
+    if current_user.admin?
+      redirect_to admin_dashboard_path and return
+    elsif current_user.fve?
+      redirect_to fve_dashboard_path and return
+    end
+
     @user = current_user
 
     # --- Données du mois en cours ---

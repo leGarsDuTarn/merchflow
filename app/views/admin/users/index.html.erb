@@ -1,2 +1,50 @@
-<h1>Admin::Users#index</h1>
-<p>Find me in app/views/admin/users/index.html.erb</p>
+<div class="container mt-4">
+
+  <h1 class="fw-bold text-orange mb-4 text-center">Gestion des utilisateurs</h1>
+
+  <div class="text-center mb-3">
+    <%= link_to "Créer un utilisateur",
+                new_admin_user_path,
+                class: "btn btn-orange fw-semibold" %>
+  </div>
+
+  <div class="row g-4">
+    <% @users.each do |user| %>
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm rounded-4 p-3 h-100">
+
+          <h5 class="fw-bold text-orange mb-1">
+            <%= user.full_name %>
+          </h5>
+
+          <p class="text-muted mb-2">
+            <%= user.email %><br>
+            <span class="badge bg-secondary"><%= user.role %></span>
+            <% if user.premium? %>
+              <span class="badge bg-warning text-dark">Premium</span>
+            <% end %>
+          </p>
+
+          <div class="d-flex justify-content-between mt-auto">
+            <%= link_to "Voir",
+                        admin_user_path(user),
+                        class: "btn btn-sm btn-outline-primary" %>
+
+            <%= link_to "Modifier",
+                        edit_admin_user_path(user),
+                        class: "btn btn-sm btn-primary" %>
+
+            <%= link_to "Supprimer",
+                        admin_user_path(user),
+                        method: :delete,
+                        data: { confirm: "Supprimer cet utilisateur ?" },
+                        class: "btn btn-sm btn-danger" %>
+          </div>
+
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+</div>
+

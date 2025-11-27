@@ -1,2 +1,122 @@
-<h1>Admin::Dashboard#index</h1>
-<p>Find me in app/views/admin/dashboard/index.html.erb</p>
+<div class="container mt-4 mb-5">
+
+  <!-- TITRE -->
+  <h1 class="fw-bold text-orange text-center mb-4">
+    Tableau de bord — Administration
+  </h1>
+
+  <p class="text-center text-muted mb-5">
+    Vue d'ensemble de l’activité de la plateforme.
+  </p>
+
+  <!-- LIGNE 1 : Users / Merch / FVE -->
+  <div class="row g-4">
+
+    <!-- Total utilisateurs -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Utilisateurs</h6>
+        <p class="display-6 fw-bold mt-2"><%= @total_users %></p>
+      </div>
+    </div>
+
+    <!-- Merch -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Merch</h6>
+        <p class="display-6 fw-bold mt-2"><%= @total_merch %></p>
+      </div>
+    </div>
+
+    <!-- FVE -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">FVE</h6>
+        <p class="display-6 fw-bold mt-2"><%= @total_fve %></p>
+      </div>
+    </div>
+
+    <!-- FVE Premium -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">FVE Premium</h6>
+        <p class="display-6 fw-bold mt-2 text-orange"><%= @total_premium_fve %></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LIGNE 2 : nouveaux inscrits / sessions -->
+  <div class="row g-4 mt-4">
+
+    <!-- Nouveaux inscrits ce mois -->
+    <div class="col-md-6 col-lg-6">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Nouveaux inscrits (mois)</h6>
+        <p class="display-6 fw-bold mt-2">
+          <%= @new_users_month %>
+        </p>
+      </div>
+    </div>
+
+    <!-- Missions effectuées -->
+    <div class="col-md-6 col-lg-6">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Missions réalisées (mois)</h6>
+        <p class="display-6 fw-bold mt-2">
+          <%= @work_sessions_month %>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LIGNE 3 : Invitations -->
+  <div class="row g-4 mt-4">
+
+    <div class="col-lg-12">
+      <div class="card shadow-sm p-4 rounded-4">
+
+        <h5 class="fw-bold text-orange mb-3 text-center">
+          Invitations FVE
+        </h5>
+
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle mb-0">
+            <thead>
+              <tr class="text-muted">
+                <th>Total</th>
+                <th>Utilisées</th>
+                <th>Actives</th>
+                <th>Expirées</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td><%= @invitations_total %></td>
+                <td><%= @invitations_used %></td>
+                <td><%= @invitations_unused %></td>
+                <td><%= @invitations_expired %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-center mt-4">
+          <%= link_to "Gérer les invitations",
+                      admin_fve_invitations_path,
+                      class: "btn btn-orange fw-bold px-4" %>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer class="text-center text-muted mt-5">
+  <small>© <%= Time.current.year %> MerchFlow — Administration</small>
+</footer>
+
