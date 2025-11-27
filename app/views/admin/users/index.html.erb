@@ -2,12 +2,6 @@
 
   <h1 class="fw-bold text-orange mb-4 text-center">Gestion des utilisateurs</h1>
 
-  <div class="text-center mb-3">
-    <%= link_to "Créer un utilisateur",
-                new_admin_user_path,
-                class: "btn btn-orange fw-semibold" %>
-  </div>
-
   <div class="row g-4">
     <% @users.each do |user| %>
       <div class="col-md-6 col-lg-4">
