@@ -1,2 +1,91 @@
-<h1>Fve::Dashboard#index</h1>
-<p>Find me in app/views/fve/dashboard/index.html.erb</p>
+<div class="container mt-4 mb-5">
+
+  <!-- TITRE -->
+  <h1 class="fw-bold text-orange text-center mb-3">
+    Tableau de bord FVE
+  </h1>
+
+  <p class="text-center text-muted mb-4">
+    Vue d’ensemble des merch de votre secteur.
+  </p>
+
+
+  <!-- ======= LIGNE 1 : STAT CARDS ======= -->
+  <div class="row g-4 mb-4">
+
+    <!-- Total Merch -->
+    <div class="col-md-6">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h5 class="text-muted mb-1">Total merch inscrits</h5>
+        <p class="display-5 fw-bold text-orange mt-2">
+          <%= @total_merch %>
+        </p>
+      </div>
+    </div>
+
+    <!-- Premium -->
+    <div class="col-md-6">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h5 class="text-muted mb-1">Votre compte</h5>
+        <p class="display-6 fw-bold mt-2 <%= @premium ? 'text-success' : 'text-orange' %>">
+          <%= @premium ? "Premium activé" : "Standard" %>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+
+
+  <!-- ======= LIGNE 2 : LISTE DES MERCH ======= -->
+  <div class="card shadow-sm rounded-4 p-4">
+
+    <h4 class="fw-bold text-orange mb-3 text-center">
+      Merch de votre secteur
+    </h4>
+
+    <% if @merch_users.any? %>
+
+      <div class="row g-3">
+
+        <% @merch_users.each do |m| %>
+          <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm p-3 rounded-4 h-100">
+
+              <!-- NOM -->
+              <h5 class="fw-bold text-orange mb-1">
+                <%= m.displayable_name(current_user) %>
+              </h5>
+
+              <!-- LOCALISATION -->
+              <p class="text-muted mb-2 small">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                <%= [m.city, m.zipcode].compact.join(" ") %>
+              </p>
+
+              <!-- ACTIONS -->
+              <div class="d-grid gap-2 mt-3">
+                <%= link_to "Voir le profil",
+                      fve_merch_path(m),
+                      class: "btn btn-orange fw-semibold" %>
+
+                <%= link_to "Voir le planning",
+                      fve_planning_path(m),
+                      class: "btn btn-orange-outline fw-semibold" %>
+              </div>
+
+            </div>
+          </div>
+        <% end %>
+
+      </div>
+
+    <% else %>
+      <p class="text-center text-muted m-0">
+        Aucun merch dans votre secteur pour l’instant.
+      </p>
+    <% end %>
+
+  </div>
+
+</div>

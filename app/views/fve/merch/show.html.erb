@@ -1,2 +1,49 @@
-<h1>Fve::Merch#show</h1>
-<p>Find me in app/views/fve/merch/show.html.erb</p>
+<div class="container mt-4 mb-5" style="max-width: 700px;">
+
+  <h1 class="fw-bold text-orange text-center mb-4">
+    Profil du merch
+  </h1>
+
+  <div class="card shadow-sm rounded-4 p-4">
+
+    <!-- NOM -->
+    <h3 class="fw-bold text-orange mb-3 text-center">
+      <%= @merch_user.displayable_name(current_user) %>
+    </h3>
+
+    <p class="text-muted text-center mb-4">
+      Merch professionnel — Accessible via la FVE
+    </p>
+
+    <!-- INFORMATIONS -->
+    <div class="mb-3">
+      <strong>Ville :</strong> <%= @merch_user.city %>
+      <br>
+      <strong>Code postal :</strong> <%= @merch_user.zipcode %>
+      <br>
+      <strong>Adresse :</strong> <%= @merch_user.address %>
+    </div>
+
+    <!-- CONTACT PRIVACY -->
+    <div class="mb-3">
+      <strong>Email :</strong>
+      <%= @merch_user.displayable_email(current_user) || "<span class='text-muted'>Non disponible</span>".html_safe %>
+      <br>
+      <strong>Téléphone :</strong>
+      <%= @merch_user.displayable_phone(current_user) || "<span class='text-muted'>Non disponible</span>".html_safe %>
+    </div>
+
+    <!-- BOUTONS -->
+    <div class="d-grid gap-3 mt-4">
+      <%= link_to "Voir le planning",
+            fve_planning_path(@merch_user),
+            class: "btn btn-orange fw-bold py-2" %>
+
+      <%= link_to "Retour",
+            fve_merch_index_path,
+            class: "btn btn-orange-outline fw-semibold" %>
+    </div>
+
+  </div>
+
+</div>
