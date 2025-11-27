@@ -36,9 +36,12 @@
 
             <%= link_to "Supprimer",
                         admin_user_path(user),
-                        method: :delete,
-                        data: { confirm: "Supprimer cet utilisateur ?" },
-                        class: "btn btn-sm btn-danger" %>
+                        class: "btn btn-sm btn-danger",
+                        data: {
+                        turbo_method: :delete,
+                        turbo_confirm: "Supprimer cette mission ?"}
+                        %>
+
           </div>
 
         </div>
@@ -47,4 +50,3 @@
   </div>
 
 </div>
-

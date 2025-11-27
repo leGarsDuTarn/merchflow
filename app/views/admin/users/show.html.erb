@@ -26,10 +26,9 @@
 
       <%= link_to "Activer / Désactiver Premium",
                   toggle_premium_admin_user_path(@user),
-                  method: :patch,
-                  class: "btn btn-orange-outline" %>
+                  class: "btn btn-orange-outline",
+                  data: { turbo_method: :patch } %>
     </div>
 
   </div>
 </div>
-
