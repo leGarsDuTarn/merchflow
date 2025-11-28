@@ -19,6 +19,15 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def after_sign_up_path_for(resource)
+    if resource.admin?
+      admin_dashboard_path
+    elsif resource.fve?
+      fve_dashboard_path
+    else
+      dashboard_path
+    end
+  end
 
   protected
 
