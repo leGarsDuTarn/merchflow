@@ -2,6 +2,76 @@ import { Controller } from "@hotwired/stimulus";
 
 // Controller principal pour la modale
 export default class extends Controller {
+  // 🔥 Ajout : cible pour le focus "aujourd’hui"
+  static targets = ["todayAnchor"];
+
+  // 🔥 Ajout : auto-scroll vers la cellule "today" sur mobile
+  connect() {
+    const todayCell = document.querySelector(".calendar-cell.today");
+    if (todayCell) {
+      todayCell.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
+    }
+  }
+
+  // =========================================================
+  // 🔥 Bouton mobile : "Ajouter une mission"
+  // =========================================================
+  openNewMission() {
+    const today = new Date().toISOString().split("T")[0];
+    window.location.href = `/work_sessions/new?date=${today}`;
+  }
+
+  // =========================================================
+  // 🔥 Bouton mobile : "Ajouter une indisponibilité"
+  // =========================================================
+  openNewUnavailability() {
+    const today = new Date().toISOString().split("T")[0];
+
+    const modalTitle = document.getElementById("dayModalTitle");
+    const modalBody = document.getElementById("dayModalBody");
+    const modalFooter = document.getElementById("dayModalFooter");
+
+    modalTitle.innerHTML = `Indisponibilité du ${this.formatDate(today)}`;
+
+    modalBody.innerHTML = `
+      <label class="fw-semibold mb-2">Motif (optionnel)</label>
+      <textarea id="newUnavNotes" class="form-control" rows="2"
+        placeholder="Ex : RDV, CP, repos…"></textarea>
+    `;
+
+    modalFooter.innerHTML = `
+      <form action="/unavailabilities" method="post" id="newUnavForm">
+        <input type="hidden" name="authenticity_token" value="${this.csrf()}">
+        <input type="hidden" name="date" value="${today}">
+        <input type="hidden" name="notes" id="new_unav_form_notes">
+        <button type="submit" class="btn btn-red w-100 fw-bold">
+          Me rendre indisponible aujourd’hui
+        </button>
+      </form>
+    `;
+
+    const modalElement = document.getElementById("dayModal");
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    setTimeout(() => {
+      const newForm = document.getElementById("newUnavForm");
+      if (newForm) {
+        newForm.addEventListener("submit", () => {
+          const noteValue = document.getElementById("newUnavNotes").value;
+          document.getElementById("new_unav_form_notes").value = noteValue;
+        });
+      }
+    }, 100);
+  }
+
+  // =========================================================
+  // CLIC SUR UNE CELLULE DU CALENDRIER
+  // =========================================================
   open(event) {
     const cell = event.currentTarget;
 
@@ -110,7 +180,7 @@ export default class extends Controller {
       `;
     }
 
-    // Bouton : Supprimer l'indispo (Rendre disponible)
+    // Bouton : Supprimer l'indispo
     if (hasUnavailability) {
       footer += `
         <form action="/unavailabilities/${unavId}" method="post">
@@ -124,16 +194,14 @@ export default class extends Controller {
     modalFooter.innerHTML = footer;
 
     // ---------------------------------------------------------
-    // 4. AFFICHAGE ET LOGIQUE JS
+    // 4. LISTENERS POUR NOTES
     // ---------------------------------------------------------
     const modalElement = document.getElementById("dayModal");
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
 
-    // On attache les listeners pour copier le contenu des textarea vers les hidden inputs
-    // On utilise setTimeout pour s'assurer que le DOM est bien mis à jour
     setTimeout(() => {
-      // Pour la création
+      // Création
       const newForm = document.getElementById("newUnavForm");
       if (newForm) {
         newForm.addEventListener("submit", () => {
@@ -142,7 +210,7 @@ export default class extends Controller {
         });
       }
 
-      // Pour l'édition
+      // Edition
       const editForm = document.getElementById("editUnavForm");
       if (editForm) {
         editForm.addEventListener("submit", () => {
@@ -153,7 +221,7 @@ export default class extends Controller {
     }, 100);
   }
 
-  // Utilitaire pour formater la date en Français
+  // Formatage FR
   formatDate(dateStr) {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString("fr-FR", {
@@ -163,7 +231,7 @@ export default class extends Controller {
     });
   }
 
-  // Récupération du token CSRF pour les formulaires Rails
+  // Token CSRF Rails
   csrf() {
     const token = document.querySelector("meta[name='csrf-token']");
     return token ? token.content : "";

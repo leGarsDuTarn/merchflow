@@ -37,9 +37,12 @@
     </div>
   </div>
 
-
   <!-- CALENDRIER -->
   <div class="calendar-wrapper">
+
+    <!-- Point d'ancrage pour auto-scroll vers aujourd'hui (mobile) -->
+    <div id="today-anchor" class="d-lg-none" data-day-target="todayAnchor"></div>
+
     <div class="calendar-grid shadow-sm rounded-4 p-3">
 
       <% @weeks.each do |week| %>
@@ -83,35 +86,28 @@
               <!-- Indisponibilité -->
               <% if unav.present? %>
                 <div class="p-1 small">
-                  <div class="text-danger fw-bold">
-                    Indisponible
-                  </div>
+                  <div class="text-danger fw-bold">Indisponible</div>
 
                   <% if unav.notes.present? %>
                     <div class="text-muted small mt-1">
                       <span class="fw-semibold">Motif:</span>
-                        <%= unav.notes %>
+                      <%= unav.notes %>
                     </div>
                   <% end %>
                 </div>
               <% end %>
-
 
               <!-- Missions -->
               <div class="sessions-container mt-2">
                 <% sessions.first(3).each do |ws| %>
                   <div class="session-item position-relative">
                     <div class="d-flex flex-column">
-                      <span class="fw-bold text-dark text-truncate">
-                        <%= ws.company %>
-                      </span>
-
+                      <span class="fw-bold text-dark text-truncate"><%= ws.company %></span>
                       <span class="text-muted small">
                         <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
                       </span>
                     </div>
                   </div>
-
                 <% end %>
               </div>
 
@@ -124,29 +120,48 @@
     </div>
   </div>
 
-<!-- ========================================================= -->
-<!-- =============== MODALE ACTIONS DU JOUR ================== -->
-<!-- ========================================================= -->
+  <!-- ========================================================= -->
+  <!-- =============== MODALE ACTIONS DU JOUR ================== -->
+  <!-- ========================================================= -->
 
-<div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true" data-controller="unavailability day">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 shadow">
+  <div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true" data-controller="unavailability day">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 shadow">
 
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold text-orange" id="dayModalTitle">Actions</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-orange" id="dayModalTitle">Actions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body" id="dayModalBody">
+          <!-- Rempli par Stimulus -->
+        </div>
+
+        <div class="modal-footer" id="dayModalFooter">
+          <!-- Rempli par Stimulus -->
+        </div>
+
       </div>
-
-      <div class="modal-body" id="dayModalBody">
-        <!-- Rempli par Stimulus -->
-      </div>
-
-      <div class="modal-footer" id="dayModalFooter">
-        <!-- Rempli par Stimulus -->
-      </div>
-
     </div>
   </div>
-</div>
+
+  <!-- ========================================================= -->
+  <!-- ============ BARRE D’ACTIONS MOBILE FIXE ================= -->
+  <!-- ========================================================= -->
+  <div class="mobile-action-bar d-lg-none">
+    <button
+      class="btn btn-orange w-100 mb-2"
+      data-action="day#openNewMission">
+      <i class="fa-solid fa-briefcase me-2"></i>
+      Ajouter une mission
+    </button>
+
+    <button
+      class="btn btn-orange-outline w-100"
+      data-action="day#openNewUnavailability">
+      <i class="fa-solid fa-ban me-2"></i>
+      Ajouter une indisponibilité
+    </button>
+  </div>
 
 </div>
