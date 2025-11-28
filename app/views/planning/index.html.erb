@@ -82,10 +82,20 @@
 
               <!-- Indisponibilité -->
               <% if unav.present? %>
-                <div class="p-1 small text-danger fw-semibold">
-                  <%= unav.notes.presence || "Indisponible" %>
+                <div class="p-1 small">
+                  <div class="text-danger fw-bold">
+                    Indisponible
+                  </div>
+
+                  <% if unav.notes.present? %>
+                    <div class="text-muted small mt-1">
+                      <span class="fw-semibold">Motif:</span>
+                        <%= unav.notes %>
+                    </div>
+                  <% end %>
                 </div>
               <% end %>
+
 
               <!-- Missions -->
               <div class="sessions-container mt-2">
