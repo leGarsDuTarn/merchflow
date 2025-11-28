@@ -46,22 +46,31 @@
           <i class="fa-solid fa-search"></i>
         </button>
 
-
-
-      <!-- Bouton ajouter mission -->
-      <%= link_to new_work_session_path,
-                  class: "btn btn-orange d-flex justify-content-center align-items-center",
-                  style: "width: 42px; height: 42px;",
-                  title: "Ajouter une mission" do %>
-        <i class="fa-solid fa-plus"></i>
       <% end %>
-    <% end %>
+
+      <!-- Bouton ajouter mission (conditionnel) -->
+      <% if current_user.contracts.any? %>
+        <%= link_to new_work_session_path,
+                    class: "btn btn-orange d-flex justify-content-center align-items-center",
+                    style: "width: 42px; height: 42px;",
+                    title: "Ajouter une mission" do %>
+          <i class="fa-solid fa-plus"></i>
+        <% end %>
+      <% else %>
+        <button class="btn btn-secondary d-flex justify-content-center align-items-center"
+                style="width: 42px; height: 42px;"
+                title="Créez d'abord un contrat"
+                disabled>
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      <% end %>
+
     </div>
   </div>
 
 
   <!-- Turbo Frame -->
-  <%= turbo_frame_tag "work_sessions_list" do %>
+  
 
     <% if @work_sessions.empty? %>
 
@@ -69,11 +78,18 @@
       <div class="text-center text-muted mt-5">
         <i class="fa-solid fa-circle-plus fa-3x mb-3 text-orange"></i>
         <h4 class="fw-semibold">Aucune mission enregistrée</h4>
-        <p class="mb-3">Créez votre première mission depuis un contrat ou depuis ici.</p>
 
-        <%= link_to "Nouvelle mission",
-                    new_work_session_path,
-                    class: "btn btn-orange btn-lg fw-bold" %>
+        <% if current_user.contracts.any? %>
+          <p class="mb-3">Créez votre première mission depuis un contrat ou depuis ici.</p>
+          <%= link_to "Nouvelle mission",
+                      new_work_session_path,
+                      class: "btn btn-orange btn-lg fw-bold" %>
+        <% else %>
+          <p class="mb-3">Vous devez d'abord créer un contrat avant de pouvoir enregistrer une mission.</p>
+          <%= link_to "Créer un contrat",
+                      new_contract_path,
+                      class: "btn btn-orange btn-lg fw-bold" %>
+        <% end %>
       </div>
 
     <% else %>
@@ -153,7 +169,7 @@
 
     <% end %>
 
-  <% end %>
+
 
 </div>
 

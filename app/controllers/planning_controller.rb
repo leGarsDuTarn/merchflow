@@ -10,6 +10,10 @@ class PlanningController < ApplicationController
     @sessions = current_user.work_sessions.for_month(@year, @month)
     @sessions_by_date = @sessions.group_by(&:date)
 
+    # Indisponibilités du mois
+    @unavailabilities = current_user.unavailabilities.where(date: Date.new(@year, @month).all_month)
+    @unavailable_dates = @unavailabilities.pluck(:date)
+
     # Pour naviguer dans les mois
     date = Date.new(@year, @month)
     prev = date.prev_month

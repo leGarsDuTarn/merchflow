@@ -5,20 +5,28 @@ Rails.application.routes.draw do
   root 'home#index'
   get 'dashboard', to: 'dashboard#index'
   patch 'dashboard/privacy', to: 'dashboard#update_privacy', as: 'dashboard_privacy'
+
   # ============================================================
-  # WORK SESSIONS (création globale)
+  # WORK SESSIONS (création globale + toutes les actions)
   # ============================================================
-  resources :work_sessions, only: %i[new create index] do
+  resources :work_sessions do
     resources :kilometer_logs, only: %i[create destroy]
   end
 
   # ============================================================
-  # CONTRATS + WORKSESSIONS (shallow)
+  # CONTRATS + WORKSESSIONS imbriqués (shallow: true)
   # ============================================================
   resources :contracts do
-    resources :work_sessions, shallow: true
+    # On ne redéfinit que index, new, create pour les routes imbriquées
+    # Les autres actions (show, edit, update, destroy) sont gérées par la route globale
+    resources :work_sessions, only: %i[index new create], shallow: true
     resources :declarations, only: %i[index create]
   end
+
+  # ============================================================
+  # PLANNINGS
+  # ============================================================
+  resources :unavailabilities, only: %i[create destroy]
 
   # ============================================================
   # CUSTOM ROUTES

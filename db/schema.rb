@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_26_142224) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_28_101441) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -70,6 +70,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_142224) do
     t.index ["work_session_id"], name: "index_kilometer_logs_on_work_session_id"
   end
 
+  create_table "unavailabilities", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "date"], name: "index_unavailabilities_on_user_id_and_date", unique: true
+    t.index ["user_id"], name: "index_unavailabilities_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "address"
     t.boolean "allow_email", default: false, null: false
@@ -120,5 +130,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_142224) do
   add_foreign_key "declarations", "contracts"
   add_foreign_key "declarations", "users"
   add_foreign_key "kilometer_logs", "work_sessions"
+  add_foreign_key "unavailabilities", "users"
   add_foreign_key "work_sessions", "contracts"
 end

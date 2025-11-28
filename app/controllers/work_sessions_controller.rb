@@ -44,11 +44,19 @@ class WorkSessionsController < ApplicationController
   # NEW
   # ============================================================
   def new
-    if @contract
+    # Vérification : l'utilisateur doit avoir au moins un contrat
+    unless current_user.contracts.any?
+      redirect_to new_contract_path, alert: "Vous devez créer un contrat avant d'enregistrer une mission."
+    return
+    end
+
+    if @contract.present?
       # Cas 1 : Route imbriquée, contrat fixé par l'URL
+      # Ex: /contracts/1/work_sessions/new
       @work_session = @contract.work_sessions.new
     else
-      # Cas 2 : Dashboard, pas de contrat fixé
+      # Cas 2 : Route globale, pas de contrat fixé
+      # Ex: /work_sessions/new
       @work_session = WorkSession.new
     end
 

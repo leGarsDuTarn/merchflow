@@ -47,65 +47,99 @@
 
 
   <!-- CALENDRIER (scrollable seulement en mobile) -->
-  <div class="calendar-wrapper">
+<div class="calendar-wrapper">
 
-    <div class="calendar-grid shadow-sm rounded-4 p-3">
+  <div class="calendar-grid shadow-sm rounded-4 p-3">
 
-      <% @weeks.each do |week| %>
+    <% @weeks.each do |week| %>
 
-        <div class="calendar-row">
-          <% week.each do |day| %>
-            <% raw_sessions = @sessions_by_date[day] || [] %>
-            <% sessions     = raw_sessions.sort_by(&:start_time) %>
+      <div class="calendar-row">
+        <% week.each do |day| %>
+          <% raw_sessions = @sessions_by_date[day] || [] %>
+          <% sessions     = raw_sessions.sort_by(&:start_time) %>
 
-            <div class="calendar-cell rounded-3 position-relative
-                        <%= 'today' if day == Date.today %>
-                        <%= sessions.any? ? 'cell-busy' : 'cell-available' %>">
+          <!-- AJOUT : détecter indisponibilité -->
+          <% is_unavailable = @unavailable_dates&.include?(day) %>
 
-              <!-- Lien "+ Ajouter mission" -->
+          <div class="calendar-cell rounded-3 position-relative
+                      <%= 'today' if day == Date.today %>
+                      <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
+                      <%= 'cell-unavailable' if is_unavailable %>"> <!-- AJOUT -->
+
+            <!-- Lien "+ Ajouter mission" (désactivé si indispo) -->
+            <% unless is_unavailable %> <!-- AJOUT -->
               <%= link_to "", new_work_session_path(date: day),
                   class: "stretched-link",
                   aria: { label: "Ajouter une mission le #{day}" } %>
+            <% end %> <!-- AJOUT -->
 
-              <!-- Header de la case -->
-              <div class="d-flex justify-content-between align-items-start p-1">
-                <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
-                  <%= day.day %>
-                </div>
-                <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
+            <!-- Header de la case -->
+            <div class="d-flex justify-content-between align-items-start p-1">
+              <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
+                <%= day.day %>
               </div>
+              <% unless is_unavailable %> <!-- AJOUT -->
+                <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
+              <% end %> <!-- AJOUT -->
+            </div>
 
-              <!-- Liste des missions du jour -->
-              <div class="sessions-container">
-                <% sessions.each do |ws| %>
+            <!-- AJOUT : Bouton Indispo / Disponible -->
+            <div class="p-1">
+              <% if is_unavailable %>
+                <% unav = @unavailabilities.find { |u| u.date == day } %>
 
-                  <%= link_to work_session_path(ws),
-                      class: "session-item text-decoration-none position-relative",
-                      style: "z-index: 2;" do %>
+                <%= button_to unavailability_path(unav),
+                      method: :delete,
+                      class: "btn btn-success btn-sm w-100 mt-1",
+                      form: { style: "z-index:10; position:relative;" } do %>
+                  Disponible
+                <% end %>
 
-                    <div class="d-flex flex-column justify-content-center">
-                      <span class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
-                        <%= ws.contract.agency %>
-                      </span>
+              <% else %>
 
-                      <span class="text-muted small">
-                        <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
-                      </span>
-                    </div>
+                <%= button_to unavailabilities_path(unavailability: { date: day }),
+                      method: :post,
+                      class: "btn btn-warning btn-sm w-100 mt-1",
+                      form: { style: "z-index:10; position:relative;" } do %>
+                  Indisponible
+                <% end %>
 
-                  <% end %>
+              <% end %>
+            </div>
+            <!-- FIN AJOUT -->
+
+            <!-- Liste des missions du jour -->
+            <div class="sessions-container">
+              <% sessions.each do |ws| %>
+
+                <%= link_to work_session_path(ws),
+                    class: "session-item text-decoration-none position-relative",
+                    style: "z-index: 2;" do %>
+
+                  <div class="d-flex flex-column justify-content-center">
+                    <span class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
+                      <%= ws.contract.agency %>
+                    </span>
+
+                    <span class="text-muted small">
+                      <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
+                    </span>
+                  </div>
 
                 <% end %>
-              </div>
 
+              <% end %>
             </div>
-          <% end %>
-        </div>
 
-      <% end %>
+          </div>
+        <% end %>
+      </div>
 
-    </div>
+    <% end %>
+
   </div>
+</div>
+
 
 
   <!-- BOUTON MOBILE FLOTTANT -->

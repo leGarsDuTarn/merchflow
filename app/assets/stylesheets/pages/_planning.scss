@@ -34,6 +34,14 @@
     display: block;
   }
 
+  // 🔥 AJOUT : visuel "Indisponible"
+  &.cell-unavailable {
+    background: #f8d7da !important;  // rouge clair
+    border: 1px solid #dc3545 !important;
+    opacity: 0.85;
+    display: block !important;       // IMPORTANT : visible en mobile
+  }
+
   // Today highlight
   &.today {
     display: block;
@@ -160,6 +168,12 @@
       border: 2px solid $orange !important;
     }
 
+    // 🔥 Desktop "Indisponible"
+    &.cell-unavailable {
+      border: 2px solid #dc3545 !important;
+      background: #f8d7da !important;
+    }
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -198,12 +212,12 @@
   }
 
   .week-headers {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: $gray;
-}
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: $gray;
+  }
 
 }

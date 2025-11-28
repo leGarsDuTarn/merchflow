@@ -11,6 +11,7 @@ class User < ApplicationRecord
   has_many :contracts, dependent: :destroy
   has_many :work_sessions, through: :contracts
   has_many :declarations, dependent: :destroy
+  has_many :unavailabilities, dependent: :destroy
 
   # ============================================================
   # RÔLE
