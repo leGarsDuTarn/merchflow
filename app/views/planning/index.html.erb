@@ -1,7 +1,16 @@
-<div class="container my-5">
+<div class="container my-5" data-controller="unavailability">
 
-  <!-- Titre -->
-  <h1 class="fw-bold text-orange mb-4">Planning du mois</h1>
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange m-0">Planning du mois</h1>
+
+    <!-- Ouverture modale gestion indispos -->
+    <button class="btn btn-orange fw-semibold"
+            data-bs-toggle="modal"
+            data-bs-target="#manageUnavailabilityModal">
+      Gérer mes indisponibilités
+    </button>
+  </div>
 
   <!-- Navigation mois -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,7 +20,7 @@
     <% end %>
 
     <h3 class="fw-semibold m-0 text-capitalize">
-      <%= I18n.l Date.new(@year, @month), format: "%B %Y" %>
+      <%= I18n.l(Date.new(@year, @month), format: "%B %Y") %>
     </h3>
 
     <%= link_to planning_path(year: @next_year, month: @next_month),
@@ -20,129 +29,89 @@
     <% end %>
   </div>
 
-
-  <!-- Message mobile -->
-  <div class="d-lg-none text-center mb-3 animate__animated animate__fadeIn">
+  <!-- Mobile hint -->
+  <div class="d-lg-none text-center mb-3">
     <div class="d-inline-block bg-light px-3 py-1 rounded-pill border">
-        <small class="text-muted">
-          Vue simplifiée : les jours libres sont masqués.
-        </small>
+      <small class="text-muted">Vue simplifiée : jours libres masqués.</small>
+    </div>
+  </div>
+
+  <!-- Headers desktop -->
+  <div class="d-none d-lg-block shadow-sm rounded-4 p-3 mb-2 bg-white">
+    <div class="week-headers">
+      <div>Lun</div><div>Mar</div><div>Mer</div>
+      <div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
     </div>
   </div>
 
 
- <!-- Jours de la semaine (DESKTOP) -->
-<div class="d-none d-lg-block shadow-sm rounded-4 p-3 mb-2 bg-white">
-  <div class="week-headers">
-    <div>Lun</div>
-    <div>Mar</div>
-    <div>Mer</div>
-    <div>Jeu</div>
-    <div>Ven</div>
-    <div>Sam</div>
-    <div>Dim</div>
-  </div>
-</div>
+  <!-- CALENDRIER -->
+  <div class="calendar-wrapper">
+    <div class="calendar-grid shadow-sm rounded-4 p-3">
 
+      <% @weeks.each do |week| %>
+        <div class="calendar-row">
 
+          <% week.each do |day| %>
+            <% sessions = (@sessions_by_date[day] || []).sort_by(&:start_time) %>
+            <% unav = @unavailabilities.find { |u| u.date == day } %>
 
-  <!-- CALENDRIER (scrollable seulement en mobile) -->
-<div class="calendar-wrapper">
+            <div class="calendar-cell rounded-3 position-relative
+                        <%= 'today' if day == Date.today %>
+                        <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
+                        <%= 'cell-unavailable' if unav.present? %>">
 
-  <div class="calendar-grid shadow-sm rounded-4 p-3">
+              <!-- Header date -->
+              <div class="d-flex justify-content-between align-items-start p-1">
+                <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
+                  <%= day.day %>
+                </div>
 
-    <% @weeks.each do |week| %>
-
-      <div class="calendar-row">
-        <% week.each do |day| %>
-          <% raw_sessions = @sessions_by_date[day] || [] %>
-          <% sessions     = raw_sessions.sort_by(&:start_time) %>
-
-          <!-- AJOUT : détecter indisponibilité -->
-          <% is_unavailable = @unavailable_dates&.include?(day) %>
-
-          <div class="calendar-cell rounded-3 position-relative
-                      <%= 'today' if day == Date.today %>
-                      <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
-                      <%= 'cell-unavailable' if is_unavailable %>"> <!-- AJOUT -->
-
-            <!-- Lien "+ Ajouter mission" (désactivé si indispo) -->
-            <% unless is_unavailable %> <!-- AJOUT -->
-              <%= link_to "", new_work_session_path(date: day),
-                  class: "stretched-link",
-                  aria: { label: "Ajouter une mission le #{day}" } %>
-            <% end %> <!-- AJOUT -->
-
-            <!-- Header de la case -->
-            <div class="d-flex justify-content-between align-items-start p-1">
-              <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
-                <%= day.day %>
+                <% if unav.present? %>
+                  <i class="fa-solid fa-ban text-danger small"></i>
+                <% else %>
+                  <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
+                <% end %>
               </div>
-              <% unless is_unavailable %> <!-- AJOUT -->
-                <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
-              <% end %> <!-- AJOUT -->
-            </div>
 
-            <!-- AJOUT : Bouton Indispo / Disponible -->
-            <div class="p-1">
-              <% if is_unavailable %>
-                <% unav = @unavailabilities.find { |u| u.date == day } %>
-
-                <%= button_to unavailability_path(unav),
-                      method: :delete,
-                      class: "btn btn-success btn-sm w-100 mt-1",
-                      form: { style: "z-index:10; position:relative;" } do %>
-                  Disponible
-                <% end %>
-
-              <% else %>
-
-                <%= button_to unavailabilities_path(unavailability: { date: day }),
-                      method: :post,
-                      class: "btn btn-warning btn-sm w-100 mt-1",
-                      form: { style: "z-index:10; position:relative;" } do %>
-                  Indisponible
-                <% end %>
-
+              <!-- Indisponibilité -->
+              <% if unav.present? %>
+                <div class="p-1 small text-danger fw-semibold">
+                  <%= unav.notes.presence || "Indisponible" %>
+                </div>
               <% end %>
-            </div>
-            <!-- FIN AJOUT -->
 
-            <!-- Liste des missions du jour -->
-            <div class="sessions-container">
-              <% sessions.each do |ws| %>
+              <!-- Missions -->
+              <div class="sessions-container mt-2">
+                <% sessions.each do |ws| %>
+                  <%= link_to work_session_path(ws),
+                    class: "session-item text-decoration-none position-relative" do %>
 
-                <%= link_to work_session_path(ws),
-                    class: "session-item text-decoration-none position-relative",
-                    style: "z-index: 2;" do %>
+                    <div class="d-flex flex-column">
+                      <span class="fw-bold text-dark text-truncate">
+                        <%= ws.contract.agency %>
+                      </span>
 
-                  <div class="d-flex flex-column justify-content-center">
-                    <span class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
-                      <%= ws.contract.agency %>
-                    </span>
+                      <span class="text-muted small">
+                        <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
+                      </span>
+                    </div>
 
-                    <span class="text-muted small">
-                      <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
-                    </span>
-                  </div>
-
+                  <% end %>
                 <% end %>
+              </div>
 
-              <% end %>
             </div>
+          <% end %>
 
-          </div>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
 
-    <% end %>
-
+    </div>
   </div>
-</div>
 
 
-
-  <!-- BOUTON MOBILE FLOTTANT -->
+  <!-- Bouton mobile -->
   <div class="add-mission-mobile d-lg-none">
     <%= link_to new_work_session_path,
         class: "btn btn-orange fw-semibold d-flex align-items-center justify-content-center" do %>
@@ -151,4 +120,140 @@
     <% end %>
   </div>
 
+</div>
+
+
+
+<!-- =================================================================== -->
+<!-- ================= MODALE : GÉRER LES INDISPONIBILITÉS ============= -->
+<!-- =================================================================== -->
+
+<div class="modal fade" id="manageUnavailabilityModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-orange">Gérer mes indisponibilités</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Liste -->
+        <h5 class="fw-bold mb-3">Indisponibilités existantes</h5>
+
+        <% if @unavailabilities.any? %>
+          <% @unavailabilities.each do |u| %>
+            <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
+              <div>
+                <strong><%= u.date %></strong><br>
+                <small><%= u.notes.presence || "Indisponible" %></small>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm"
+                        data-id="<%= u.id %>"
+                        data-date="<%= u.date %>"
+                        data-notes="<%= u.notes %>"
+                        data-action="click->unavailability#openEdit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editUnavailabilityModal">
+                  Modifier
+                </button>
+
+                <%= button_to unavailability_path(u),
+                    method: :delete,
+                    class: "btn btn-danger btn-sm" do %>
+                  Supprimer
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Aucune indisponibilité.</p>
+        <% end %>
+
+
+        <hr class="my-4">
+
+        <!-- Nouvelle indispo -->
+        <h5 class="fw-bold mb-3">Nouvelle indisponibilité</h5>
+
+        <%= form_with url: unavailabilities_path, local: true do %>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= label_tag :start_date, "Du", class: "form-label fw-semibold" %>
+              <%= date_field_tag :start_date, nil, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= label_tag :end_date, "Au", class: "form-label fw-semibold" %>
+              <%= date_field_tag :end_date, nil, class: "form-control", required: true %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= label_tag :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
+            <%= text_area_tag :notes, nil, class: "form-control", rows: 3 %>
+          </div>
+
+          <%= submit_tag "Créer", class: "btn btn-orange fw-bold" %>
+
+        <% end %>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- =================================================================== -->
+<!-- ================ MODALE : MODIFIER UNE INDISPO ===================== -->
+<!-- =================================================================== -->
+
+<div class="modal fade" id="editUnavailabilityModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-orange">Modifier une indisponibilité</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <%= form_with url: "", method: :patch,
+          local: true,
+          id: "editUnavailabilityForm",
+          data: { unavailability_target: "editForm" } do %>
+
+        <div class="modal-body">
+
+          <%= hidden_field_tag :id, nil, data: { unavailability_target: "editId" } %>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date</label>
+            <input type="text" class="form-control" disabled
+                   data-unavailability-target="editDate">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notes</label>
+            <textarea class="form-control" rows="3"
+                      name="notes"
+                      data-unavailability-target="editNotes"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <%= submit_tag "Modifier", class: "btn btn-orange fw-bold" %>
+        </div>
+
+      <% end %>
+
+    </div>
+  </div>
 </div>

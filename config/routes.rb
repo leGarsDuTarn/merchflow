@@ -26,7 +26,7 @@ Rails.application.routes.draw do
   # ============================================================
   # PLANNINGS
   # ============================================================
-  resources :unavailabilities, only: %i[create destroy]
+  resources :unavailabilities, only: %i[new create update destroy]
 
   # ============================================================
   # CUSTOM ROUTES
