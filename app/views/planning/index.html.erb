@@ -1,15 +1,8 @@
-<div class="container my-5" data-controller="unavailability">
+<div class="container my-5" data-controller="day unavailability">
 
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="fw-bold text-orange m-0">Planning du mois</h1>
-
-    <!-- Ouverture modale gestion indispos -->
-    <button class="btn btn-orange fw-semibold"
-            data-bs-toggle="modal"
-            data-bs-target="#manageUnavailabilityModal">
-      Gérer mes indisponibilités
-    </button>
   </div>
 
   <!-- Navigation mois -->
@@ -55,20 +48,33 @@
           <% week.each do |day| %>
             <% sessions = (@sessions_by_date[day] || []).sort_by(&:start_time) %>
             <% unav = @unavailabilities.find { |u| u.date == day } %>
+            <% is_today = (day == Date.today) %>
 
             <div class="calendar-cell rounded-3 position-relative
-                        <%= 'today' if day == Date.today %>
+                        <%= 'today' if is_today %>
                         <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
-                        <%= 'cell-unavailable' if unav.present? %>">
+                        <%= 'cell-unavailable' if unav.present? %>"
 
-              <!-- Header date -->
+                 data-action="click->day#open"
+                 data-date="<%= day %>"
+                 data-has-missions="<%= sessions.any? %>"
+                 data-has-unavailability="<%= unav.present? %>"
+                 data-unavailability-id="<%= unav&.id %>"
+                 data-unavailability-notes="<%= unav&.notes %>"
+                 data-missions="<%= sessions.map { |ws|
+                       { id: ws.id, company: ws.company, start: ws.start_time.strftime("%H:%M"), end: ws.end_time.strftime("%H:%M") }
+                     }.to_json %>">
+
+              <!-- Header date + icône -->
               <div class="d-flex justify-content-between align-items-start p-1">
                 <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
                   <%= day.day %>
                 </div>
 
                 <% if unav.present? %>
-                  <i class="fa-solid fa-ban text-danger small"></i>
+                  <i class="fa-solid fa-pen text-orange small"></i>
+                <% elsif sessions.any? %>
+                  <i class="fa-solid fa-pen text-orange small"></i>
                 <% else %>
                   <i class="fa-solid fa-plus text-muted opacity-25 small add-icon"></i>
                 <% end %>
@@ -83,13 +89,13 @@
 
               <!-- Missions -->
               <div class="sessions-container mt-2">
-                <% sessions.each do |ws| %>
+                <% sessions.first(3).each do |ws| %>
                   <%= link_to work_session_path(ws),
                     class: "session-item text-decoration-none position-relative" do %>
 
                     <div class="d-flex flex-column">
                       <span class="fw-bold text-dark text-truncate">
-                        <%= ws.contract.agency %>
+                        <%= ws.company %>
                       </span>
 
                       <span class="text-muted small">
@@ -110,150 +116,29 @@
     </div>
   </div>
 
+<!-- ========================================================= -->
+<!-- =============== MODALE ACTIONS DU JOUR ================== -->
+<!-- ========================================================= -->
 
-  <!-- Bouton mobile -->
-  <div class="add-mission-mobile d-lg-none">
-    <%= link_to new_work_session_path,
-        class: "btn btn-orange fw-semibold d-flex align-items-center justify-content-center" do %>
-      <i class="fa-solid fa-plus me-2"></i>
-      Ajouter une mission
-    <% end %>
-  </div>
-
-</div>
-
-
-
-<!-- =================================================================== -->
-<!-- ================= MODALE : GÉRER LES INDISPONIBILITÉS ============= -->
-<!-- =================================================================== -->
-
-<div class="modal fade" id="manageUnavailabilityModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content rounded-4 shadow">
-
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold text-orange">Gérer mes indisponibilités</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-
-        <!-- Liste -->
-        <h5 class="fw-bold mb-3">Indisponibilités existantes</h5>
-
-        <% if @unavailabilities.any? %>
-          <% @unavailabilities.each do |u| %>
-            <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
-              <div>
-                <strong><%= u.date %></strong><br>
-                <small><%= u.notes.presence || "Indisponible" %></small>
-              </div>
-
-              <div class="d-flex gap-2">
-                <button class="btn btn-primary btn-sm"
-                        data-id="<%= u.id %>"
-                        data-date="<%= u.date %>"
-                        data-notes="<%= u.notes %>"
-                        data-action="click->unavailability#openEdit"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editUnavailabilityModal">
-                  Modifier
-                </button>
-
-                <%= button_to unavailability_path(u),
-                    method: :delete,
-                    class: "btn btn-danger btn-sm" do %>
-                  Supprimer
-                <% end %>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <p class="text-muted">Aucune indisponibilité.</p>
-        <% end %>
-
-
-        <hr class="my-4">
-
-        <!-- Nouvelle indispo -->
-        <h5 class="fw-bold mb-3">Nouvelle indisponibilité</h5>
-
-        <%= form_with url: unavailabilities_path, local: true do %>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= label_tag :start_date, "Du", class: "form-label fw-semibold" %>
-              <%= date_field_tag :start_date, nil, class: "form-control", required: true %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= label_tag :end_date, "Au", class: "form-label fw-semibold" %>
-              <%= date_field_tag :end_date, nil, class: "form-control", required: true %>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <%= label_tag :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
-            <%= text_area_tag :notes, nil, class: "form-control", rows: 3 %>
-          </div>
-
-          <%= submit_tag "Créer", class: "btn btn-orange fw-bold" %>
-
-        <% end %>
-
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-
-<!-- =================================================================== -->
-<!-- ================ MODALE : MODIFIER UNE INDISPO ===================== -->
-<!-- =================================================================== -->
-
-<div class="modal fade" id="editUnavailabilityModal" tabindex="-1">
+<div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true" data-controller="unavailability day">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 shadow">
 
       <div class="modal-header">
-        <h5 class="modal-title fw-bold text-orange">Modifier une indisponibilité</h5>
+        <h5 class="modal-title fw-bold text-orange" id="dayModalTitle">Actions</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <%= form_with url: "", method: :patch,
-          local: true,
-          id: "editUnavailabilityForm",
-          data: { unavailability_target: "editForm" } do %>
+      <div class="modal-body" id="dayModalBody">
+        <!-- Rempli par Stimulus -->
+      </div>
 
-        <div class="modal-body">
-
-          <%= hidden_field_tag :id, nil, data: { unavailability_target: "editId" } %>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Date</label>
-            <input type="text" class="form-control" disabled
-                   data-unavailability-target="editDate">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Notes</label>
-            <textarea class="form-control" rows="3"
-                      name="notes"
-                      data-unavailability-target="editNotes"></textarea>
-          </div>
-
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <%= submit_tag "Modifier", class: "btn btn-orange fw-bold" %>
-        </div>
-
-      <% end %>
+      <div class="modal-footer" id="dayModalFooter">
+        <!-- Rempli par Stimulus -->
+      </div>
 
     </div>
   </div>
+</div>
+
 </div>
