@@ -5,7 +5,7 @@ export default class extends Controller {
   open(event) {
     const cell = event.currentTarget;
 
-    // Infos depuis data-*
+    // Récupération des données depuis les attributs data-* du HTML
     const date = cell.dataset.date;
     const missions = JSON.parse(cell.dataset.missions || "[]");
     const hasMissions = cell.dataset.hasMissions === "true";
@@ -13,22 +13,22 @@ export default class extends Controller {
     const unavId = cell.dataset.unavailabilityId;
     const unavNotes = cell.dataset.unavailabilityNotes || "";
 
-    // Cibles de la modale
+    // Cibles du DOM dans la modale
     const modalTitle = document.getElementById("dayModalTitle");
     const modalBody = document.getElementById("dayModalBody");
     const modalFooter = document.getElementById("dayModalFooter");
 
     // ---------------------------------------------------------
-    // TITRE
+    // 1. LE TITRE
     // ---------------------------------------------------------
     modalTitle.innerHTML = `Actions du ${this.formatDate(date)}`;
 
     // ---------------------------------------------------------
-    // CORPS DE LA MODALE
+    // 2. LE CORPS DE LA MODALE
     // ---------------------------------------------------------
     let bodyHtml = "";
 
-    // Missions
+    // CAS A : Il y a des missions
     if (hasMissions) {
       bodyHtml += `<h6 class='fw-bold text-orange'>Missions du jour</h6>`;
       missions.forEach((m) => {
@@ -44,20 +44,18 @@ export default class extends Controller {
       });
     }
 
-    // Indisponibilité
+    // CAS B : Il y a une indisponibilité
     if (hasUnavailability) {
       bodyHtml += `
         <h6 class="fw-bold text-danger mt-3">Indisponible</h6>
-        <p><strong>Motif :</strong>${
-          unavNotes ? " " + unavNotes : ""
-        }</p>
+        <p><strong>Motif :</strong>${unavNotes ? " " + unavNotes : " Aucun"}</p>
 
-        <label class="fw-semibold">Modifier la note</label>
+        <label class="fw-semibold mt-2">Modifier la note</label>
         <textarea id="editUnavNotes" class="form-control" rows="2">${unavNotes}</textarea>
       `;
     }
 
-    // Jour libre
+    // CAS C : Jour totalement libre
     if (!hasMissions && !hasUnavailability) {
       bodyHtml += `
         <h6 class="fw-bold text-orange mb-2">Ce jour est libre</h6>
@@ -74,11 +72,11 @@ export default class extends Controller {
     modalBody.innerHTML = bodyHtml;
 
     // ---------------------------------------------------------
-    // FOOTER : ACTIONS
+    // 3. LE FOOTER (ACTIONS)
     // ---------------------------------------------------------
     let footer = "";
 
-    // Ajouter mission (sauf indispo)
+    // Bouton : Ajouter mission (sauf si déjà indisponible)
     if (!hasUnavailability) {
       footer += `
         <a href="/work_sessions/new?date=${date}"
@@ -88,7 +86,7 @@ export default class extends Controller {
       `;
     }
 
-    // Rendre indisponible
+    // Bouton : Créer l'indisponibilité (si libre)
     if (!hasUnavailability && !hasMissions) {
       footer += `
         <form action="/unavailabilities" method="post" id="newUnavForm">
@@ -100,7 +98,7 @@ export default class extends Controller {
       `;
     }
 
-    // Modifier indispo
+    // Bouton : Mettre à jour l'indispo existante
     if (hasUnavailability) {
       footer += `
         <form action="/unavailabilities/${unavId}" method="post" id="editUnavForm" class="me-2">
@@ -112,7 +110,7 @@ export default class extends Controller {
       `;
     }
 
-    // Supprimer l'indispo
+    // Bouton : Supprimer l'indispo (Rendre disponible)
     if (hasUnavailability) {
       footer += `
         <form action="/unavailabilities/${unavId}" method="post">
@@ -126,37 +124,38 @@ export default class extends Controller {
     modalFooter.innerHTML = footer;
 
     // ---------------------------------------------------------
-    // OUVRIR LA MODALE
+    // 4. AFFICHAGE ET LOGIQUE JS
     // ---------------------------------------------------------
-    const modal = new bootstrap.Modal(document.getElementById("dayModal"));
+    const modalElement = document.getElementById("dayModal");
+    const modal = new bootstrap.Modal(modalElement);
     modal.show();
 
-    // ---------------------------------------------------------
-    // FIX ICI → ajouter les listeners APRÈS que la modale existe
-    // ---------------------------------------------------------
+    // On attache les listeners pour copier le contenu des textarea vers les hidden inputs
+    // On utilise setTimeout pour s'assurer que le DOM est bien mis à jour
     setTimeout(() => {
-      // Création d'indispo avec note
+      // Pour la création
       const newForm = document.getElementById("newUnavForm");
       if (newForm) {
         newForm.addEventListener("submit", () => {
-          document.getElementById("new_unav_form_notes").value =
-            document.getElementById("newUnavNotes").value;
+          const noteValue = document.getElementById("newUnavNotes").value;
+          document.getElementById("new_unav_form_notes").value = noteValue;
         });
       }
 
-      // Modification d’indisponibilité
+      // Pour l'édition
       const editForm = document.getElementById("editUnavForm");
       if (editForm) {
         editForm.addEventListener("submit", () => {
-          document.getElementById("unav_form_notes").value =
-            document.getElementById("editUnavNotes").value;
+          const noteValue = document.getElementById("editUnavNotes").value;
+          document.getElementById("unav_form_notes").value = noteValue;
         });
       }
-    }, 50);
+    }, 100);
   }
 
-  // Format FR
+  // Utilitaire pour formater la date en Français
   formatDate(dateStr) {
+    if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString("fr-FR", {
       weekday: "long",
       day: "numeric",
@@ -164,7 +163,9 @@ export default class extends Controller {
     });
   }
 
+  // Récupération du token CSRF pour les formulaires Rails
   csrf() {
-    return document.querySelector("meta[name='csrf-token']").content;
+    const token = document.querySelector("meta[name='csrf-token']");
+    return token ? token.content : "";
   }
 }
