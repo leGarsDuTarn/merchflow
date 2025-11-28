@@ -95,7 +95,7 @@ export default class extends Controller {
           <input type="hidden" name="authenticity_token" value="${this.csrf()}">
           <input type="hidden" name="date" value="${date}">
           <input type="hidden" name="notes" id="new_unav_form_notes">
-          <button type="submit" class="btn btn-danger">Me rendre indisponible</button>
+          <button type="submit" class="btn btn-red">Me rendre indisponible</button>
         </form>
       `;
     }
