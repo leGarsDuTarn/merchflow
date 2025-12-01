@@ -117,7 +117,7 @@
           </p>
 
           <%= link_to toggle_premium_admin_user_path(@user),
-                      class: "btn w-100 fw-bold #{@user.premium? ? 'btn-outline-danger' : 'btn-orange'}",
+                      class: "btn btn-red w-100  #{@user.premium? ? 'btn-outline-danger' : 'btn-orange'}",
                       data: { turbo_method: :patch } do %>
             <% if @user.premium? %>
               <i class="fa-solid fa-ban me-2"></i>Désactiver Premium
