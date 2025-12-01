@@ -15,6 +15,12 @@ class Fve::PlanningsController < ApplicationController
     @sessions = @merch_user.work_sessions.for_month(@year, @month)
     @sessions_by_date = @sessions.group_by(&:date)
 
+    @unavailabilities = @merch_user.unavailabilities.where(date: date.all_month)
+    # Ici .pluck permet de récupérer seulement les valeurs d'une (ou plusieurs) colonne
+    # directement sous forme de tableau (Array), sans charger tout l'objet en mémoire.
+    # C'est une méthode d'optimisation
+    @unavailable_dates = @unavailabilities.pluck(:date)
+
 
     # Navigation mois
     prev = date.prev_month

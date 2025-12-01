@@ -61,18 +61,36 @@
             <% raw_sessions = @sessions_by_date[day] || [] %>
             <% sessions = raw_sessions.sort_by(&:start_time) %>
 
+            <%# 🔥 1. On cherche l'indisponibilité pour ce jour %>
+            <% unav = @unavailabilities.find { |u| u.date == day } %>
+
             <div class="calendar-cell rounded-3 position-relative
                         <%= 'today' if day == Date.today %>
-                        <%= sessions.any? ? 'cell-busy' : 'cell-available' %>">
+                        <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
+                        <%= 'cell-unavailable' if unav.present? %>"> <%# 🔥 2. On ajoute la classe CSS %>
 
-              <!-- Header du jour -->
               <div class="d-flex justify-content-between align-items-start p-1">
                 <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
                   <%= day.day %>
                 </div>
+
+                <%# Petit icône visuel (optionnel) %>
+                <% if unav.present? %>
+                  <i class="fa-solid fa-ban text-danger small"></i>
+                <% end %>
               </div>
 
-              <!-- Missions du jour (version lecture seule FVE) -->
+              <% if unav.present? %>
+                <div class="p-1 mb-2">
+                  <div class="text-danger fw-bold small">Indisponible</div>
+                  <% if unav.notes.present? %>
+                    <div class="text-muted small fst-italic" style="font-size: 0.75rem;">
+                      <%= unav.notes %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
               <div class="sessions-container">
                 <% sessions.each do |ws| %>
 
