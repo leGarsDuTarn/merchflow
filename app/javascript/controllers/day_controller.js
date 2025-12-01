@@ -213,7 +213,7 @@ export default class extends Controller {
         <form action="/unavailabilities/${unavId}" method="post">
           <input type="hidden" name="authenticity_token" value="${this.csrf()}">
           <input type="hidden" name="_method" value="delete">
-          <button type="submit" class="btn btn-secondary">Disponible</button>
+          <button type="submit" class="btn btn-green">Disponible</button>
         </form>
       `;
     }
