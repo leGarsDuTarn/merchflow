@@ -29,27 +29,40 @@ export default class extends Controller {
   // 🔥 Bouton mobile : "Ajouter une indisponibilité"
   // =========================================================
   openNewUnavailability() {
+    // On pré-remplit avec la date d'aujourd'hui pour le confort
     const today = new Date().toISOString().split("T")[0];
 
     const modalTitle = document.getElementById("dayModalTitle");
     const modalBody = document.getElementById("dayModalBody");
     const modalFooter = document.getElementById("dayModalFooter");
 
-    modalTitle.innerHTML = `Indisponibilité du ${this.formatDate(today)}`;
+    // Titre générique puisqu'on peut choisir la date
+    modalTitle.innerHTML = `Nouvelle indisponibilité`;
 
+    // CORPS : On ajoute un input TYPE DATE + le Textarea
     modalBody.innerHTML = `
-      <label class="fw-semibold mb-2">Motif (optionnel)</label>
-      <textarea id="newUnavNotes" class="form-control" rows="2"
-        placeholder="Ex : RDV, CP, repos…"></textarea>
+      <div class="mb-3">
+        <label class="fw-semibold mb-1">Date concernée</label>
+        <input type="date" id="newUnavDateSelect" class="form-control" value="${today}">
+      </div>
+
+      <div class="mb-1">
+        <label class="fw-semibold mb-1">Motif (optionnel)</label>
+        <textarea id="newUnavNotes" class="form-control" rows="2"
+          placeholder="Ex : RDV, CP, repos…"></textarea>
+      </div>
     `;
 
+    // FOOTER : Le formulaire avec des inputs hidden qui recevront les valeurs
     modalFooter.innerHTML = `
       <form action="/unavailabilities" method="post" id="newUnavForm">
         <input type="hidden" name="authenticity_token" value="${this.csrf()}">
-        <input type="hidden" name="date" value="${today}">
+
+        <input type="hidden" name="date" id="new_unav_form_date">
         <input type="hidden" name="notes" id="new_unav_form_notes">
+
         <button type="submit" class="btn btn-red w-100 fw-bold">
-          Me rendre indisponible aujourd’hui
+          Confirmer l'indisponibilité
         </button>
       </form>
     `;
@@ -58,11 +71,25 @@ export default class extends Controller {
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
 
+    // LISTENER : Au moment de valider, on copie la date choisie et la note dans le form
     setTimeout(() => {
       const newForm = document.getElementById("newUnavForm");
       if (newForm) {
-        newForm.addEventListener("submit", () => {
+        newForm.addEventListener("submit", (e) => {
+          // 1. Récupérer la date choisie par l'utilisateur
+          const dateValue = document.getElementById("newUnavDateSelect").value;
+          // 2. Récupérer la note
           const noteValue = document.getElementById("newUnavNotes").value;
+
+          // 3. Si l'utilisateur n'a pas mis de date (peu probable avec un input date), on bloque ou on met today par défaut
+          if (!dateValue) {
+             e.preventDefault();
+             alert("Veuillez sélectionner une date.");
+             return;
+          }
+
+          // 4. Injecter dans les champs cachés du formulaire
+          document.getElementById("new_unav_form_date").value = dateValue;
           document.getElementById("new_unav_form_notes").value = noteValue;
         });
       }
