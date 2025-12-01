@@ -44,36 +44,47 @@ class Fve::MerchController < ApplicationController
                             true, true, true)
     end
 
+    # ----------------------------------------------------------------------
     # FILTRE : Disponibilité sur une période
-    if params[:start_date].present? && params[:end_date].present?
-      start_date = Date.parse(params[:start_date]) rescue nil
-      end_date = Date.parse(params[:end_date]) rescue nil
+    # Inclut l'indisponibilité personnelle (Unavailability) ET les missions planifiées (WorkSession)
+    # ----------------------------------------------------------------------
+
+    if params[:start_date].present? || params[:end_date].present?
+      start_date = params[:start_date].present? ? (Date.parse(params[:start_date]) rescue nil) : nil
+      end_date   = params[:end_date].present? ? (Date.parse(params[:end_date]) rescue nil) : nil
+
+      # On définit la condition SQL pour les dates
+      date_condition_sql = nil
 
       if start_date && end_date
-        # On exclut les merch qui ont des indisponibilités sur cette période
-        unavailable_user_ids = Unavailability
-          .where("date BETWEEN ? AND ?", start_date, end_date)
+        date_condition_sql = "date BETWEEN '#{start_date}' AND '#{end_date}'"
+        work_session_condition = "DATE(work_sessions.start_time) BETWEEN '#{start_date}' AND '#{end_date}'"
+      elsif start_date
+        date_condition_sql = "date >= '#{start_date}'"
+        work_session_condition = "DATE(work_sessions.start_time) >= '#{start_date}'"
+      elsif end_date
+        date_condition_sql = "date <= '#{end_date}'"
+        work_session_condition = "DATE(work_sessions.start_time) <= '#{end_date}'"
+      end
+
+      if date_condition_sql.present?
+
+        # 1. IDs indisponibles par Indisponibilité personnelle
+        unavailable_by_unavailability_ids = Unavailability
+          .where(date_condition_sql)
           .pluck(:user_id)
           .uniq
 
-        @merch = @merch.where.not(id: unavailable_user_ids)
-      end
-    elsif params[:start_date].present?
-      start_date = Date.parse(params[:start_date]) rescue nil
-      if start_date
-        unavailable_user_ids = Unavailability
-          .where("date >= ?", start_date)
-          .pluck(:user_id)
+        # 2. IDs indisponibles par Missions planifiées (WorkSession)
+        unavailable_by_work_session_ids = User.joins(contracts: :work_sessions)
+          .where(work_session_condition)
+          .pluck(:id)
           .uniq
-        @merch = @merch.where.not(id: unavailable_user_ids)
-      end
-    elsif params[:end_date].present?
-      end_date = Date.parse(params[:end_date]) rescue nil
-      if end_date
-        unavailable_user_ids = Unavailability
-          .where("date <= ?", end_date)
-          .pluck(:user_id)
-          .uniq
+
+        # Combinaison des IDs non-disponibles (Union d'ensembles)
+        unavailable_user_ids = unavailable_by_unavailability_ids | unavailable_by_work_session_ids
+
+        # Exclusion des marchands occupés
         @merch = @merch.where.not(id: unavailable_user_ids)
       end
     end
