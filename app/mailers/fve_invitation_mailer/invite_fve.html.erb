@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body style="font-family: sans-serif; color: #333;">
+
+    <h2 style="color: #FF5722;">Bienvenue sur Merchflow !</h2>
+
+    <p>Bonjour,</p>
+
+    <p>
+      L'administrateur de Merchflow vous invite à créer votre compte
+      <strong>Force de Vente Externalisée (FVE)</strong>.
+    </p>
+
+    <p>
+      Vous avez été assigné à l'agence :
+      <strong style="color: #FF5722;"><%= @agency_label %></strong>.
+    </p>
+
+    <p>
+      Grâce à ce compte, vous pourrez consulter les plannings des merchandisers
+      travaillant pour votre agence et vérifier leurs disponibilités.
+    </p>
+
+    <div style="margin: 30px 0;">
+      <a href="<%= @url %>"
+         style="background-color: #FF5722; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        Accepter l'invitation et créer mon compte
+      </a>
+    </div>
+
+    <p style="font-size: 12px; color: #777;">
+      Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :<br>
+      <%= @url %>
+    </p>
+
+    <p>À bientôt,<br>L'équipe Merchflow</p>
+
+  </body>
+</html>

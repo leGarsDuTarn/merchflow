@@ -17,11 +17,17 @@ class Admin::FveInvitationsController < ApplicationController
     @invitation = FveInvitation.new(invitation_params)
     authorize [:admin, @invitation]
 
+    # Génération manuelle du token et de l'expiration
     @invitation.token = SecureRandom.hex(20)
     @invitation.expires_at = 7.days.from_now
 
     if @invitation.save
-      redirect_to admin_fve_invitations_path, notice: 'Invitation FVE créée.'
+
+      # L'appel à la classe de mailer définie (FveInvitations::InvitationMailer)
+      FveInvitations::InvitationMailer.invite_fve(@invitation).deliver_now
+
+      redirect_to admin_fve_invitations_path,
+                  notice: "Invitation FVE créée et email envoyé à #{@invitation.email}."
     else
       render :new, status: :unprocessable_entity
     end
