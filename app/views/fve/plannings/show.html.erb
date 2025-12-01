@@ -61,7 +61,7 @@
             <% raw_sessions = @sessions_by_date[day] || [] %>
             <% sessions = raw_sessions.sort_by(&:start_time) %>
 
-            <%# 🔥 1. On cherche l'indisponibilité pour ce jour %>
+            <%# 1. On cherche l'indisponibilité pour ce jour %>
             <% unav = @unavailabilities.find { |u| u.date == day } %>
 
             <div class="calendar-cell rounded-3 position-relative
@@ -93,15 +93,32 @@
 
               <div class="sessions-container">
                 <% sessions.each do |ws| %>
+                  <%# On compare l'agence du FVE connecté avec l'agence du contrat de la mission %>
+                  <% is_my_agency = (current_user.agency == ws.contract.agency) %>
 
-                  <div class="session-item bg-white rounded-3 p-2 mb-1 border text-truncate">
-                    <div class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
-                      <%= ws.contract.agency_label %>
+                  <% if is_my_agency %>
+
+                    <div class="session-item bg-white rounded-3 p-2 mb-1 border border-orange text-truncate">
+                      <div class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
+                        <%= ws.contract.agency_label %>
+                      </div>
+                      <div class="text-muted small">
+                        <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
+                      </div>
                     </div>
-                    <div class="text-muted small">
-                      <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
+
+                  <% else %>
+
+                    <div class="session-item bg-light rounded-3 p-2 mb-1 border border-light text-truncate opacity-75">
+                      <div class="fw-bold text-secondary fst-italic" style="line-height: 1.1;">
+                        <i class="fa-solid fa-briefcase me-1 small"></i> Indisponible
+                      </div>
+                      <div class="text-muted small">
+                        Mission externe
+                      </div>
                     </div>
-                  </div>
+
+                  <% end %>
 
                 <% end %>
               </div>

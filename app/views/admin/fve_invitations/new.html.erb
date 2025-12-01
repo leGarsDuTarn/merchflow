@@ -10,12 +10,20 @@
 
       <div class="mb-3">
         <%= f.label :email, "Email du futur FVE", class: "form-label fw-semibold" %>
-        <%= f.email_field :email, class: "form-control" %>
+        <%= f.email_field :email, class: "form-control", placeholder: "ex: benjamin@edelvi.com" %>
       </div>
 
       <div class="mb-3">
-        <%= f.label :agency, "Agence", class: "form-label fw-semibold" %>
-        <%= f.text_field :agency, class: "form-control" %>
+        <%= f.label :agency, "Agence de rattachement", class: "form-label fw-semibold" %>
+
+        <%= f.select :agency,
+              Contract.agency_options,
+              { prompt: "Sélectionner une agence" },
+              class: "form-select"               
+        %>
+        <div class="form-text text-muted">
+          Le futur utilisateur ne verra que les missions de cette agence.
+        </div>
       </div>
 
       <div class="form-check mb-3">
