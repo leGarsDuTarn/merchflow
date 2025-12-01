@@ -4,34 +4,37 @@ class Fve::InvitationsController < ApplicationController
   before_action :set_invitation, only: %i[accept complete]
 
   def accept
-    authorize [:fve, :invitations], :accept?
+    authorize %i[fve invitations], :accept?
 
     if @invitation.used?
-      redirect_to root_path, alert: "Cette invitation a déjà été utilisée."
+      redirect_to root_path, alert: 'Cette invitation a déjà été utilisée.'
       return
     end
 
     if @invitation.expired?
-      redirect_to root_path, alert: "Cette invitation a expiré."
+      redirect_to root_path, alert: 'Cette invitation a expiré.'
       return
     end
 
-    @user = User.new
+    # On pré-remplit l'email pour le confort de l'utilisateur
+    @user = User.new(email: @invitation.email)
   end
 
   def complete
-    authorize [:fve, :invitations], :complete?
+    authorize %i[fve invitations], :complete?
 
     @user = User.new(user_params)
     @user.role    = :fve
     @user.premium = @invitation.premium
+    # On assigne l'agence de l'invitation au user
+    @user.agency  = @invitation.agency
 
     if @user.save
       @invitation.update(used: true)
 
       sign_in(@user)
       redirect_to fve_dashboard_path,
-                  notice: "Votre compte FVE est maintenant actif. Bienvenue !"
+                  notice: 'Votre compte FVE est maintenant actif. Bienvenue !'
     else
       render :accept, status: :unprocessable_entity
     end
@@ -43,11 +46,12 @@ class Fve::InvitationsController < ApplicationController
     @invitation = FveInvitation.find_by(token: params[:token])
 
     unless @invitation
-      redirect_to root_path, alert: "Invitation introuvable."
+      redirect_to root_path, alert: 'Invitation introuvable.'
     end
   end
 
   def user_params
+    # Pas besoin d'ajouter :agency ici, car on l'ajoute manuellement dans 'complete'
     params.require(:user).permit(
       :email,
       :password,

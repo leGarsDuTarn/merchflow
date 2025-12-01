@@ -19,6 +19,8 @@ class User < ApplicationRecord
   after_initialize :set_default_role, if: :new_record?
 
   enum :role, { merch: 0, fve: 1, admin: 2 }, default: :merch
+  # On réutilise l'enum défini dans Contract pour ne pas avoir à le réécrire
+  enum :agency, Contract.agencies, prefix: :works_for
 
   # ============================================================
   # PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM
@@ -86,6 +88,8 @@ class User < ApplicationRecord
   validates :address, presence: { message: 'Vous devez renseigner une adresse' }, unless: :fve?
   validates :zipcode, presence: { message: 'Vous devez renseigner un code postal' }, unless: :fve?
   validates :city,    presence: { message: 'Vous devez renseigner une ville' }, unless: :fve?
+  # Validation : Un FVE doit obligatoirement avoir une agence
+  validates :agency, presence: true, if: :fve?
 
   # ============================================================
   # MOT DE PASSE FORT
