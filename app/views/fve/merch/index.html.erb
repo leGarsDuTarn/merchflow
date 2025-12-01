@@ -64,7 +64,7 @@
           <%= f.check_box :has_contract_with_me,
               { class: "form-check-input", checked: params[:has_contract_with_me] == "1" },
               "1", "0" %>
-          <%= f.label :has_contract_with_me, "A déjà un contrat avec ma FVE", class: "form-check-label" %>
+          <%= f.label :has_contract_with_me, "A déjà éffectué une mission avec #{current_user.agency.capitalize}", class: "form-check-label" %>
         </div>
       </div>
 
@@ -120,7 +120,7 @@
             <!-- CONTRAT EXISTANT -->
             <% if m.contracts.where(agency: current_user.agency).exists? %>
               <p class="mb-2">
-                <span class="badge bg-success">✓ Contrat existant avec votre FVE</span>
+                <span class="badge bg-success rounded-pill">✓ Contrat existant avec votre FVE</span>
               </p>
             <% end %>
 
