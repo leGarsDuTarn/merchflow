@@ -23,8 +23,8 @@ class Admin::FveInvitationsController < ApplicationController
 
     if @invitation.save
 
-      # L'appel à la classe de mailer définie (FveInvitations::InvitationMailer)
-      FveInvitations::InvitationMailer.invite_fve(@invitation).deliver_now
+      # L'appel à la classe de mailer définie
+      FveInvitationMailer.invite_fve(@invitation).deliver_now
 
       redirect_to admin_fve_invitations_path,
                   notice: "Invitation FVE créée et email envoyé à #{@invitation.email}."
