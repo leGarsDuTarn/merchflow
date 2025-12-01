@@ -27,37 +27,41 @@
         <%= f.label :email, "Email", class: "form-label fw-semibold" %>
         <%= f.email_field :email,
               value: @invitation.email,
-              class: "form-control",
+              class: "form-control bg-light",
               readonly: true %>
       </div>
 
-      <!-- Agence pré-remplie -->
+      <!-- Agence pré-remplie (Purement visuel) -->
       <div class="mb-3">
-        <label class="form-label fw-semibold">Agence</label>
+        <label class="form-label fw-semibold">Votre Agence</label>
         <input type="text"
-               class="form-control"
-               value="<%= @invitation.agency.presence || 'Non renseignée' %>"
-               readonly>
+               class="form-control bg-light"
+               value="<%= Contract::AGENCY_LABELS[@invitation.agency] || @invitation.agency.humanize %>"
+               readonly
+               disabled>
+        <div class="form-text text-muted small">
+          Assignée par l'administrateur.
+        </div>
       </div>
 
       <!-- Prénom -->
       <div class="mb-3">
         <%= f.label :firstname, "Prénom", class: "form-label fw-semibold" %>
-        <%= f.text_field :firstname, class: "form-control", required: true %>
+        <%= f.text_field :firstname, class: "form-control", required: true, placeholder: "Ex: Jean" %>
       </div>
 
       <!-- Nom -->
       <div class="mb-3">
         <%= f.label :lastname, "Nom", class: "form-label fw-semibold" %>
-        <%= f.text_field :lastname, class: "form-control", required: true %>
+        <%= f.text_field :lastname, class: "form-control", required: true, placeholder: "Ex: Dupont" %>
       </div>
 
       <!-- Mot de passe -->
       <div class="mb-3">
         <%= f.label :password, "Mot de passe", class: "form-label fw-semibold" %>
         <%= f.password_field :password, class: "form-control", required: true %>
-        <small class="text-muted">
-          8 caractères min., 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial.
+        <small class="text-muted" style="font-size: 0.8rem;">
+          Min. 8 caractères : 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial.
         </small>
       </div>
 
