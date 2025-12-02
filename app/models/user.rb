@@ -12,7 +12,15 @@ class User < ApplicationRecord
   has_many :work_sessions, through: :contracts
   has_many :declarations, dependent: :destroy
   has_many :unavailabilities, dependent: :destroy
-
+  has_one :merch_setting, dependent: :destroy, foreign_key: :user_id
+  # Contrats où cet utilisateur agit comme le MERCH (prestataire)
+  has_many :merch_contracts, class_name: 'Contract', foreign_key: 'merch_id', dependent: :nullify
+  # Contrats où cet utilisateur agit comme le FVE (agence/facturier)
+  has_many :fve_contracts, class_name: 'Contract', foreign_key: 'fve_id', dependent: :nullify
+  # Propositions de Missions envoyées (FVE)
+  has_many :sent_mission_proposals, class_name: 'MissionProposal', foreign_key: 'fve_id', dependent: :destroy
+  # Propositions de Missions reçues (Merch)
+  has_many :received_mission_proposals, class_name: 'MissionProposal', foreign_key: 'merch_id', dependent: :destroy
   # ============================================================
   # RÔLE
   # ============================================================
@@ -29,8 +37,12 @@ class User < ApplicationRecord
   # Conditions d'accès aux informations sensibles
   def can_view_contact?(viewer)
     return false unless viewer.present?
+    # Seul un FVE peut potentiellement voir les informations
     return false unless viewer.fve?
+    # Le FVE doit être premium
     return false unless viewer.premium?
+    # L'utilisateur Merch doit avoir un MerchSetting (sécurité)
+    return false unless merch_setting.present?
 
     true
   end
@@ -38,25 +50,27 @@ class User < ApplicationRecord
   # Affichage du nom
   def displayable_name(viewer)
     # Visible seulement si : identité autorisée + viewer premium FVE
-    return username unless can_view_contact?(viewer) && allow_identity
+    # Utilisation correcte de l'association merch_setting
+    return username unless can_view_contact?(viewer) && merch_setting.allow_identity
 
     full_name
   end
 
   # Affichage de l'email
   def displayable_email(viewer)
-    return nil unless can_view_contact?(viewer) && allow_email
+    # Utilisation correcte du nom de la colonne
+    return nil unless can_view_contact?(viewer) && merch_setting.allow_contact_email
 
     email
   end
 
   # Affichage du numéro
   def displayable_phone(viewer)
-    return nil unless can_view_contact?(viewer) && allow_phone
+    # Utilisation correcte du nom de la colonne
+    return nil unless can_view_contact?(viewer) && merch_setting.allow_contact_phone
 
     phone_number
   end
-
   # ============================================================
   # VALIDATIONS
   # ============================================================

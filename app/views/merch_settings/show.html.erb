@@ -1,0 +1,121 @@
+<div class="container mt-4 mb-5">
+
+  <h1 class="fw-bold text-orange text-center mb-4">
+    Paramètres du Prestataire
+  </h1>
+
+  <p class="text-center text-muted mb-5">
+    Gérez vos préférences de contact, de missions et le partage de vos informations.
+  </p>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <%# Affichage des messages de notification (notice) %>
+      <% if notice %>
+        <div class="alert alert-info text-center rounded-4 mb-4" role="alert">
+          <%= notice %>
+        </div>
+      <% end %>
+
+      <%# Gestion des erreurs de validation du formulaire principal %>
+      <% if @merch_setting.errors.any? %>
+        <div class="alert alert-danger rounded-4 mb-4">
+          <p class="fw-bold mb-1">Erreur de validation :</p>
+          <ul>
+            <% @merch_setting.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="card shadow-sm rounded-4 p-4 mb-5">
+        <h5 class="fw-bold text-orange mb-3">Préférences de Contact</h5>
+
+        <%# Le formulaire utilise l'action update du MerchSettingsController %>
+        <%= form_with model: @merch_setting, url: merch_settings_path, method: :patch, class: "row g-3" do |f| %>
+
+          <%# Canal de contact préféré %>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Canal de contact préféré :</label>
+            <%= f.select :preferred_contact_channel,
+                         options_for_select([['Téléphone', 'phone'], ['Email', 'email'], ['Message App', 'message'], ['Aucun', 'none']], @merch_setting.preferred_contact_channel),
+                         { include_blank: 'Sélectionner une option' },
+                         class: "form-select" %>
+          </div>
+
+          <%# Accepter les propositions de missions %>
+          <div class="col-md-6 d-flex align-items-center justify-content-between pt-4">
+             <label class="fw-semibold mb-0">Accepter les propositions de missions :</label>
+            <div class="form-check form-switch m-0">
+              <%= f.check_box :accept_mission_proposals,
+                  class: "form-check-input" %>
+            </div>
+          </div>
+
+          <div class="col-12 text-end mt-4">
+            <%= f.submit 'Enregistrer les préférences', class: "btn btn-orange fw-bold px-4" %>
+          </div>
+        <% end %>
+      </div>
+
+
+      <div class="card shadow-sm rounded-4 p-4">
+
+        <h5 class="fw-bold text-orange mb-4">
+          Partage et Rôles de Missions (Clic rapide)
+        </h5>
+
+        <div class="d-flex flex-column gap-3">
+
+          <%# --- Options de Confidentialité (Partage) --- %>
+
+          <%# Répéter la structure suivante pour chaque toggle de confidentialité %>
+          <%= render 'merch_settings/toggle_item',
+            label: 'Afficher mon identité',
+            status: @merch_setting.allow_identity?,
+            path: toggle_identity_merch_settings_path %>
+
+          <%= render 'merch_settings/toggle_item',
+            label: 'Partager mon adresse',
+            status: @merch_setting.share_address?,
+            path: toggle_share_address_merch_settings_path %>
+
+          <%= render 'merch_settings/toggle_item',
+            label: 'Autoriser contact par Email',
+            status: @merch_setting.allow_contact_email?,
+            path: toggle_allow_email_merch_settings_path %>
+
+          <%= render 'merch_settings/toggle_item',
+            label: 'Autoriser contact par Téléphone',
+            status: @merch_setting.allow_contact_phone?,
+            path: toggle_allow_phone_merch_settings_path %>
+
+          <%= render 'merch_settings/toggle_item',
+            label: 'Autoriser contact par Message',
+            status: @merch_setting.allow_contact_message?,
+            path: toggle_allow_message_merch_settings_path %>
+
+          <hr class="my-2">
+
+          <%# --- Préférences de Missions --- %>
+          <p class="fw-semibold text-muted small mt-2 mb-1">Je souhaite recevoir des missions :</p>
+
+          <%= render 'merch_settings/toggle_item',
+            label: 'Merchandising',
+            status: @merch_setting.role_merch?,
+            path: toggle_role_merch_merch_settings_path %>
+
+          <%= render 'merch_settings/toggle_item',
+            label: 'Animation / Démo',
+            status: @merch_setting.role_anim?,
+            path: toggle_role_anim_merch_settings_path %>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

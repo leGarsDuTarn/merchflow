@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_01_102036) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_02_145316) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,15 +19,20 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_102036) do
     t.string "contract_type"
     t.decimal "cp_rate", precision: 4, scale: 2, default: "0.1", null: false
     t.datetime "created_at", null: false
+    t.integer "fve_id"
     t.decimal "ifm_rate", precision: 4, scale: 2, default: "0.1", null: false
     t.decimal "km_limit", precision: 5, scale: 2, default: "0.0", null: false
     t.decimal "km_rate", precision: 5, scale: 2
     t.boolean "km_unlimited", default: false, null: false
+    t.integer "merch_id"
     t.string "name", default: "", null: false
     t.decimal "night_rate", precision: 4, scale: 2, default: "0.5", null: false
     t.text "notes"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["fve_id", "merch_id"], name: "index_contracts_on_fve_id_and_merch_id", unique: true
+    t.index ["fve_id"], name: "index_contracts_on_fve_id"
+    t.index ["merch_id"], name: "index_contracts_on_merch_id"
     t.index ["user_id"], name: "index_contracts_on_user_id"
   end
 
@@ -70,6 +75,44 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_102036) do
     t.index ["work_session_id"], name: "index_kilometer_logs_on_work_session_id"
   end
 
+  create_table "merch_settings", force: :cascade do |t|
+    t.boolean "accept_mission_proposals", default: false, null: false
+    t.boolean "allow_contact_email", default: false
+    t.boolean "allow_contact_message", default: false
+    t.boolean "allow_contact_phone", default: false
+    t.boolean "allow_identity", default: false, null: false
+    t.boolean "allow_none", default: false
+    t.datetime "created_at", null: false
+    t.string "preferred_contact_channel", default: "phone"
+    t.boolean "role_anim", default: false
+    t.boolean "role_merch", default: true
+    t.boolean "share_address", default: false, null: false
+    t.boolean "share_planning", default: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_merch_settings_on_user_id", unique: true
+  end
+
+  create_table "mission_proposals", force: :cascade do |t|
+    t.string "agency", null: false
+    t.string "company", null: false
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.datetime "end_time", null: false
+    t.bigint "fve_id", null: false
+    t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88"
+    t.bigint "merch_id", null: false
+    t.text "message"
+    t.datetime "start_time", null: false
+    t.string "status", default: "pending"
+    t.string "store_address"
+    t.string "store_name"
+    t.datetime "updated_at", null: false
+    t.index ["fve_id"], name: "index_mission_proposals_on_fve_id"
+    t.index ["merch_id"], name: "index_mission_proposals_on_merch_id"
+    t.index ["status"], name: "index_mission_proposals_on_status"
+  end
+
   create_table "unavailabilities", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date", null: false
@@ -83,9 +126,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_102036) do
   create_table "users", force: :cascade do |t|
     t.string "address"
     t.string "agency"
-    t.boolean "allow_email", default: false, null: false
-    t.boolean "allow_identity", default: false, null: false
-    t.boolean "allow_phone", default: false, null: false
     t.string "city"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -121,6 +161,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_102036) do
     t.text "notes"
     t.boolean "recommended", default: false, null: false
     t.datetime "start_time", null: false
+    t.integer "status", default: 0
     t.string "store"
     t.string "store_full_address"
     t.datetime "updated_at", null: false
@@ -132,6 +173,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_102036) do
   add_foreign_key "declarations", "contracts"
   add_foreign_key "declarations", "users"
   add_foreign_key "kilometer_logs", "work_sessions"
+  add_foreign_key "merch_settings", "users"
+  add_foreign_key "mission_proposals", "users", column: "fve_id"
+  add_foreign_key "mission_proposals", "users", column: "merch_id"
   add_foreign_key "unavailabilities", "users"
   add_foreign_key "work_sessions", "contracts"
 end

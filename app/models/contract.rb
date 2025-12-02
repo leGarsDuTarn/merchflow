@@ -1,5 +1,11 @@
 class Contract < ApplicationRecord
   belongs_to :user
+  belongs_to :fve, class_name: 'User', optional: true
+  # L'utilisateur Prestataire (Merch)
+  # Le contrat est généralement lié à un seul user (user_id), mais si merch_id sert à identifier
+  # le prestataire dans le cadre d'une relation complexe (par exemple, si user_id est l'admin)
+  # l'association est bien définie.
+  belongs_to :merch, class_name: 'User', optional: true
   has_many :work_sessions, dependent: :destroy
   has_many :declarations, dependent: :destroy
 
@@ -25,8 +31,7 @@ class Contract < ApplicationRecord
     upsell: "upsell",
     idal: "idal",
     armada: "armada",
-    sellbytel: "sellbytel",
-    other_agency: "other_agency"
+    sellbytel: "sellbytel"
   }
 
   AGENCY_LABELS = {
@@ -47,8 +52,7 @@ class Contract < ApplicationRecord
     "upsell" => "Upsell",
     "idal" => "iDal",
     "armada" => "Armada",
-    "sellbytel" => "Sellbytel",
-    "other_agency" => "Autre"
+    "sellbytel" => "Sellbytel"
   }.freeze
 
   def agency_label
@@ -69,16 +73,14 @@ class Contract < ApplicationRecord
   enum :contract_type, {
     cdd: "cdd",
     cidd: "cidd",
-    interim: "interim",
-    other_contract: "other_contract"
+    interim: "interim"
   }
 
   CONTRACT_TYPE_LABELS = {
     "cdd" => "CDD",
     "cidd" => "CIDD",
     "interim" => "Intérim",
-    "cdi" => "CDI",
-    "other_contract" => "Autre"
+    "cdi" => "CDI"
   }.freeze
 
   def contract_type_label

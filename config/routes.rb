@@ -1,15 +1,38 @@
 Rails.application.routes.draw do
   devise_for :users
 
+  # ============================================================
   # HOME + DASHBOARD
+  # ============================================================
   root 'home#index'
   get 'dashboard', to: 'dashboard#index'
   patch 'dashboard/privacy', to: 'dashboard#update_privacy', as: 'dashboard_privacy'
 
   # ============================================================
+  # PARAMÈTRES PRESTATAIRE (MERCH SETTINGS)
+  # ============================================================
+  # Ressource singulière car l'utilisateur n'a qu'un seul MerchSetting
+  resource :merch_settings, path: 'settings/merch', only: %i[show update] do
+    # Routes spécifiques pour les toggles (basculement rapide par POST)
+
+    # Confidentialité (Contact)
+    post :toggle_identity
+    post :toggle_share_address
+    post :toggle_allow_email
+    post :toggle_allow_phone
+    post :toggle_allow_message
+
+    # Propositions de missions et Rôles de travail
+    post :toggle_accept_mission_proposals
+    post :toggle_role_merch
+    post :toggle_role_anim
+  end
+
+  # ============================================================
   # WORK SESSIONS (création globale + toutes les actions)
   # ============================================================
   resources :work_sessions do
+    # Logs kilométriques (imbriqués dans WorkSession)
     resources :kilometer_logs, only: %i[create destroy]
   end
 
@@ -46,6 +69,9 @@ Rails.application.routes.draw do
     # Invitations FVE
     get  'invitations/:token', to: 'invitations#accept',   as: 'accept_invitation'
     post 'invitations/:token', to: 'invitations#complete', as: 'complete_invitation'
+
+    # Proposition de missions
+    resources :mission_proposals, only: [:create]
   end
 
   # ============================================================

@@ -13,6 +13,12 @@ class WorkSession < ApplicationRecord
   validates :hourly_rate, numericality: { greater_than: 0 }
 
   # ============================================================
+  # ENUM
+  # ============================================================
+
+  enum :status, { pending: 0, accepted: 1, declined: 2 }
+
+  # ============================================================
   # SCOPES - pour le planning
   # ============================================================
 
