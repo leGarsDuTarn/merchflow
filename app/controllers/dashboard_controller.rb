@@ -1,3 +1,4 @@
+# app/controllers/dashboard_controller.rb
 class DashboardController < ApplicationController
   before_action :authenticate_user!
 
@@ -8,31 +9,42 @@ class DashboardController < ApplicationController
       redirect_to fve_dashboard_path and return
     end
 
+    # ==========================================================
+    # LOGIQUE DE DÉFAUT DU MOIS EN COURS (SI PAS DE PARAMÈTRE)
+    # ==========================================================
+    @year = (params[:year] || Date.current.year).to_i
+    @month = (params[:month] || Date.current.month).to_i
+
+    # Construction de la date cible pour les calculs (sécurisée)
+    begin
+      @target_date = Date.new(@year, @month, 1)
+    rescue ArgumentError
+      @target_date = Date.current.beginning_of_month
+      @year = @target_date.year
+      @month = @target_date.month
+    end
+
     @user = current_user
 
-    # --- Données du mois en cours ---
-    @total_hours_month      = @user.total_hours_this_month
-    @total_brut_month       = @user.total_brut_this_month
-    @net_estimated_month    = @user.net_estimated_this_month
-    @net_total_estimated_month = @user.net_total_estimated_this_month
-    @km_month               = @user.total_km_this_month
-    @km_payment_month       = @user.total_km_payment_this_month
+    # --- Variables de navigation pour la vue ---
+    @prev_month = (@target_date - 1.month).month
+    @prev_year = (@target_date - 1.month).year
+    @next_month = (@target_date + 1.month).month
+    @next_year = (@target_date + 1.month).year
 
-    # Répartition par agence (mois)
-    @by_agency = @user.total_by_agency_this_month
-  end
+    # --- Données du mois sélectionné (doivent utiliser @target_date) ---
+    @total_hours_month      = @user.total_hours_for_month(@target_date)
+    @total_brut_month       = @user.total_brut_for_month(@target_date)
+    @net_estimated_month    = @user.net_estimated_for_month(@target_date)
+    @net_total_estimated_month = @user.net_total_estimated_for_month(@target_date)
+    @km_month               = @user.total_km_for_month(@target_date)
+    @km_payment_month       = @user.total_km_payment_for_month(@target_date)
 
-  def update_privacy
-    if current_user.update(privacy_params)
-      head :ok # Statut 200 - succès
-    else
-      head :unprocessable_entity # Statut 422 - erreur
-    end
-  end
+    # Propositions de mission en attente (inchangées car indépendantes du mois)
+    @pending_proposals = @user.received_mission_proposals
+                              .where(status: :pending)
+                              .order(date: :asc)
 
-  private
-
-  def privacy_params
-    params.require(:user).permit(:allow_email, :allow_phone, :allow_identity)
+    @by_agency = @user.total_by_agency_for_month(@target_date) || []
   end
 end

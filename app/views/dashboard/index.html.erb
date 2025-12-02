@@ -1,94 +1,175 @@
 <div class="container mt-4 mb-5">
 
-  <!-- TITRE -->
-  <h1 class="fw-bold text-orange text-center mb-4">
-    Tableau de bord
-  </h1>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <%# Bouton Précédent %>
+    <%= link_to dashboard_path(year: @prev_year, month: @prev_month),
+                class: "btn btn-orange-outline rounded-3" do %>
+      <i class="fa-solid fa-chevron-left"></i>
+    <% end %>
+
+    <h3 class="fw-bold text-orange text-center m-0 text-capitalize">
+      <%# Affiche le mois sélectionné %>
+      <%= I18n.l @target_date, format: "%B %Y" %>
+    </h3>
+
+    <%# Bouton Suivant (Désactivé si le mois suivant est après le mois en cours) %>
+    <% is_next_month_in_future = (@target_date + 1.month).beginning_of_month > Date.current.beginning_of_month %>
+
+    <%= link_to dashboard_path(year: @next_year, month: @next_month),
+                class: "btn btn-orange-outline rounded-3 #{'disabled' if is_next_month_in_future}" do %>
+      <i class="fa-solid fa-chevron-right"></i>
+    <% end %>
+
+  </div>
 
   <p class="text-center text-muted mb-5">
     Votre activité du mois en un coup d'œil.
   </p>
 
-  <!-- LIGNE 1 : Heures / Brut / KM -->
+
   <div class="row g-4">
 
-    <!-- Heures -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Heures</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= current_user.total_hours_this_month %> h
+          <%= @total_hours_month.to_i %> h
         </p>
       </div>
     </div>
 
-    <!-- Brut -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Brut</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(current_user.total_brut_this_month, unit: "€", format: "%n %u") %>
+          <%= number_to_currency(@total_brut_month, unit: "€", format: "%n %u") %>
         </p>
       </div>
     </div>
 
-    <!-- Kilomètres -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Kilomètres</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= current_user.total_km_this_month.to_i %> km
+          <%= @km_month.to_i %> km
         </p>
       </div>
     </div>
 
   </div>
 
-  <!-- LIGNE 2 : Frais km / Net estimé / Net total estimé -->
   <div class="row g-4 mt-4">
 
-    <!-- Frais km remboursés -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Frais km remboursés</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(current_user.total_km_payment_this_month, unit: "€", format: "%n %u") %>
+          <%= number_to_currency(@km_payment_month, unit: "€", format: "%n %u") %>
         </p>
       </div>
     </div>
 
-    <!-- Net estimé (ORANGE) -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Net estimé</h5>
         <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(current_user.net_estimated_this_month, unit: "€", format: "%n %u") %>
+          <%= number_to_currency(@net_estimated_month, unit: "€", format: "%n %u") %>
         </p>
       </div>
     </div>
 
-    <!-- Net total estimé (ORANGE) -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Net total estimé (km inclus)</h5>
         <p class="display-6 fw-bold mt-2 text-orange">
-          <%= number_to_currency(current_user.net_total_estimated_this_month, unit: "€", format: "%n %u") %>
+          <%= number_to_currency(@net_total_estimated_month, unit: "€", format: "%n %u") %>
         </p>
       </div>
     </div>
 
   </div>
 
-  <!-- LIGNE 3 : Répartition par agence -->
+  <%# ========================================================== %>
+  <%# NOUVEAU : BLOC PROPOSITIONS DE MISSIONS EN ATTENTE %>
+  <%# ========================================================== %>
+
+  <% if @pending_proposals.any? %>
+    <div class="card shadow-lg border-warning rounded-4 mt-5">
+      <div class="card-header bg-warning text-dark fw-bold rounded-top-4 py-3">
+        <h4 class="mb-0">
+          <i class="fa-solid fa-bell me-2"></i>
+          Nouvelles Propositions de Mission (<%= @pending_proposals.count %>)
+        </h4>
+      </div>
+      <div class="list-group list-group-flush">
+
+        <% @pending_proposals.each do |proposal| %>
+          <%= tag.div class: "list-group-item p-4" do %>
+            <div class="d-flex w-100 justify-content-between align-items-center">
+              <h5 class="mb-1 fw-bold text-orange"><%= proposal.company %></h5>
+              <small class="text-muted fst-italic">Proposé il y a <%= time_ago_in_words(proposal.created_at) %></small>
+            </div>
+
+            <hr class="my-2">
+
+            <div class="row small">
+              <div class="col-md-6 mb-2">
+                <strong><i class="fa-solid fa-calendar-day me-1"></i> Date :</strong>
+                <%= I18n.l proposal.date, format: :long %>
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong><i class="fa-solid fa-clock me-1"></i> Heures :</strong>
+                <%= proposal.start_time.strftime('%H:%M') %> – <%= proposal.end_time.strftime('%H:%M') %>
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong><i class="fa-solid fa-euro-sign me-1"></i> Taux :</strong>
+                <%= number_to_currency(proposal.hourly_rate) %>/h
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong><i class="fa-solid fa-location-dot me-1"></i> Lieu :</strong>
+                <%= proposal.store_name %> (<%= proposal.store_address.split(',').first %>)
+              </div>
+            </div>
+
+            <% if proposal.message.present? %>
+              <div class="alert alert-light border-start border-3 border-warning mt-3 mb-0 py-2 px-3 small fst-italic text-dark">
+                **Message de l'Agence :** "<%= proposal.message %>"
+              </div>
+            <% end %>
+
+            <%# BOUTONS D'ACTION %>
+            <div class="mt-4 text-end">
+
+              <%# Lien vers l'action 'update' avec le statut 'accepted' %>
+              <%= link_to "✅ Accepter la Mission",
+                    merch_mission_proposal_path(proposal, mission_proposal: { status: :accepted }),
+                    data: { turbo_method: :patch, confirm: "Confirmez-vous l'acceptation de cette mission?" },
+                    class: "btn btn-success fw-bold me-2" %>
+
+              <%# Lien vers l'action 'update' avec le statut 'declined' %>
+              <%= link_to "❌ Refuser",
+                    merch_mission_proposal_path(proposal, mission_proposal: { status: :declined }),
+                    data: { turbo_method: :patch, confirm: "Confirmez-vous le refus de cette mission?" },
+                    class: "btn btn-outline-danger" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+
   <div class="row g-4 mt-4">
     <div class="col-12">
       <div class="card shadow-sm p-4 rounded-4">
 
         <h5 class="fw-bold text-orange mb-3 text-center">
-          Répartition par agence (mois)
+          Répartition par agence (<%= I18n.l @target_date, format: "%B" %>)
         </h5>
 
-        <% if current_user.total_by_agency_this_month.any? %>
+        <%# Utilise la variable pré-calculée @by_agency %>
+        <% if @by_agency.any? %>
           <div class="table-responsive">
             <table class="table table-borderless align-middle mb-0">
               <thead>
@@ -100,7 +181,7 @@
                 </tr>
               </thead>
               <tbody>
-                <% current_user.total_by_agency_this_month.each do |stats| %>
+                <% @by_agency.each do |stats| %>
                   <tr>
                     <td><strong><%= stats[:agency] %></strong></td>
                     <td><%= stats[:hours] %> h</td>
@@ -121,7 +202,6 @@
     </div>
   </div>
 
-  <!-- BOUTONS ACTION -->
   <div class="text-center mt-5">
 
     <%= link_to "Créer un contrat",

@@ -195,6 +195,15 @@ class User < ApplicationRecord
     address.present? && zipcode.present? && city.present?
   end
 
+  # Méthode utilitaire pour filtrer les WorkSessions par mois
+  def work_sessions_for_month(target_date)
+    start_date = target_date.beginning_of_month
+    end_date = target_date.end_of_month
+
+    # Utilise l'association work_sessions (qui utilise through: :contracts) et filtre par date
+    work_sessions.where(date: start_date..end_date)
+  end
+
   # ============================================================
   # DASHBOARD — TOTAUX GLOBAUX
   # ============================================================
@@ -225,65 +234,61 @@ class User < ApplicationRecord
   end
 
   # ============================================================
-  # DASHBOARD — TOTAUX DU MOIS EN COURS
+  # DASHBOARD — TOTAUX MENSUELS (CORRIGÉS)
   # ============================================================
 
-  # Sessions du mois
-  def sessions_this_month
-    WorkSession
-      .joins(:contract)
-      .where(contracts: { user_id: id })
-      .current_month
-  end
-
   # Heures du mois
-  def total_hours_this_month
-    (sessions_this_month.sum(&:duration_minutes) / 60.0).round(2)
+  def total_hours_for_month(target_date)
+    (work_sessions_for_month(target_date).sum(&:duration_minutes) / 60.0).round(2)
   end
 
   # Brut du mois
-  def total_brut_this_month
-    sessions_this_month.sum(&:brut)
+  def total_brut_for_month(target_date)
+    work_sessions_for_month(target_date).sum(&:brut)
   end
 
   # IFM + CP du mois
-  def total_ifm_cp_this_month
-    sessions_this_month.sum { |ws| ws.contract.ifm(ws.brut) + ws.contract.cp(ws.brut) }
+  def total_ifm_cp_for_month(target_date)
+    work_sessions_for_month(target_date).sum { |ws| ws.contract.ifm(ws.brut) + ws.contract.cp(ws.brut) }
   end
 
   # KM du mois
-  def total_km_this_month
-    sessions_this_month.sum(&:effective_km)
+  def total_km_for_month(target_date)
+    work_sessions_for_month(target_date).sum(&:effective_km)
   end
 
   # Frais km remboursés du mois
-  def total_km_payment_this_month
-    sessions_this_month.sum(&:km_payment_final)
+  def total_km_payment_for_month(target_date)
+    work_sessions_for_month(target_date).sum(&:km_payment_final)
   end
 
   # Net estimé hors km
-  def net_estimated_this_month
-    (total_brut_this_month * 0.78).round(2)
+  def net_estimated_for_month(target_date)
+    (total_brut_for_month(target_date) * 0.78).round(2)
   end
 
   # Net total estimé avec km
-  def net_total_estimated_this_month
-    (net_estimated_this_month + total_km_payment_this_month).round(2)
+  def net_total_estimated_for_month(target_date)
+    (net_estimated_for_month(target_date) + total_km_payment_for_month(target_date)).round(2)
   end
 
   # Répartition par agence (mois)
-  def total_by_agency_this_month
-    sessions_this_month
-      .includes(:contract)
-      .group_by { |ws| ws.contract }
-      .map do |contract, sessions|
-        {
-          agency: contract.agency_label,
-          brut: sessions.sum(&:brut),
-          hours: (sessions.sum(&:duration_minutes) / 60.0).round(2),
-          km: sessions.sum(&:effective_km)
-        }
-      end
+  def total_by_agency_for_month(target_date)
+    sessions = work_sessions_for_month(target_date)
+
+    # Si aucune session n'est trouvée, retourner un Array vide.
+    return [] unless sessions.any?
+
+    sessions.includes(:contract)
+            .group_by(&:contract)
+            .map do |contract, contract_sessions|
+              {
+                agency: contract.agency_label,
+                brut: contract_sessions.sum(&:brut), # Utilisation de contract_sessions
+                hours: (contract_sessions.sum(&:duration_minutes) / 60.0).round(2), # Utilisation de contract_sessions
+                km: contract_sessions.sum(&:effective_km)
+              }
+            end
   end
 
   private

@@ -45,22 +45,18 @@ class WorkSession < ApplicationRecord
   scope :search, ->(query) {
     return all if query.blank?
 
-  where(
-    'company ILIKE :q OR store ILIKE :q OR date::text ILIKE :q',
-    q: "%#{query}%"
-  )
+    where(
+      'company ILIKE :q OR store ILIKE :q OR date::text ILIKE :q',
+      q: "%#{query}%"
+    )
   }
 
   # Vérifie si la période proposée chevauche une session existante
   scope :overlapping, ->(start_time, end_time) {
-    # La condition de chevauchement standard est :
-    # (Début A < Fin B) AND (Fin A > Début B)
-    # Dans notre cas, A est la WorkSession existante, B est la nouvelle période (start_time/end_time)
     where("
       (work_sessions.start_time < :end_time) AND (work_sessions.end_time > :start_time)
     ", start_time: start_time, end_time: end_time)
   }
-
 
   # ============================================================
   # SCOPES - pour le dashboard
@@ -69,6 +65,33 @@ class WorkSession < ApplicationRecord
   scope :current_month, -> {
     where(date: Date.current.beginning_of_month..Date.current.end_of_month)
   }
+
+  # ============================================================
+  # CLASSE METHOD (NOUVEAU)
+  # ============================================================
+  def self.create_from_proposal(proposal)
+    # Trouver le contrat Merch-Agence le plus récent pour l'agence donnée
+    contract = proposal.merch.contracts
+                       .where(agency: proposal.agency)
+                       .order(created_at: :desc)
+                       .first
+
+    return unless contract
+
+    WorkSession.create!(
+      contract: contract,
+      date: proposal.date,
+      start_time: proposal.start_time,
+      end_time: proposal.end_time,
+      hourly_rate: proposal.hourly_rate,
+      effective_km: 0.0,
+      store: proposal.store_name,
+      company: proposal.company,
+      recommended: false,
+      status: :accepted
+    )
+  end
+
 
   # ============================================================
   # CONSTANTES
@@ -146,7 +169,7 @@ class WorkSession < ApplicationRecord
       return
     end
 
-    # 3) Fallback si rien du tout (l’API fera une MAJ après création)
+    # 3) Fallback si rien du tout
     self.effective_km = 0.0
   end
 
@@ -182,19 +205,18 @@ class WorkSession < ApplicationRecord
   end
 
   def net_total
-    # Assurez-vous que amount_ifm et amount_cp sont arrondis
+    # Récupérer les montants bruts des compléments
     amount_ifm = contract.ifm(brut).round(2)
     amount_cp  = contract.cp(brut).round(2)
 
     # On passe 'effective_km' pour calculer les frais kilométriques
     amount_km  = contract.km_payment(effective_km).round(2)
 
-    # Net = montant × 0.78
+    # Calculer le net des compléments (Net = montant × 0.78)
     net_ifm = (amount_ifm * 0.78).round(2)
     net_cp  = (amount_cp  * 0.78).round(2)
 
-    # On additionne tout
-    # S'assurer que 'net' est également arrondi si ce n'est pas déjà le cas
+    # On additionne tout (Net Salaire + Net IFM + Net CP + KM)
     (net.round(2) + net_ifm + net_cp + amount_km).round(2)
   end
 

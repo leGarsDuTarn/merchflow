@@ -1,31 +1,30 @@
+# config/routes.rb
 Rails.application.routes.draw do
   devise_for :users
-
+  
   resources :users, only: [:show]
 
   # ============================================================
   # HOME + DASHBOARD
   # ============================================================
   root 'home#index'
-  get 'dashboard', to: 'dashboard#index'
-  patch 'dashboard/privacy', to: 'dashboard#update_privacy', as: 'dashboard_privacy'
+  # Ajout des paramètres optionnels pour la navigation historique (Merch Dashboard)
+  get 'dashboard(/:year(/:month))', to: 'dashboard#index', as: :dashboard, constraints: { year: /\d{4}/, month: /\d{1,2}/ }
+
+  # NOTE: La route dashboard/privacy était obsolète et n'est plus nécessaire.
+  # patch 'dashboard/privacy', to: 'dashboard#update_privacy', as: 'dashboard_privacy'
 
   # ============================================================
   # PARAMÈTRES PRESTATAIRE (MERCH SETTINGS)
   # ============================================================
-  # Ressource singulière car l'utilisateur n'a qu'un seul MerchSetting
   resource :merch_settings, path: 'settings/merch', only: %i[show update] do
     # Routes spécifiques pour les toggles (basculement rapide par POST)
-
-    # Confidentialité (Contact)
     post :toggle_identity
     post :toggle_share_address
     post :toggle_share_planning
     post :toggle_allow_email
     post :toggle_allow_phone
     post :toggle_allow_message
-
-    # Propositions de missions et Rôles de travail
     post :toggle_accept_mission_proposals
     post :toggle_role_merch
     post :toggle_role_anim
@@ -35,7 +34,6 @@ Rails.application.routes.draw do
   # WORK SESSIONS (création globale + toutes les actions)
   # ============================================================
   resources :work_sessions do
-    # Logs kilométriques (imbriqués dans WorkSession)
     resources :kilometer_logs, only: %i[create destroy]
   end
 
@@ -43,8 +41,6 @@ Rails.application.routes.draw do
   # CONTRATS + WORKSESSIONS imbriqués (shallow: true)
   # ============================================================
   resources :contracts do
-    # On ne redéfinit que index, new, create pour les routes imbriquées
-    # Les autres actions (show, edit, update, destroy) sont gérées par la route globale
     resources :work_sessions, only: %i[index new create], shallow: true
     resources :declarations, only: %i[index create]
   end
@@ -59,7 +55,15 @@ Rails.application.routes.draw do
   # ============================================================
   get 'france_travail', to: 'declarations#france_travail'
   get 'km/calc', to: 'km_api#calculate'
-  get 'planning', to: 'planning#index'
+  get 'planning', to: 'planning#index' # Planning côté Merch
+
+  # ============================================================
+  # MERCH ROUTES (Actions du Prestataire)
+  # ============================================================
+  # Géré par Merch::MissionProposalsController (doit être créé)
+  scope module: :merch do
+    resources :mission_proposals, only: [:update], as: :merch_mission_proposals
+  end
 
   # ============================================================
   # FVE (force de vente externalisée)
@@ -73,7 +77,7 @@ Rails.application.routes.draw do
     get  'invitations/:token', to: 'invitations#accept',   as: 'accept_invitation'
     post 'invitations/:token', to: 'invitations#complete', as: 'complete_invitation'
 
-    # Proposition de missions
+    # Proposition de missions (Création par le FVE)
     resources :mission_proposals, only: [:create]
   end
 
