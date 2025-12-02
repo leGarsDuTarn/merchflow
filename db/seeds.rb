@@ -3,13 +3,19 @@
 # ============================================================
 puts "🔥 Suppression des données merchandisers..."
 
-# Supprimer dans l'ordre pour respecter les dépendances
+# 1. Supprimer les WorkSessions (dépendance)
 WorkSession.joins(contract: :user).where(users: { role: :merch }).delete_all
 puts "  ✓ Missions supprimées"
 
+# 2. Supprimer les MerchSettings (dépendance)
+MerchSetting.joins(:user).where(users: { role: :merch }).delete_all
+puts "  ✓ Paramètres de confidentialité supprimés"
+
+# 3. Supprimer les Contracts (dépendance)
 Contract.joins(:user).where(users: { role: :merch }).delete_all
 puts "  ✓ Contrats supprimés"
 
+# 4. Supprimer les Merchandisers
 User.where(role: :merch).delete_all
 puts "  ✓ Merchandisers supprimés"
 
@@ -29,6 +35,13 @@ CITIES_FR = [
 ].freeze
 
 AGENCIES = %w[actiale rma edelvi].freeze
+CONTACT_CHANNELS = %w[phone email message none].freeze
+STORE_NAMES = ['Carrefour', 'Auchan', 'Leclerc', 'Casino', 'Intermarché'].freeze
+
+# NOUVEAU : Liste des entreprises (clients) pour les missions
+CLIENT_COMPANIES = [
+  "Panzani", "PepsiCo", "Carambar", "Coca Cola", "Bonduelle", "Barilla"
+].freeze
 
 FIRSTNAMES = %w[
   Lucas Hugo Adam Léo Tom Nathan Louis Enzo Nolan Raphaël
@@ -59,7 +72,6 @@ nb_users.times do |i|
   lastname = LASTNAMES.sample
   city, zipcode = CITIES_FR.sample
 
-  # Nettoyer les accents pour l'email
   email_firstname = firstname.downcase.unicode_normalize(:nfkd).gsub(/[^\x00-\x7F]/, '')
   email_lastname = lastname.downcase.unicode_normalize(:nfkd).gsub(/[^\x00-\x7F]/, '')
 
@@ -74,18 +86,39 @@ nb_users.times do |i|
       zipcode: zipcode,
       city: city,
       phone_number: generate_phone,
-      role: :merch,
-
-      # Confidentialité : mix réaliste
-      allow_email: [true, false].sample,
-      allow_phone: [true, false].sample,
-      allow_identity: [true, true, false].sample # 2/3 acceptent
+      role: :merch
     )
   rescue ActiveRecord::RecordInvalid => e
     puts "\n❌ ERREUR lors de la création de l'utilisateur #{firstname} #{lastname}:"
     puts e.record.errors.full_messages.join(", ")
     raise
   end
+
+  # ============================================================
+  # ⚙️ CRÉATION DES PARAMÈTRES DE CONFIDENTIALITÉ (MerchSetting)
+  # ============================================================
+  role_merch = [true, false].sample
+  role_anim = [true, false].sample
+
+  if !role_merch && !role_anim
+    role_merch = true
+  end
+
+  share_planning_status = (rand(1..100) > 2)
+
+  MerchSetting.create!(
+    user: user,
+    allow_identity: [true, true, false].sample,
+    share_address: [true, false].sample,
+    share_planning: share_planning_status,
+    allow_contact_email: [true, true, false].sample,
+    allow_contact_phone: [true, false].sample,
+    allow_contact_message: [true, false].sample,
+    preferred_contact_channel: CONTACT_CHANNELS.sample,
+    accept_mission_proposals: true,
+    role_merch: role_merch,
+    role_anim: role_anim
+  )
 
   print "." if (i + 1) % 10 == 0
 
@@ -106,7 +139,7 @@ nb_users.times do |i|
       cp_rate: 0.10,
       km_rate: [0.29, 0.35].sample,
       km_limit: [40, 50, 60].sample,
-      km_unlimited: [true, false, false].sample # 1/3 illimité
+      km_unlimited: [true, false, false].sample
     )
 
     # ============================================================
@@ -114,14 +147,9 @@ nb_users.times do |i|
     # ============================================================
 
     rand(8..15).times do
-      # Date aléatoire dans les 90 derniers jours
       date = rand(90.days.ago.to_date..Date.today)
-
-      # Heures de début réalistes
       start_hour = [7, 8, 9, 13, 14].sample
       start_minute = [0, 15, 30].sample
-
-      # Durée réaliste (3h à 7h)
       duration_hours = rand(3..7)
 
       start_time = Time.zone.parse("#{date} #{start_hour}:#{start_minute}")
@@ -134,8 +162,8 @@ nb_users.times do |i|
         end_time: end_time,
         hourly_rate: [12.50, 13.00, 13.50, 14.00, 15.00].sample,
         effective_km: rand(5..80),
-        store: "Magasin #{['Carrefour', 'Auchan', 'Leclerc', 'Casino', 'Intermarché'].sample}",
-        company: agency.capitalize,
+        store: "Magasin #{STORE_NAMES.sample}",
+        company: CLIENT_COMPANIES.sample, # <-- UTILISATION DE LA NOUVELLE LISTE DE MARQUES
         recommended: [true, false].sample,
         notes: ["Mission standard", "Mise en rayon", "Inventaire", nil].sample
       )
@@ -150,6 +178,7 @@ end
 puts "\n\n✅ SEED TERMINÉ AVEC SUCCÈS !\n"
 puts "=" * 50
 puts "👥 Merchandisers créés : #{User.merch.count}"
+puts "⚙️ Paramètres de Merch créés : #{MerchSetting.count}"
 puts "📄 Contrats créés : #{Contract.count}"
 puts "📅 Missions créées : #{WorkSession.count}"
 puts "💼 FVE existants : #{User.fve.count}"
