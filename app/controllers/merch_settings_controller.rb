@@ -30,13 +30,19 @@ class MerchSettingsController < ApplicationController
   # Visibilité de l'identité
   def toggle_identity
     @merch_setting.toggle_identity!
-    redirect_to merch_settings_path, notice: 'Visibilité de l\'identité basculée.'
+    redirect_to merch_settings_path, notice: "Visibilité de l'identité basculée."
   end
 
   # Partage de l'adresse
   def toggle_share_address
     @merch_setting.toggle_share_address!
-    redirect_to merch_settings_path, notice: 'Partage de l\'adresse basculé.'
+    redirect_to merch_settings_path, notice: "Partage de l'adresse basculé."
+  end
+
+  # Partage du planning
+  def toggle_share_planning
+    @merch_setting.toggle_share_planning!
+    redirect_to merch_settings_path, notice: 'Partage du planning basculé.'
   end
 
   # Autorisation de contact par email

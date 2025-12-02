@@ -1,7 +1,7 @@
 <div class="container mt-4 mb-5">
 
   <h1 class="fw-bold text-orange text-center mb-4">
-    Paramètres du Prestataire
+    Paramètres du Confidentialité
   </h1>
 
   <p class="text-center text-muted mb-5">
@@ -81,6 +81,11 @@
             label: 'Partager mon adresse',
             status: @merch_setting.share_address?,
             path: toggle_share_address_merch_settings_path %>
+
+            <%= render 'merch_settings/toggle_item',
+            label: 'Partager mon planning',
+            status: @merch_setting.share_planning?,
+            path: toggle_share_planning_merch_settings_path %>
 
           <%= render 'merch_settings/toggle_item',
             label: 'Autoriser contact par Email',

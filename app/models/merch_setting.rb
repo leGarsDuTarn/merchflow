@@ -44,6 +44,10 @@ class MerchSetting < ApplicationRecord
     toggle!(:share_address)
   end
 
+  def toggle_share_planning!
+    toggle!(:share_planning)
+  end
+
   # Autorisation de contact par email
   def toggle_allow_email!
     toggle!(:allow_contact_email)

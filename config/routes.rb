@@ -18,6 +18,7 @@ Rails.application.routes.draw do
     # Confidentialité (Contact)
     post :toggle_identity
     post :toggle_share_address
+    post :toggle_share_planning
     post :toggle_allow_email
     post :toggle_allow_phone
     post :toggle_allow_message
