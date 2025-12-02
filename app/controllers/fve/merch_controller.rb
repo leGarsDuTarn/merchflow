@@ -32,10 +32,12 @@ class Fve::MerchController < ApplicationController
                      .distinct
     end
 
-    # CRITIQUE : FILTRE : A déjà un contrat avec ma FVE (Utilisation de l'association réflexive)
+    # CRITIQUE : FILTRE : A déjà un contrat avec ma FVE (CORRIGÉ PAR NOM D'AGENCE)
     if params[:has_contract_with_me] == "1"
-      @merch = @merch.joins(:fve_contracts)
-                     .where(fve_contracts: { fve_id: current_user.id })
+      # Correction : On utilise l'association standard :contracts et on filtre par le nom
+      # de l'agence de l'utilisateur FVE connecté (ex: 'actiale').
+      @merch = @merch.joins(:contracts)
+                     .where(contracts: { agency: current_user.agency })
                      .distinct
     end
 
