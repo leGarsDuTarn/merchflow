@@ -7,7 +7,8 @@ class Fve::MerchController < ApplicationController
     authorize %i[fve merch]
 
     # Base : tous les merch avec eager loading pour optimisation
-    @merch = User.merch.includes(:contracts, :work_sessions, :unavailabilities)
+    # CRITIQUE : Ajout de :merch_setting pour les filtres de confidentialité (évite N+1)
+    @merch = User.merch.includes(:contracts, :work_sessions, :unavailabilities, :merch_setting)
 
     # FILTRE : Ville
     if params[:city].present?
@@ -31,29 +32,46 @@ class Fve::MerchController < ApplicationController
                      .distinct
     end
 
-    # FILTRE : A déjà un contrat avec ma FVE
+    # CRITIQUE : FILTRE : A déjà un contrat avec ma FVE (Utilisation de l'association réflexive)
     if params[:has_contract_with_me] == "1"
-      @merch = @merch.joins(:contracts)
-                     .where(contracts: { agency: current_user.agency })
+      @merch = @merch.joins(:fve_contracts)
+                     .where(fve_contracts: { fve_id: current_user.id })
                      .distinct
     end
 
-    # FILTRE : Coordonnées visibles uniquement (premium FVE requis)
+    # CRITIQUE : FILTRE : Coordonnées visibles uniquement (premium FVE requis)
+    # Cible la table merch_settings et non plus la table users
     if params[:only_with_contact] == "1" && current_user.premium?
-      @merch = @merch.where("allow_email = ? OR allow_phone = ? OR allow_identity = ?",
-                            true, true, true)
+      @merch = @merch.joins(:merch_setting)
+                     .where(merch_settings: {
+                       allow_contact_email: true
+                     }).or(@merch.where(merch_settings: {
+                       allow_contact_phone: true
+                     })).or(@merch.where(merch_settings: {
+                       allow_identity: true
+                     }))
+                     .distinct
+    end
+
+    # NOUVEAU FILTRE : RÔLE MERCHANDISING
+    if params[:prefers_merch] == "1"
+      @merch = @merch.joins(:merch_setting)
+                     .where(merch_settings: { role_merch: true })
+    end
+
+    # NOUVEAU FILTRE : RÔLE ANIMATION
+    if params[:prefers_anim] == "1"
+      @merch = @merch.joins(:merch_setting)
+                     .where(merch_settings: { role_anim: true })
     end
 
     # ----------------------------------------------------------------------
     # FILTRE : Disponibilité sur une période
-    # Inclut l'indisponibilité personnelle (Unavailability) ET les missions planifiées (WorkSession)
     # ----------------------------------------------------------------------
-
     if params[:start_date].present? || params[:end_date].present?
       start_date = params[:start_date].present? ? (Date.parse(params[:start_date]) rescue nil) : nil
       end_date   = params[:end_date].present? ? (Date.parse(params[:end_date]) rescue nil) : nil
 
-      # On définit la condition SQL pour les dates
       date_condition_sql = nil
 
       if start_date && end_date
@@ -68,7 +86,6 @@ class Fve::MerchController < ApplicationController
       end
 
       if date_condition_sql.present?
-
         # 1. IDs indisponibles par Indisponibilité personnelle
         unavailable_by_unavailability_ids = Unavailability
           .where(date_condition_sql)
@@ -97,13 +114,18 @@ class Fve::MerchController < ApplicationController
     @merch_user = User.merch.find(params[:id])
     authorize [:fve, @merch_user]
 
+    # dans les méthodes displayable_... (si l'utilisateur ne l'a jamais créé).
+    @merch_user.create_merch_setting! unless @merch_user.merch_setting.present?
+
     # ========== CONFIDENTIALITÉ : DONNÉES AFFICHABLES ==========
+    # Ces méthodes utilisent la logique de MerchSetting
     @name  = @merch_user.displayable_name(current_user)
     @email = @merch_user.displayable_email(current_user)
     @phone = @merch_user.displayable_phone(current_user)
 
     # ========== INFOS DÉTAILLÉES POUR LA VUE SHOW ==========
-    @contracts_with_my_agency = @merch_user.contracts.where(agency: current_user.agency)
+    # Utilisation de l'association réflexive fve_contracts
+    @contracts_with_my_agency = @merch_user.fve_contracts.where(fve_id: current_user.id)
     @work_sessions = @merch_user.work_sessions.includes(:contract).order(date: :desc).limit(20)
     @companies_worked_with = @merch_user.work_sessions.pluck(:company).compact.uniq.sort
     @unavailabilities = @merch_user.unavailabilities.where("date >= ?", Date.today).order(:date)

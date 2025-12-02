@@ -1,15 +1,12 @@
 <div class="container mt-4 mb-5">
 
-  <!-- TITRE -->
   <h1 class="fw-bold text-orange text-center mb-4">
     Recherche de Merchandisers
   </h1>
 
-  <!-- FORMULAIRE DE RECHERCHE AVANCÉE -->
   <div class="card shadow-sm rounded-4 p-4 mb-5">
     <%= form_with url: fve_merch_index_path, method: :get, local: true, class: "row g-3" do |f| %>
 
-      <!-- LOCALISATION -->
       <div class="col-md-6 col-lg-4">
         <%= f.label :city, "Ville", class: "form-label fw-semibold" %>
         <%= f.text_field :city,
@@ -34,7 +31,6 @@
             placeholder: "Ex: 75, 69..." %>
       </div>
 
-      <!-- DISPONIBILITÉ -->
       <div class="col-md-6 col-lg-4">
         <%= f.label :start_date, "Disponible du", class: "form-label fw-semibold" %>
         <%= f.date_field :start_date,
@@ -49,7 +45,6 @@
             class: "form-control" %>
       </div>
 
-      <!-- EXPÉRIENCE -->
       <div class="col-md-6 col-lg-4">
         <%= f.label :company, "A travaillé pour", class: "form-label fw-semibold" %>
         <%= f.text_field :company,
@@ -58,18 +53,39 @@
             placeholder: "Nom de l'entreprise" %>
       </div>
 
-      <!-- FILTRES SUPPLÉMENTAIRES -->
+      <%# NOUVEAU BLOC : PRÉFÉRENCES DE RÔLES %>
+      <div class="col-12"><h6 class="mt-3">Préférences de Missions</h6></div>
+
       <div class="col-md-6 col-lg-4">
-        <div class="form-check mt-4">
-          <%= f.check_box :has_contract_with_me,
-              { class: "form-check-input", checked: params[:has_contract_with_me] == "1" },
+        <div class="form-check">
+          <%= f.check_box :prefers_merch,
+              { class: "form-check-input", checked: params[:prefers_merch] == "1" },
               "1", "0" %>
-          <%= f.label :has_contract_with_me, "A déjà éffectué une mission avec #{current_user.agency.capitalize}", class: "form-check-label" %>
+          <%= f.label :prefers_merch, "Recherche missions Merchandising", class: "form-check-label" %>
         </div>
       </div>
 
       <div class="col-md-6 col-lg-4">
-        <div class="form-check mt-4">
+        <div class="form-check">
+          <%= f.check_box :prefers_anim,
+              { class: "form-check-input", checked: params[:prefers_anim] == "1" },
+              "1", "0" %>
+          <%= f.label :prefers_anim, "Recherche missions Animation / Démo", class: "form-check-label" %>
+        </div>
+      </div>
+      <%# FIN NOUVEAU BLOC %>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="form-check mt-3">
+          <%= f.check_box :has_contract_with_me,
+              { class: "form-check-input", checked: params[:has_contract_with_me] == "1" },
+              "1", "0" %>
+          <%= f.label :has_contract_with_me, "A déjà un contrat avec votre FVE", class: "form-check-label" %>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="form-check mt-3">
           <%= f.check_box :only_with_contact,
               { class: "form-check-input", checked: params[:only_with_contact] == "1" },
               "1", "0" %>
@@ -77,7 +93,6 @@
         </div>
       </div>
 
-      <!-- BOUTONS -->
       <div class="col-12 d-flex gap-2 justify-content-end mt-4">
         <%= f.submit "Rechercher", class: "btn btn-orange fw-semibold px-4" %>
         <%= link_to "Réinitialiser", fve_merch_index_path, class: "btn btn-green" %>
@@ -86,8 +101,7 @@
     <% end %>
   </div>
 
-  <!-- RÉSULTATS -->
-  <% search_params = %w[city zipcode department start_date end_date company has_contract_with_me only_with_contact] %>
+  <% search_params = %w[city zipcode department start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim] %>
   <% has_search = search_params.any? { |key| params[key].present? } %>
 
   <% if has_search %>
@@ -103,12 +117,19 @@
         <div class="col-md-6 col-lg-4">
           <div class="card shadow-sm rounded-4 p-3 h-100">
 
-            <!-- NOM -->
             <h5 class="fw-bold text-orange mb-1">
               <%= m.displayable_name(current_user) %>
             </h5>
 
-            <!-- LOCALISATION -->
+            <%# NOUVEAU BLOC : PRÉFÉRENCES DE MISSIONS %>
+            <% if m.merch_setting.present? %>
+              <p class="small mb-1 text-muted">
+                <i class="bi bi-briefcase-fill"></i> Missions :
+                <strong><%= m.merch_setting.mission_preferences %></strong>
+              </p>
+            <% end %>
+            <%# FIN NOUVEAU BLOC %>
+
             <p class="text-muted mb-2">
               <strong>Ville :</strong>
               <%= m.city.presence || "—" %>
@@ -117,14 +138,13 @@
               <%= m.zipcode.presence || "—" %>
             </p>
 
-            <!-- CONTRAT EXISTANT -->
-            <% if m.contracts.where(agency: current_user.agency).exists? %>
+            <%# Correction de l'association pour utiliser fve_contracts et l'ID du FVE %>
+            <% if m.fve_contracts.where(fve_id: current_user.id).exists? %>
               <p class="mb-2">
                 <span class="badge bg-success rounded-pill">✓ Contrat existant avec votre FVE</span>
               </p>
             <% end %>
 
-            <!-- CONTACT -->
             <div class="mb-2 small">
               <strong>✉️ Email :</strong>
               <%= m.displayable_email(current_user) || "<span class='text-muted'>Non visible</span>".html_safe %>
@@ -133,7 +153,6 @@
               <%= m.displayable_phone(current_user) || "<span class='text-muted'>Non visible</span>".html_safe %>
             </div>
 
-            <!-- DISPONIBILITÉ (si dates recherchées) -->
             <% if params[:start_date].present? || params[:end_date].present? %>
               <% unavailable_dates = m.unavailabilities.pluck(:date) %>
               <% if unavailable_dates.empty? %>
@@ -141,7 +160,6 @@
               <% end %>
             <% end %>
 
-            <!-- BOUTON -->
             <div class="mt-auto d-grid">
               <%= link_to "Voir le profil détaillé",
                     fve_merch_path(m),

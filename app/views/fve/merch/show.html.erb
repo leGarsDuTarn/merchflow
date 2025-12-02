@@ -1,45 +1,93 @@
 <div class="container mt-4 mb-5" style="max-width: 700px;">
 
   <h1 class="fw-bold text-orange text-center mb-4">
-    Profil du merch
+    Profil du Prestataire
   </h1>
 
   <div class="card shadow-sm rounded-4 p-4">
 
-    <!-- NOM -->
     <h3 class="fw-bold text-orange mb-3 text-center">
-      <%= @merch_user.displayable_name(current_user) %>
+      <%= @name %> <%# Utilisé le @name pré-calculé dans le contrôleur %>
     </h3>
 
     <p class="text-muted text-center mb-4">
       Merch professionnel — Accessible via la FVE
     </p>
 
-    <!-- INFORMATIONS -->
-    <div class="mb-3">
-      <strong>Ville :</strong> <%= @merch_user.city %>
-      <br>
-      <strong>Code postal :</strong> <%= @merch_user.zipcode %>
-      <br>
-      <strong>Adresse :</strong> <%= @merch_user.address %>
+    <div class="row g-3">
+
+      <div class="col-md-6">
+        <h5 class="fw-bold mb-3">Informations</h5>
+
+        <div class="mb-3">
+          <strong>Ville :</strong> <%= @merch_user.city.presence || "—" %>
+          <br>
+          <strong>Code postal :</strong> <%= @merch_user.zipcode.presence || "—" %>
+          <br>
+          <%# VÉRIFICATION DU PARTAGE D'ADRESSE %>
+          <strong>Adresse :</strong>
+          <% if @merch_user.merch_setting&.share_address? %>
+            <%= @merch_user.address.presence || "Non renseignée" %>
+          <% else %>
+            <span class='text-muted'>Privée</span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <h5 class="fw-bold mb-3">Contact & Rôles</h5>
+
+        <div class="mb-3">
+          <strong>Email :</strong>
+          <%= @email || "<span class='text-muted'>Non visible</span>".html_safe %>
+          <br>
+          <strong>Téléphone :</strong>
+          <%= @phone || "<span class='text-muted'>Non visible</span>".html_safe %>
+        </div>
+
+        <% if @merch_user.merch_setting.present? %>
+          <p class="small mb-2">
+            <strong>Rôles :</strong>
+            <%= @merch_user.merch_setting.mission_preferences %>
+          </p>
+        <% end %>
+      </div>
     </div>
 
-    <!-- CONTACT PRIVACY -->
+    <hr class="my-4">
+
+    <h5 class="fw-bold text-orange mb-3">Planning et Contrats</h5>
+
     <div class="mb-3">
-      <strong>Email :</strong>
-      <%= @merch_user.displayable_email(current_user) || "<span class='text-muted'>Non disponible</span>".html_safe %>
+      <strong>Statut du Planning :</strong>
+      <% if @merch_user.merch_setting&.share_planning? %>
+        <span class="badge bg-success rounded-pill">Partagé et Visible</span>
+      <% else %>
+        <span class="badge bg-warning text-dark rounded-pill">Privé / Non Partagé</span>
+      <% end %>
+
       <br>
-      <strong>Téléphone :</strong>
-      <%= @merch_user.displayable_phone(current_user) || "<span class='text-muted'>Non disponible</span>".html_safe %>
+      <strong>Contrat FVE existant :</strong>
+      <% if @contracts_with_my_agency.any? %>
+        <span class="badge bg-primary rounded-pill">Oui (Agence <%= current_user.agency.capitalize %>)</span>
+      <% else %>
+        <span class="badge bg-secondary rounded-pill">Non</span>
+      <% end %>
     </div>
 
-    <!-- BOUTONS -->
     <div class="d-grid gap-3 mt-4">
-      <%= link_to "Voir le planning",
-            fve_planning_path(@merch_user),
-            class: "btn btn-orange fw-bold py-2" %>
+      <%# Le bouton Voir Planning n'est visible que si le partage est activé %>
+      <% if @merch_user.merch_setting&.share_planning? %>
+        <%= link_to "Voir le planning détaillé",
+              fve_planning_path(@merch_user),
+              class: "btn btn-orange fw-bold py-2" %>
+      <% else %>
+        <button type="button" class="btn btn-secondary py-2" disabled>
+          Planning Privé
+        </button>
+      <% end %>
 
-      <%= link_to "Retour",
+      <%= link_to "Retour à la recherche",
             fve_merch_index_path,
             class: "btn btn-orange-outline fw-semibold" %>
     </div>
