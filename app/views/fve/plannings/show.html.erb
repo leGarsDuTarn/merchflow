@@ -1,11 +1,9 @@
 <div class="container my-5">
 
-  <!-- TITRE -->
   <h1 class="fw-bold text-orange mb-4 text-center">
     Planning de <%= @merch_user.displayable_name(current_user) %>
   </h1>
 
-  <!-- Navigation mois -->
   <div class="d-flex justify-content-between align-items-center mb-4">
 
     <%= link_to fve_planning_path(@merch_user, year: @prev_year, month: @prev_month),
@@ -25,7 +23,6 @@
   </div>
 
 
-  <!-- Message mobile -->
   <div class="d-lg-none text-center mb-3 animate__animated animate__fadeIn">
     <div class="d-inline-block bg-light px-3 py-1 rounded-pill border">
       <small class="text-muted">
@@ -35,21 +32,14 @@
   </div>
 
 
-  <!-- Jours de la semaine (desktop) -->
   <div class="d-none d-lg-block shadow-sm rounded-4 p-3 mb-2 bg-white">
     <div class="week-headers">
-      <div>Lun</div>
-      <div>Mar</div>
-      <div>Mer</div>
-      <div>Jeu</div>
-      <div>Ven</div>
-      <div>Sam</div>
-      <div>Dim</div>
+      <div>Lun</div><div>Mar</div><div>Mer</div>
+      <div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
     </div>
   </div>
 
 
-  <!-- CALENDRIER -->
   <div class="calendar-wrapper">
     <div class="calendar-grid shadow-sm rounded-4 p-3">
 
@@ -64,64 +54,87 @@
             <%# 1. On cherche l'indisponibilité pour ce jour %>
             <% unav = @unavailabilities.find { |u| u.date == day } %>
 
+            <%# Logique pour déterminer la disponibilité (Libre ET Futur/Aujourd'hui) %>
+            <% is_available = sessions.empty? && unav.blank? && day >= Date.today %>
+
             <div class="calendar-cell rounded-3 position-relative
                         <%= 'today' if day == Date.today %>
                         <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
-                        <%= 'cell-unavailable' if unav.present? %>"> <%# 🔥 2. On ajoute la classe CSS %>
+                        <%= 'cell-unavailable' if unav.present? %>">
 
-              <div class="d-flex justify-content-between align-items-start p-1">
-                <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
-                  <%= day.day %>
-                </div>
+              <%# ============================================================ %>
+              <%# LOGIQUE DU DÉCLENCHEUR DE MODALE (Cliquable si disponible) %>
+              <%# ============================================================ %>
 
-                <%# Petit icône visuel (optionnel) %>
-                <% if unav.present? %>
-                  <i class="fa-solid fa-ban text-danger small"></i>
-                <% end %>
-              </div>
-
-              <% if unav.present? %>
-                <div class="p-1 mb-2">
-                  <div class="text-danger fw-bold small">Indisponible</div>
-                  <% if unav.notes.present? %>
-                    <div class="text-muted small fst-italic" style="font-size: 0.75rem;">
-                      <%= unav.notes %>
-                    </div>
-                  <% end %>
-                </div>
+              <% if is_available %>
+                <button type="button"
+                        class="d-block w-100 h-100 p-1 text-start calendar-button-trigger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#newMissionModal"
+                        data-mission-date="<%= day.strftime('%Y-%m-%d') %>">
               <% end %>
 
-              <div class="sessions-container">
-                <% sessions.each do |ws| %>
-                  <%# On compare l'agence du FVE connecté avec l'agence du contrat de la mission %>
-                  <% is_my_agency = (current_user.agency == ws.contract.agency) %>
+                <div class="d-flex justify-content-between align-items-start p-1">
+                  <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
+                    <%= day.day %>
+                  </div>
 
-                  <% if is_my_agency %>
+                  <%# Icône en fonction du statut du jour (Contrôle visuel) %>
+                  <% if unav.present? %>
+                    <i class="fa-solid fa-ban text-danger small"></i>
+                  <% elsif sessions.any? %>
+                    <i class="fa-solid fa-briefcase text-orange small"></i>
+                  <% elsif is_available %>
+                    <i class="fa-solid fa-circle-plus text-orange small"></i>
+                  <% end %>
+                </div>
 
-                    <div class="session-item bg-white rounded-3 p-2 mb-1 border border-orange text-truncate">
-                      <div class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
-                        <%= ws.contract.agency_label %> - <%= ws.company %>
+                <% if unav.present? %>
+                  <div class="p-1 mb-2">
+                    <div class="text-danger fw-bold small">Indisponible</div>
+                    <% if unav.notes.present? %>
+                      <div class="text-muted small fst-italic" style="font-size: 0.75rem;">
+                        <%= unav.notes %>
                       </div>
-                      <div class="text-muted small">
-                        <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
-                      </div>
-                    </div>
+                    <% end %>
+                  </div>
+                <% end %>
 
-                  <% else %>
+                <div class="sessions-container">
+                  <% sessions.each do |ws| %>
+                    <%# On compare l'agence du FVE connecté avec l'agence du contrat de la mission %>
+                    <% is_my_agency = (current_user.agency == ws.contract.agency) %>
 
-                    <div class="session-item bg-light rounded-3 p-2 mb-1 border border-light text-truncate opacity-75">
-                      <div class="fw-bold text-secondary fst-italic" style="line-height: 1.1;">
-                        <i class="fa-solid fa-briefcase me-1 small"></i> Indisponible
+                    <% if is_my_agency %>
+
+                      <div class="session-item bg-white rounded-3 p-2 mb-1 border border-orange text-truncate">
+                        <div class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
+                          <%= ws.contract.agency_label %> - <%= ws.company %>
+                        </div>
+                        <div class="text-muted small">
+                          <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
+                        </div>
                       </div>
-                      <div class="text-muted small">
-                        Mission externe
+
+                    <% else %>
+
+                      <div class="session-item bg-light rounded-3 p-2 mb-1 border border-light text-truncate opacity-75">
+                        <div class="fw-bold text-secondary fst-italic" style="line-height: 1.1;">
+                          <i class="fa-solid fa-briefcase me-1 small"></i> Mission externe
+                        </div>
+                        <div class="text-muted small">
+                          Non visible
+                        </div>
                       </div>
-                    </div>
+
+                    <% end %>
 
                   <% end %>
+                </div>
 
-                <% end %>
-              </div>
+              <% if is_available %>
+                </button> <%# Fermeture du bouton cliquable %>
+              <% end %>
 
             </div>
           <% end %>
@@ -133,9 +146,10 @@
   </div>
 
 
-  <!-- RETOUR -->
   <div class="text-center mt-4">
     <%= link_to "Retour", fve_merch_index_path, class: "btn btn-orange-outline fw-semibold px-4" %>
   </div>
+
+  <%= render 'fve/plannings/mission_proposal_modal', merch_user: @merch_user %>
 
 </div>

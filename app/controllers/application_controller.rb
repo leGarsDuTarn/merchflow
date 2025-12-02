@@ -49,9 +49,6 @@ class ApplicationController < ActionController::Base
       zipcode
       city
       phone_number
-      allow_email
-      allow_phone
-      allow_identity
     ])
   end
 

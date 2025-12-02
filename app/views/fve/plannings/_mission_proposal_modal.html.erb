@@ -1,0 +1,99 @@
+
+<%# AJOUT DU CONTRÔLEUR STIMULUS (data-controller) à l'élément modal %>
+<div class="modal fade"
+     id="newMissionModal"
+     tabindex="-1"
+     aria-labelledby="newMissionModalLabel"
+     aria-hidden="true"
+     data-controller="mission-planner">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 shadow">
+
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="newMissionModalLabel">
+          Proposer une Mission à <%= merch_user.full_name %>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <p class="small text-muted mb-4">
+          La date sera automatiquement pré-remplie par le jour sélectionné.
+        </p>
+
+        <%= form_with model: MissionProposal.new,
+                      url: fve_mission_proposals_path,
+                      method: :post,
+                      local: true,
+                      class: "row g-3" do |f| %>
+
+          <%# CHAMP CACHÉ CRITIQUE : ID du Merch Cible %>
+          <%= f.hidden_field :merch_id, value: merch_user.id %>
+
+          <%# CHAMPS TEMPS & DATE %>
+          <div class="col-md-6">
+            <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
+            <%# CRITIQUE : L'ID 'mission_proposal_date' est ciblé par le JS pour le pré-remplissage %>
+            <%# AJOUT DE LA CIBLE STIMULUS (data-mission-planner-target="dateInput") %>
+            <%= f.date_field :date,
+                class: "form-control",
+                required: true,
+                id: "mission_proposal_date",
+                data: { "mission-planner-target": "dateInput" } %>
+          </div>
+
+          <div class="col-md-3">
+            <%= f.label :start_time, "Heure de Début", class: "form-label fw-semibold" %>
+            <%= f.time_field :start_time,
+                class: "form-control",
+                required: true,
+                value: Time.zone.parse("09:00") %>
+          </div>
+
+          <div class="col-md-3">
+            <%= f.label :end_time, "Heure de Fin", class: "form-label fw-semibold" %>
+            <%= f.time_field :end_time,
+                class: "form-control",
+                required: true,
+                value: Time.zone.parse("13:00") %>
+          </div>
+
+          <%# CHAMPS LIEU ET TAUX %>
+          <div class="col-md-6">
+            <%= f.label :company, "Client / Marque", class: "form-label fw-semibold" %>
+            <%= f.text_field :company, class: "form-control", placeholder: "Ex: PepsiCo", required: true %>
+          </div>
+
+          <div class="col-md-6">
+            <%= f.label :hourly_rate, "Taux Horaire proposé (€/h)", class: "form-label fw-semibold" %>
+            <%= f.number_field :hourly_rate, class: "form-control", step: 0.01, placeholder: "Ex: 13.50", required: true %>
+          </div>
+
+          <div class="col-md-6">
+            <%= f.label :store_name, "Nom du Magasin", class: "form-label fw-semibold" %>
+            <%= f.text_field :store_name, class: "form-control", required: true %>
+          </div>
+
+          <div class="col-md-6">
+            <%= f.label :store_address, "Adresse complète du Magasin", class: "form-label fw-semibold" %>
+            <%= f.text_field :store_address, class: "form-control", required: true %>
+          </div>
+
+          <%# MESSAGE %>
+          <div class="col-12">
+            <%= f.label :message, "Message de la proposition (optionnel)", class: "form-label fw-semibold" %>
+            <%= f.text_area :message, class: "form-control", rows: 3 %>
+          </div>
+
+          <%# BOUTON SUBMIT dans le footer de la modale %>
+          <div class="col-12 text-end mt-4">
+             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+             <%= f.submit "Envoyer la Proposition", class: "btn btn-success fw-bold px-4" %>
+          </div>
+
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+</div>
