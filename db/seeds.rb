@@ -1,3 +1,5 @@
+# db/seeds.rb
+
 # ============================================================
 # 🔥 RESET DES DONNÉES MERCH UNIQUEMENT
 # ============================================================
@@ -8,14 +10,19 @@ WorkSession.joins(contract: :user).where(users: { role: :merch }).delete_all
 puts "  ✓ Missions supprimées"
 
 # 2. Supprimer les MerchSettings (dépendance)
-MerchSetting.joins(:user).where(users: { role: :merch }).delete_all
+# Note : on utilise joins(:merch) car l'association s'appelle 'merch' dans le model
+MerchSetting.joins(:merch).where(users: { role: :merch }).delete_all
 puts "  ✓ Paramètres de confidentialité supprimés"
 
 # 3. Supprimer les Contracts (dépendance)
 Contract.joins(:user).where(users: { role: :merch }).delete_all
 puts "  ✓ Contrats supprimés"
 
-# 4. Supprimer les Merchandisers
+# 4. Supprimer les Unavailabilities (dépendance bloquante)
+Unavailability.joins(:user).where(users: { role: :merch }).delete_all
+puts "  ✓ Indisponibilités supprimées"
+
+# 5. Supprimer les Merchandisers
 User.where(role: :merch).delete_all
 puts "  ✓ Merchandisers supprimés"
 
@@ -38,7 +45,7 @@ AGENCIES = %w[actiale rma edelvi].freeze
 CONTACT_CHANNELS = %w[phone email message none].freeze
 STORE_NAMES = ['Carrefour', 'Auchan', 'Leclerc', 'Casino', 'Intermarché'].freeze
 
-# NOUVEAU : Liste des entreprises (clients) pour les missions
+# Les entreprises demandées
 CLIENT_COMPANIES = [
   "Panzani", "PepsiCo", "Carambar", "Coca Cola", "Bonduelle", "Barilla"
 ].freeze
@@ -104,18 +111,26 @@ nb_users.times do |i|
     role_merch = true
   end
 
+  # Logique pour 98% de partage du planning (2% ne partagent pas)
   share_planning_status = (rand(1..100) > 2)
 
   MerchSetting.create!(
-    user: user,
+    merch: user, # <--- CORRECTION ICI : 'merch' au lieu de 'user'
+    # Options de partage
     allow_identity: [true, true, false].sample,
     share_address: [true, false].sample,
     share_planning: share_planning_status,
+
+    # Autorisations de contact
     allow_contact_email: [true, true, false].sample,
     allow_contact_phone: [true, false].sample,
     allow_contact_message: [true, false].sample,
+
+    # Préférences
     preferred_contact_channel: CONTACT_CHANNELS.sample,
     accept_mission_proposals: true,
+
+    # Rôles
     role_merch: role_merch,
     role_anim: role_anim
   )
@@ -163,7 +178,7 @@ nb_users.times do |i|
         hourly_rate: [12.50, 13.00, 13.50, 14.00, 15.00].sample,
         effective_km: rand(5..80),
         store: "Magasin #{STORE_NAMES.sample}",
-        company: CLIENT_COMPANIES.sample, # <-- UTILISATION DE LA NOUVELLE LISTE DE MARQUES
+        company: CLIENT_COMPANIES.sample, # <-- UTILISATION DES MARQUES
         recommended: [true, false].sample,
         notes: ["Mission standard", "Mise en rayon", "Inventaire", nil].sample
       )
