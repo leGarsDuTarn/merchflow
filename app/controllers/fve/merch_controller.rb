@@ -127,7 +127,7 @@ class Fve::MerchController < ApplicationController
 
     # ========== INFOS DÉTAILLÉES POUR LA VUE SHOW ==========
     # Utilisation de l'association réflexive fve_contracts
-    @contracts_with_my_agency = @merch_user.fve_contracts.where(fve_id: current_user.id)
+    @contracts_with_my_agency = @merch_user.contracts.where(agency: current_user.agency)
     @work_sessions = @merch_user.work_sessions.includes(:contract).order(date: :desc).limit(20)
     @companies_worked_with = @merch_user.work_sessions.pluck(:company).compact.uniq.sort
     @unavailabilities = @merch_user.unavailabilities.where("date >= ?", Date.today).order(:date)
