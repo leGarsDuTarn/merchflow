@@ -43,13 +43,23 @@ class WorkSession < ApplicationRecord
   }
 
   scope :search, ->(query) {
-  return all if query.blank?
+    return all if query.blank?
 
   where(
-    "company ILIKE :q OR store ILIKE :q OR date::text ILIKE :q",
+    'company ILIKE :q OR store ILIKE :q OR date::text ILIKE :q',
     q: "%#{query}%"
   )
-}
+  }
+
+  # Vérifie si la période proposée chevauche une session existante
+  scope :overlapping, ->(start_time, end_time) {
+    # La condition de chevauchement standard est :
+    # (Début A < Fin B) AND (Fin A > Début B)
+    # Dans notre cas, A est la WorkSession existante, B est la nouvelle période (start_time/end_time)
+    where("
+      (work_sessions.start_time < :end_time) AND (work_sessions.end_time > :start_time)
+    ", start_time: start_time, end_time: end_time)
+  }
 
 
   # ============================================================
