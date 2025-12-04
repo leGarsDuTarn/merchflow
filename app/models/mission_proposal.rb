@@ -19,6 +19,19 @@ class MissionProposal < ApplicationRecord
   validate :no_overlap_with_existing_proposals
 
   # =========================================================
+  # SCOPE
+  # =========================================================
+
+  # Scope pour afficher uniquement les propositions non expirées
+  # Cette scope s'assure que la mission n'est pas déjà passée.
+  scope :active_opportunities, -> {
+    where('date > ?', Date.current)
+      .or(
+        where(date: Date.current)
+        .where("start_time::time > ?", Time.current.strftime('%H:%M:%S'))
+      )
+  }
+  # =========================================================
   # TRANSFORMER EN MISSION
   # =========================================================
   def accept!

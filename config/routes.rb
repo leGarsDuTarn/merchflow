@@ -53,7 +53,7 @@ Rails.application.routes.draw do
   # ============================================================
   # PROPOSAL
   # ============================================================
-  resources :proposals, only: %i[index update], as: :merch_proposals
+  resources :proposals, only: %i[index update destroy], as: :merch_proposals
   # ============================================================
   # CUSTOM ROUTES
   # ============================================================
