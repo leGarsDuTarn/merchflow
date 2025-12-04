@@ -6,30 +6,41 @@ module Fve
 
     def index
       authorize %i[fve dashboard]
-
-      # Statistiques générales
-      @total_merch = User.merch.count
       @premium = current_user.premium?
 
-      # 1. Missions Proposées par cet utilisateur FVE (Sent Mission Proposals)
-      # On compte le nombre total de propositions que cette agence FVE a envoyées.
-      @total_proposals_sent = current_user.sent_mission_proposals.count
+      # --- ZONE 1 : MÉTÉO (KPIs) ---
 
-      # 2. Statut des Propositions
-      # Montre l'état actuel des missions proposées par cet FVE
-      @pending_proposals = current_user.sent_mission_proposals.where(status: :pending).count
-      @accepted_proposals = current_user.sent_mission_proposals.where(status: :accepted).count
+      # CORRECTION ICI : On utilise directement le champ "date" de la proposition
+      @missions_today_count = current_user.sent_mission_proposals
+                                          .where(status: 'accepted') # ou :accepted si enum
+                                          .where(date: Date.today)
+                                          .count
 
-      # 3. Contrats actifs
-      # Compte le nombre de prestataires qui ont un contrat avec l'agence du FVE
-      @merch_with_contracts = User.merch
-                                  .joins(:contracts)
-                                  .where(contracts: { agency: current_user.agency })
-                                  .distinct
-                                  .count
+      @pending_proposals_count = current_user.sent_mission_proposals
+                                             .where(status: 'pending')
+                                             .count
 
-      # 4. Utilisateurs Merch récents (pour la vue)
-      @merch_users = User.merch.order(created_at: :desc).limit(10)
+      # --- ZONE 2 : ALERTES (Refus) ---
+
+      # CORRECTION ICI : On retire :mission du includes car il n'existe pas
+      @alerts = current_user.sent_mission_proposals
+                            .includes(:merch) # On garde merch pour éviter les requêtes N+1
+                            .where(status: 'refused')
+                            .order(updated_at: :desc)
+                            .limit(5)
+
+      # --- ZONE 3 : ÉQUIPE ---
+
+      # Si tu as mis en place les favoris :
+      @favorite_merchs = current_user.try(:favorites) || []
+
+      # Les autres (exclure les favoris)
+      excluded_ids = @favorite_merchs.any? ? @favorite_merchs.pluck(:id) : []
+
+      @other_merchs = User.merch
+                          .where.not(id: excluded_ids)
+                          .order(created_at: :desc)
+                          .limit(9)
     end
 
     private
