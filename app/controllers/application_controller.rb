@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_merch_notifications, if: :current_user_is_merch?
 
   def after_sign_out_path_for(_resource_or_scope)
     root_path
@@ -56,5 +57,18 @@ class ApplicationController < ActionController::Base
 
   def user_not_authorized
     redirect_to root_path, alert: 'Accès non autorisé.'
+  end
+
+  def current_user_is_merch?
+    # Vérifie si l'utilisateur est connecté et a le rôle merch
+    user_signed_in? && current_user.merch?
+  end
+
+  def set_merch_notifications
+    # Calcule le nombre de propositions reçues et en attente
+    # La variable @pending_proposals_count est utilisée dans la navbar.
+    @pending_proposals_count = current_user.received_mission_proposals
+                                           .where(status: :pending)
+                                           .count
   end
 end
