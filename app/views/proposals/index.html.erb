@@ -68,7 +68,7 @@
               <%# TITRE / AGENCE / DATE PROPOSÉE %>
               <div class="d-flex justify-content-between align-items-start mb-3">
                 <h5 class="card-title fw-bold text-dark mb-0">
-                  <span class="text-orange me-1"><%= proposal.fve.agency_label %></span>
+                  <span class="text-orange me-1"><%= proposal.fve.agency_label %> - <%= proposal.company %></span>
                 </h5>
                 <small class="text-muted text-end fst-italic">
                   Proposé le <%= l proposal.created_at.to_date, format: :default %> à <%= l proposal.created_at, format: :short_time %>
@@ -124,13 +124,13 @@
               <div class="d-flex justify-content-end">
                 <% if proposal.pending? %>
                   <%= button_to 'Accepter',
-                        merch_proposals_path(proposal, mission_proposal: { status: 'accepted' }),
+                        merch_proposal_path(proposal, mission_proposal: { status: 'accepted' }),
                         method: :patch,
                         data: { turbo_confirm: "Confirmez-vous l'acceptation de cette mission ?" },
                         class: 'btn btn-green me-2' %>
 
                   <%= button_to 'Refuser',
-                        merch_proposals_path(proposal, mission_proposal: { status: 'declined' }),
+                        merch_proposal_path(proposal, mission_proposal: { status: 'declined' }),
                         method: :patch,
                         data: { turbo_confirm: "Confirmez-vous le refus de cette proposition ?" },
                         class: 'btn btn-red' %>

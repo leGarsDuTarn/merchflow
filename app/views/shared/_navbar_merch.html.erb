@@ -14,17 +14,19 @@
 
         <li class="nav-item"><%= link_to "Dashboard", dashboard_path, class: "nav-link fw-semibold" %></li>
 
-        <%# Opportunités (visible seulement si le compteur est > 0) %>
-        <% if @pending_proposals_count.to_i > 0 %>
-          <li class="nav-item">
-            <%= link_to merch_proposals_path, class: "nav-link fw-bold text-orange" do %>
-              Opportunités
+        <%# Le LI est TOUJOURS présent. Le badge est conditionnel. %>
+        <li class="nav-item">
+          <%# La classe text-orange est appliquée si des propositions sont en attente pour attirer l'attention %>
+          <%= link_to merch_proposals_path,
+                      class: "nav-link fw-bold #{ @pending_proposals_count.to_i > 0 ? 'text-orange' : 'text-dark' }" do %>
+            Opportunités
+            <% if @pending_proposals_count.to_i > 0 %>
               <span class="badge rounded-pill bg-warning text-dark ms-1">
                 <%= @pending_proposals_count %>
               </span>
             <% end %>
-          </li>
-        <% end %>
+          <% end %>
+        </li>
 
         <li class="nav-item"><%= link_to "Contrats", contracts_path, class: "nav-link fw-semibold" %></li>
         <li class="nav-item"><%= link_to "Missions", work_sessions_path, class: "nav-link fw-semibold" %></li>
