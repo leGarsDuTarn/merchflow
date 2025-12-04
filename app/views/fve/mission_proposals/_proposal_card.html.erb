@@ -15,7 +15,7 @@
         <% end %>
       </span>
 
-      <%= link_to fve_mission_proposals_path(proposal),
+      <%= link_to fve_mission_proposal_path(proposal),
           data: {
             turbo_method: :delete,
             turbo_confirm: proposal.accepted? ?
