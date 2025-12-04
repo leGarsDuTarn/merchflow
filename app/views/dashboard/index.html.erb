@@ -1,26 +1,18 @@
 <div class="container mt-4 mb-5">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
-
-    <%# Bouton Précédent %>
-    <%= link_to dashboard_path(year: @prev_year, month: @prev_month),
-                class: "btn btn-orange-outline rounded-3" do %>
+    <%= link_to dashboard_path(year: @prev_year, month: @prev_month), class: "btn btn-orange-outline rounded-3" do %>
       <i class="fa-solid fa-chevron-left"></i>
     <% end %>
 
     <h3 class="fw-bold text-orange text-center m-0 text-capitalize">
-      <%# Affiche le mois sélectionné %>
       <%= I18n.l @target_date, format: "%B %Y" %>
     </h3>
 
-    <%# Bouton Suivant (Désactivé si le mois suivant est après le mois en cours) %>
     <% is_next_month_in_future = (@target_date + 1.month).beginning_of_month > Date.current.beginning_of_month %>
-
-    <%= link_to dashboard_path(year: @next_year, month: @next_month),
-                class: "btn btn-orange-outline rounded-3 #{'disabled' if is_next_month_in_future}" do %>
+    <%= link_to dashboard_path(year: @next_year, month: @next_month), class: "btn btn-orange-outline rounded-3 #{'disabled' if is_next_month_in_future}" do %>
       <i class="fa-solid fa-chevron-right"></i>
     <% end %>
-
   </div>
 
   <p class="text-center text-muted mb-5">
@@ -28,8 +20,43 @@
   </p>
 
 
-  <div class="row g-4">
+  <%# ========================================================== %>
+  <%# NOTIFICATION D'OPPORTUNITÉS %>
+  <%# ========================================================== %>
 
+  <%# N'affiche QUE si c'est le mois en cours ET qu'il y a des propositions %>
+  <% if @is_current_month && @pending_proposals_count.to_i > 0 %>
+    <div class="row mb-4 animate__animated animate__fadeIn">
+      <div class="col-12">
+        <div class="card shadow-sm p-4 rounded-4 text-center border border-orange position-relative" style="background-color: #fff;">
+
+          <div class="d-flex justify-content-center align-items-center flex-column flex-md-row">
+            <div class="me-md-4 mb-3 mb-md-0">
+              <span class="display-6 fw-bold text-orange">
+                <%= @pending_proposals_count %>
+              </span>
+            </div>
+            <div class="text-md-start">
+              <h5 class="fw-bold text-dark mb-1">
+                Nouvelle<%= 's' if @pending_proposals_count > 1 %> opportunité<%= 's' if @pending_proposals_count > 1 %> !
+              </h5>
+              <p class="text-muted mb-2 small">
+                Vous avez reçu des propositions de mission qui attendent votre réponse.
+              </p>
+              <%= link_to merch_proposals_path, class: "btn btn-orange btn-sm fw-bold px-4 rounded-pill" do %>
+                Voir les propositions <i class="fa-solid fa-arrow-right ms-2"></i>
+              <% end %>
+            </div>
+          </div>
+
+          <div data-controller="vibration" data-vibration-count-value="<%= @pending_proposals_count.to_i %>"></div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+
+  <div class="row g-4">
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Heures</h5>
@@ -56,11 +83,9 @@
         </p>
       </div>
     </div>
-
   </div>
 
   <div class="row g-4 mt-4">
-
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h5 class="text-muted mb-0">Frais km remboursés</h5>
@@ -87,88 +112,15 @@
         </p>
       </div>
     </div>
-
   </div>
-
-  <%# ========================================================== %>
-  <%# NOUVEAU : BLOC PROPOSITIONS DE MISSIONS EN ATTENTE %>
-  <%# ========================================================== %>
-
-  <% if @pending_proposals.any? %>
-    <div class="card shadow-lg border-warning rounded-4 mt-5">
-      <div class="card-header bg-warning text-dark fw-bold rounded-top-4 py-3">
-        <h4 class="mb-0">
-          <i class="fa-solid fa-bell me-2"></i>
-          Nouvelles Propositions de Mission (<%= @pending_proposals.count %>)
-        </h4>
-      </div>
-      <div class="list-group list-group-flush">
-
-        <% @pending_proposals.each do |proposal| %>
-          <%= tag.div class: "list-group-item p-4" do %>
-            <div class="d-flex w-100 justify-content-between align-items-center">
-              <h5 class="mb-1 fw-bold text-orange"><%= proposal.company %></h5>
-              <small class="text-muted fst-italic">Proposé il y a <%= time_ago_in_words(proposal.created_at) %></small>
-            </div>
-
-            <hr class="my-2">
-
-            <div class="row small">
-              <div class="col-md-6 mb-2">
-                <strong><i class="fa-solid fa-calendar-day me-1"></i> Date :</strong>
-                <%= I18n.l proposal.date, format: :long %>
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong><i class="fa-solid fa-clock me-1"></i> Heures :</strong>
-                <%= proposal.start_time.strftime('%H:%M') %> – <%= proposal.end_time.strftime('%H:%M') %>
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong><i class="fa-solid fa-euro-sign me-1"></i> Taux :</strong>
-                <%= number_to_currency(proposal.hourly_rate) %>/h
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong><i class="fa-solid fa-location-dot me-1"></i> Lieu :</strong>
-                <%= proposal.store_name %> (<%= proposal.store_address.split(',').first %>)
-              </div>
-            </div>
-
-            <% if proposal.message.present? %>
-              <div class="alert alert-light border-start border-3 border-warning mt-3 mb-0 py-2 px-3 small fst-italic text-dark">
-                **Message de l'Agence :** "<%= proposal.message %>"
-              </div>
-            <% end %>
-
-            <%# BOUTONS D'ACTION %>
-            <div class="mt-4 text-end">
-
-              <%# Lien vers l'action 'update' avec le statut 'accepted' %>
-              <%= link_to "✅ Accepter la Mission",
-                    merch_mission_proposal_path(proposal, mission_proposal: { status: :accepted }),
-                    data: { turbo_method: :patch, confirm: "Confirmez-vous l'acceptation de cette mission?" },
-                    class: "btn btn-success fw-bold me-2" %>
-
-              <%# Lien vers l'action 'update' avec le statut 'declined' %>
-              <%= link_to "❌ Refuser",
-                    merch_mission_proposal_path(proposal, mission_proposal: { status: :declined }),
-                    data: { turbo_method: :patch, confirm: "Confirmez-vous le refus de cette mission?" },
-                    class: "btn btn-outline-danger" %>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
 
   <div class="row g-4 mt-4">
     <div class="col-12">
       <div class="card shadow-sm p-4 rounded-4">
-
         <h5 class="fw-bold text-orange mb-3 text-center">
           Répartition par agence (<%= I18n.l @target_date, format: "%B" %>)
         </h5>
 
-        <%# Utilise la variable pré-calculée @by_agency %>
         <% if @by_agency.any? %>
           <div class="table-responsive">
             <table class="table table-borderless align-middle mb-0">
@@ -197,32 +149,20 @@
             Aucune donnée disponible pour ce mois.
           </p>
         <% end %>
-
       </div>
     </div>
   </div>
 
   <div class="text-center mt-5">
-
-    <%= link_to "Créer un contrat",
-                new_contract_path,
-                class: "btn btn-orange btn-lg fw-bold px-4 me-3" %>
+    <%= link_to "Créer un contrat", new_contract_path, class: "btn btn-orange btn-lg fw-bold px-4 me-3" %>
 
     <% if current_user.contracts.exists? %>
-      <%= link_to "Créer une mission",
-                  new_contract_work_session_path(current_user.contracts.first),
-                  class: "btn btn-orange-outline btn-lg fw-bold px-4 mt-2 m-2" %>
+      <%= link_to "Créer une mission", new_contract_work_session_path(current_user.contracts.first), class: "btn btn-orange-outline btn-lg fw-bold px-4 mt-2 m-2" %>
     <% else %>
-      <button class="btn btn-orange-outline btn-lg fw-bold mt-2 px-4" disabled>
-        Créer une mission
-      </button>
-      <p class="text-muted mt-2 small">
-        Vous devez d’abord créer un contrat.
-      </p>
+      <button class="btn btn-orange-outline btn-lg fw-bold mt-2 px-4" disabled>Créer une mission</button>
+      <p class="text-muted mt-2 small">Vous devez d’abord créer un contrat.</p>
     <% end %>
-
   </div>
-
 </div>
 
 <footer class="text-center text-muted mt-4">

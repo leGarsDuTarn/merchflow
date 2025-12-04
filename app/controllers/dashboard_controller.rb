@@ -23,7 +23,8 @@ class DashboardController < ApplicationController
       @year = @target_date.year
       @month = @target_date.month
     end
-
+    # Permet de cacher la notification si on regarde l'historique
+    @is_current_month = (@target_date.beginning_of_month == Date.current.beginning_of_month)
     @user = current_user
 
     # --- Variables de navigation pour la vue ---
@@ -40,10 +41,12 @@ class DashboardController < ApplicationController
     @km_month               = @user.total_km_for_month(@target_date)
     @km_payment_month       = @user.total_km_payment_for_month(@target_date)
 
-    # Propositions de mission en attente (inchangées car indépendantes du mois)
-    @pending_proposals = @user.received_mission_proposals
-                              .where(status: :pending)
-                              .order(date: :asc)
+    # Calculer le compte pour la carte de notification
+    @pending_proposals_count = @user.received_mission_proposals
+                                    .where(status: :pending)
+                                    .count
+
+    # L'ancienne variable @pending_proposals n'est plus nécessaire ici.
 
     @by_agency = @user.total_by_agency_for_month(@target_date) || []
   end

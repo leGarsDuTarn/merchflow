@@ -1,7 +1,7 @@
 # config/routes.rb
 Rails.application.routes.draw do
   devise_for :users
-  
+
   resources :users, only: [:show]
 
   # ============================================================
@@ -50,6 +50,10 @@ Rails.application.routes.draw do
   # ============================================================
   resources :unavailabilities, only: %i[new create update destroy]
 
+  # ============================================================
+  # PROPOSAL
+  # ============================================================
+  resources :proposals, only: %i[index update], as: :merch_proposals
   # ============================================================
   # CUSTOM ROUTES
   # ============================================================
