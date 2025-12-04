@@ -103,7 +103,7 @@ class WorkSessionsController < ApplicationController
   end
 
   # ============================================================
-  # UPDATE (C'était cette méthode qui manquait !)
+  # UPDATE 
   # ============================================================
   def update
     if @work_session.update(work_session_params)

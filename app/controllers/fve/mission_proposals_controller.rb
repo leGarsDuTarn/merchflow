@@ -1,5 +1,5 @@
 # app/controllers/fve/mission_proposals_controller.rb
-module Fve 
+module Fve
   class MissionProposalsController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
@@ -78,7 +78,8 @@ module Fve
         :store_name,
         :store_address,
         :hourly_rate,
-        :message
+        :message,
+        :estimated_km
       )
     end
   end

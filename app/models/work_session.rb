@@ -11,6 +11,8 @@ class WorkSession < ApplicationRecord
   validates :date, :start_time, :end_time, presence: { message: 'Ce champ est requis' }
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
+  # 🚨 AJOUT : Validation du chevauchement horaire pour éviter les double-réservations
+  validate :no_overlap_with_existing_sessions
 
   # ============================================================
   # ENUM
@@ -84,7 +86,8 @@ class WorkSession < ApplicationRecord
       start_time: proposal.start_time,
       end_time: proposal.end_time,
       hourly_rate: proposal.hourly_rate,
-      effective_km: 0.0,
+      # 🚨 MISE À JOUR : Utilise le champ estimated_km de la proposition
+      effective_km: proposal.estimated_km || 0.0,
       store: proposal.store_name,
       company: proposal.company,
       recommended: false,
@@ -224,6 +227,25 @@ class WorkSession < ApplicationRecord
   # MÉTHODES PRIVÉES
   # ============================================================
   private
+
+  # Garde-fou de Chevauchement
+  def no_overlap_with_existing_sessions
+    # Vérifie si les données critiques sont présentes
+    return unless contract.present? && date.present? && start_time.present? && end_time.present?
+
+    user_id = contract.user_id
+
+    # 1. Scope qui trouve les sessions du même utilisateur, sur la même date, et n'est pas l'enregistrement courant
+    overlapping_sessions = WorkSession
+      .joins(:contract)
+      .where(contracts: { user_id: user_id }, date: date)
+      .where.not(id: id)
+
+    # 2. Utilise le scope overlapping sur la portée trouvée
+    if overlapping_sessions.overlapping(start_time, end_time).exists?
+      errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée pour vous ce jour-là. Vérifiez votre planning.')
+    end
+  end
 
   def hours_day
     ((duration_minutes - night_minutes) / 60.0).round(2)

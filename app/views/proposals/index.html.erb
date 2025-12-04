@@ -98,9 +98,18 @@
 
                 <%# Lieu synthétique %>
                 <div class="col-12 col-md-6">
-                  <strong><i class="fa-solid fa-map-marker-alt me-1"></i> Adresse :</strong>
-                  <%= proposal.store_address %>
+                  <strong><i class="fa-solid fa-map-marker-alt me-1"></i> Ville :</strong>
+                  <%# Affichage du lieu synthétique %>
+                  <%= proposal.store_address.split(',').last.to_s.strip %>
                 </div>
+
+                <div class="col-12 col-md-6">
+                  <strong><i class="fa-solid fa-road me-1"></i> KM Estimés :</strong>
+                  <span class="fw-semibold">
+                    <%= proposal.estimated_km.to_i %> km
+                  </span>
+                </div>
+
               </div>
 
               <%# TAUX PROPOSÉ %>
@@ -110,6 +119,13 @@
                   <%= number_to_currency(proposal.hourly_rate) %>/h
                 </span>
               </div>
+
+              <%# ADRESSE COMPLÈTE (Optionnel, affiché si KM estimés sont présents pour le contexte) %>
+              <% if proposal.estimated_km.present? %>
+                <p class="small text-muted mt-2 mb-0">
+                  Adresse complète: <%= proposal.store_address %>
+                </p>
+              <% end %>
 
               <%# MESSAGE (Optionnel) %>
               <% if proposal.message.present? %>
@@ -127,7 +143,7 @@
                         merch_proposal_path(proposal, mission_proposal: { status: 'accepted' }),
                         method: :patch,
                         data: { turbo_confirm: "Confirmez-vous l'acceptation de cette mission ?" },
-                        class: 'btn btn-green me-2' %>
+                        class: 'btn btn-green fw-bold me-2' %>
 
                   <%= button_to 'Refuser',
                         merch_proposal_path(proposal, mission_proposal: { status: 'declined' }),

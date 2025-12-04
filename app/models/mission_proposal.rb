@@ -6,21 +6,26 @@ class MissionProposal < ApplicationRecord
   # STATUTS
   enum :status, { pending: 'pending', accepted: 'accepted', declined: 'declined', cancelled: 'cancelled' }
 
-  # VALIDATIONS
+  # =========================================================
+  # VALIDATIONS ET GARDE-FOU
+  # =========================================================
   validates :date, :start_time, :end_time, :company, :agency, presence: true
+
+  # Validations du rôle
   validate :fve_must_be_fve
   validate :merch_must_be_merch
 
+  # Vérifie le chevauchement horaire
+  validate :no_overlap_with_existing_proposals
+
   # =========================================================
-  # 🔥 LA MÉTHODE PIVOT : TRANSFORMER EN MISSION
+  # TRANSFORMER EN MISSION
   # =========================================================
   def accept!
     return unless pending?
 
     ActiveRecord::Base.transaction do
       # 1. On cherche le contrat EXISTANT entre ce Merch et cette Agence.
-      # ⚠️ STRICT : On utilise find_by! qui lève une erreur si le contrat n'existe pas.
-      # L'application ne crée JAMAIS de contrat automatiquement.
       contract = Contract.find_by!(
         user: merch,
         agency: agency
@@ -39,17 +44,21 @@ class MissionProposal < ApplicationRecord
         store: store_name,
         store_full_address: store_address,
         hourly_rate: hourly_rate,
-        status: :accepted,       # La mission naît directement 'Acceptée'
+        estimated_km: estimated_km,
+        status: :accepted,
         notes: "Mission acceptée via proposition FVE. Message initial : #{message}"
       )
     end
   rescue ActiveRecord::RecordNotFound
-    # Sécurité supplémentaire : Si jamais le contrat a été supprimé entre temps
     errors.add(:base, "Impossible d'accepter : Aucun contrat actif trouvé pour l'agence #{agency}.")
     false
   end
 
   private
+
+  # =========================================================
+  # VALIDATIONS PERSONNELLES
+  # =========================================================
 
   def fve_must_be_fve
     errors.add(:fve, 'doit être un FVE') unless fve&.fve?
@@ -57,5 +66,22 @@ class MissionProposal < ApplicationRecord
 
   def merch_must_be_merch
     errors.add(:merch, 'doit être un Merch') unless merch&.merch?
+  end
+
+  # GARDE-FOU (Chevauchement)
+  def no_overlap_with_existing_proposals
+    return unless date.present? && start_time.present? && end_time.present?
+
+    # Chercher d'autres propositions pour le même Merch le même jour, excluant l'enregistrement courant (pour les mises à jour)
+    scope = MissionProposal.where(merch_id: merch_id, date: date)
+                           .where.not(id: id)
+
+    # Condition de chevauchement : (Start Existant < End Nouveau) AND (End Existant > Start Nouveau)
+    if scope.exists?([
+      '(start_time < ?) AND (end_time > ?)', end_time, start_time
+    ])
+
+      errors.add(:base, 'Cette mission chevauche une autre proposition existante pour ce prestataire ce jour-là. Vérifiez vos horaires.')
+    end
   end
 end

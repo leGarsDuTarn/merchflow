@@ -1,11 +1,119 @@
+<%# ========================================================== %>
+<%# MODALE DE PROPOSITION DE MISSION (Intégrée directement) %>
+<%# ========================================================== %>
+<div class="modal fade"
+     id="newMissionModal"
+     tabindex="-1"
+     aria-labelledby="newMissionModalLabel"
+     aria-hidden="true"
+     data-controller="mission-planner">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 shadow">
+
+      <div class="modal-header bg-orange text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="newMissionModalLabel">
+          Proposer une Mission à <%= @merch_user.full_name %>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <p class="small text-muted mb-4">
+          La date sera automatiquement pré-remplie par le jour sélectionné.
+        </p>
+
+        <%= form_with model: MissionProposal.new,
+                      url: fve_mission_proposals_path,
+                      method: :post,
+                      local: true,
+                      class: "row g-3" do |f| %>
+
+          <%# CHAMP CACHÉ : ID du Merch Cible %>
+          <%= f.hidden_field :merch_id, value: @merch_user.id %>
+
+          <%# CHAMPS TEMPS & DATE %>
+          <div class="col-md-6">
+            <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
+            <%= f.date_field :date,
+                class: "form-control",
+                required: true,
+                id: "mission_proposal_date",
+                data: { "mission-planner-target": "dateInput" } %>
+          </div>
+
+          <div class="col-md-3">
+            <%= f.label :start_time, "Heure de Début", class: "form-label fw-semibold" %>
+            <%= f.time_field :start_time,
+                class: "form-control",
+                required: true,
+                value: Time.zone.parse("09:00") %>
+          </div>
+
+          <div class="col-md-3">
+            <%= f.label :end_time, "Heure de Fin", class: "form-label fw-semibold" %>
+            <%= f.time_field :end_time,
+                class: "form-control",
+                required: true,
+                value: Time.zone.parse("13:00") %>
+          </div>
+
+          <%# CHAMPS LIEU ET TAUX %>
+          <div class="col-md-6">
+            <%= f.label :company, "Client / Marque", class: "form-label fw-semibold" %>
+            <%= f.text_field :company, class: "form-control", placeholder: "Ex: PepsiCo", required: true %>
+          </div>
+
+          <div class="col-md-6">
+            <%= f.label :hourly_rate, "Taux Horaire proposé (€/h)", class: "form-label fw-semibold" %>
+            <%= f.number_field :hourly_rate, class: "form-control", step: 0.01, placeholder: "Ex: 13.50", required: true %>
+          </div>
+
+          <%# CHAMPS MAGASIN + KM %>
+          <div class="col-md-4">
+            <%= f.label :store_name, "Nom du Magasin", class: "form-label fw-semibold" %>
+            <%= f.text_field :store_name, class: "form-control", required: true %>
+          </div>
+
+          <div class="col-md-4">
+            <%= f.label :store_address, "Adresse complète", class: "form-label fw-semibold" %>
+            <%= f.text_field :store_address, class: "form-control", required: true %>
+          </div>
+
+          <div class="col-md-4">
+            <%= f.label :estimated_km, "KM Estimés (A/R)", class: "form-label fw-semibold" %>
+            <%= f.number_field :estimated_km, class: "form-control", placeholder: "Ex: 50", step: 1, required: false %>
+          </div>
+
+          <%# MESSAGE %>
+          <div class="col-12">
+            <%= f.label :message, "Message (optionnel)", class: "form-label fw-semibold" %>
+            <%= f.text_area :message, class: "form-control", rows: 3 %>
+          </div>
+
+          <%# BOUTONS D'ACTION %>
+          <div class="col-12 text-end mt-4">
+             <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+             <%= f.submit "Envoyer la Proposition", class: "btn btn-orange fw-bold px-4" %>
+          </div>
+
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%# ========================================================== %>
+<%# VUE PRINCIPALE DU PLANNING %>
+<%# ========================================================== %>
 <div class="container my-5">
 
   <h1 class="fw-bold text-orange mb-4 text-center">
     Planning de <%= @merch_user.displayable_name(current_user) %>
   </h1>
 
+  <%# NAVIGATION MOIS %>
   <div class="d-flex justify-content-between align-items-center mb-4">
-
     <%= link_to fve_planning_path(@merch_user, year: @prev_year, month: @prev_month),
                 class: "btn btn-orange-outline rounded-3" do %>
       <i class="fa-solid fa-chevron-left"></i>
@@ -19,19 +127,16 @@
                 class: "btn btn-orange-outline rounded-3" do %>
       <i class="fa-solid fa-chevron-right"></i>
     <% end %>
-
   </div>
 
-
+  <%# LÉGENDE MOBILE %>
   <div class="d-lg-none text-center mb-3 animate__animated animate__fadeIn">
     <div class="d-inline-block bg-light px-3 py-1 rounded-pill border">
-      <small class="text-muted">
-        Vue simplifiée (jours libres masqués)
-      </small>
+      <small class="text-muted">Vue simplifiée</small>
     </div>
   </div>
 
-
+  <%# EN-TÊTES JOURS (Desktop) %>
   <div class="d-none d-lg-block shadow-sm rounded-4 p-3 mb-2 bg-white">
     <div class="week-headers">
       <div>Lun</div><div>Mar</div><div>Mer</div>
@@ -39,52 +144,48 @@
     </div>
   </div>
 
-
+  <%# GRILLE CALENDRIER %>
   <div class="calendar-wrapper">
     <div class="calendar-grid shadow-sm rounded-4 p-3">
 
       <% @weeks.each do |week| %>
-
         <div class="calendar-row">
 
           <% week.each do |day| %>
             <% raw_sessions = @sessions_by_date[day] || [] %>
             <% sessions = raw_sessions.sort_by(&:start_time) %>
-
-            <%# 1. On cherche l'indisponibilité pour ce jour %>
             <% unav = @unavailabilities.find { |u| u.date == day } %>
 
-            <%# Logique pour déterminer la disponibilité (Libre ET Futur/Aujourd'hui) %>
-            <% is_available = sessions.empty? && unav.blank? && day >= Date.today %>
+            <%# LOGIQUE : Proposition possible si pas d'indisponibilité et jour >= aujourd'hui %>
+            <% can_propose = unav.blank? && day >= Date.today %>
 
             <div class="calendar-cell rounded-3 position-relative
                         <%= 'today' if day == Date.today %>
                         <%= sessions.any? ? 'cell-busy' : 'cell-available' %>
                         <%= 'cell-unavailable' if unav.present? %>">
 
-              <%# ============================================================ %>
-              <%# LOGIQUE DU DÉCLENCHEUR DE MODALE (Cliquable si disponible) %>
-              <%# ============================================================ %>
-
-              <% if is_available %>
+              <%# DÉCLENCHEUR DE MODALE (Bouton couvrant toute la cellule) %>
+              <% if can_propose %>
                 <button type="button"
                         class="d-block w-100 h-100 p-1 text-start calendar-button-trigger"
+                        style="position: absolute; top: 0; left: 0; z-index: 50; background: none; border: none; cursor: pointer;"
                         data-bs-toggle="modal"
                         data-bs-target="#newMissionModal"
+                        data-action="click->mission-planner#setDate"
                         data-mission-date="<%= day.strftime('%Y-%m-%d') %>">
               <% end %>
 
+                <%# Contenu visuel de la cellule %>
                 <div class="d-flex justify-content-between align-items-start p-1">
                   <div class="date-number fw-semibold <%= 'text-orange' if day.month == @month %>">
                     <%= day.day %>
                   </div>
 
-                  <%# Icône en fonction du statut du jour (Contrôle visuel) %>
                   <% if unav.present? %>
                     <i class="fa-solid fa-ban text-danger small"></i>
                   <% elsif sessions.any? %>
                     <i class="fa-solid fa-briefcase text-orange small"></i>
-                  <% elsif is_available %>
+                  <% elsif can_propose %>
                     <i class="fa-solid fa-circle-plus text-orange small"></i>
                   <% end %>
                 </div>
@@ -102,11 +203,10 @@
 
                 <div class="sessions-container">
                   <% sessions.each do |ws| %>
-                    <%# On compare l'agence du FVE connecté avec l'agence du contrat de la mission %>
+                    <% next unless ws.contract.present? %>
                     <% is_my_agency = (current_user.agency == ws.contract.agency) %>
 
                     <% if is_my_agency %>
-
                       <div class="session-item bg-white rounded-3 p-2 mb-1 border border-orange text-truncate">
                         <div class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
                           <%= ws.contract.agency_label %> - <%= ws.company %>
@@ -115,25 +215,19 @@
                           <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
                         </div>
                       </div>
-
                     <% else %>
-
                       <div class="session-item bg-light rounded-3 p-2 mb-1 border border-light text-truncate opacity-75">
                         <div class="fw-bold text-secondary fst-italic" style="line-height: 1.1;">
                           <i class="fa-solid fa-briefcase me-1 small"></i> Mission externe
                         </div>
-                        <div class="text-muted small">
-                          Non visible
-                        </div>
+                        <div class="text-muted small">Non visible</div>
                       </div>
-
                     <% end %>
-
                   <% end %>
                 </div>
 
-              <% if is_available %>
-                </button> <%# Fermeture du bouton cliquable %>
+              <% if can_propose %>
+                </button>
               <% end %>
 
             </div>
@@ -145,11 +239,10 @@
     </div>
   </div>
 
-
   <div class="text-center mt-4">
     <%= link_to "Retour", fve_merch_index_path, class: "btn btn-orange-outline fw-semibold px-4" %>
   </div>
 
-  <%= render 'fve/plannings/mission_proposal_modal', merch_user: @merch_user %>
-
 </div>
+
+
