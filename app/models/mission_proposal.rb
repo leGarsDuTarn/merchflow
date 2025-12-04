@@ -31,6 +31,10 @@ class MissionProposal < ApplicationRecord
         .where("start_time::time > ?", Time.current.strftime('%H:%M:%S'))
       )
   }
+  # Filtre par mois
+  scope :for_month, ->(date) {
+    where(date: date.beginning_of_month..date.end_of_month)
+  }
   # =========================================================
   # TRANSFORMER EN MISSION
   # =========================================================

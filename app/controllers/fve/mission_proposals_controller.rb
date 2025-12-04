@@ -3,60 +3,89 @@ module Fve
   class MissionProposalsController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
+    # On charge la proposition pour l'action destroy
+    before_action :set_proposal, only: [:destroy]
 
+    # =========================================================
+    # INDEX (Suivi des propositions envoyées)
+    # =========================================================
     def index
-      # On récupère toutes les propositions envoyées par ce FVE
-      # On inclut :merch pour éviter les requêtes N+1 (performance)
+      # 1. Gestion de la date (Navigation par mois)
+      @year = (params[:year] || Date.current.year).to_i
+      @month = (params[:month] || Date.current.month).to_i
+
+      begin
+        @target_date = Date.new(@year, @month, 1)
+      rescue ArgumentError
+        @target_date = Date.current.beginning_of_month
+      end
+
+      # 2. Récupération des propositions du mois choisi
       @proposals = current_user.sent_mission_proposals
+                               .for_month(@target_date) # 👈 Scope par mois
                                .includes(:merch)
                                .order(date: :desc, created_at: :desc)
 
-      # On peut séparer pour l'affichage dans des onglets
-      @pending_proposals  = @proposals.select(&:pending?)
-      @accepted_proposals = @proposals.select(&:accepted?)
-      @declined_proposals = @proposals.select(&:declined?)
+      # 3. Séparation pour les onglets
+      @pending_proposals   = @proposals.select(&:pending?)
+      @accepted_proposals  = @proposals.select(&:accepted?)
+      # On regroupe refusées et annulées
+      @history_proposals   = @proposals.select { |p| p.declined? || p.cancelled? }
+
+      # Variables pour la navigation (Mois suivant / Précédent)
+      @prev_date = @target_date - 1.month
+      @next_date = @target_date + 1.month
     end
 
+    # =========================================================
+    # CREATE (Envoi d'une nouvelle proposition)
+    # =========================================================
     def create
+      # 1. Instanciation, assignation FVE et Agence
       @proposal = MissionProposal.new(proposal_params)
       @proposal.fve = current_user
       @proposal.agency = current_user.agency
 
-      # 1. Trouver le Merch (ID est dans les paramètres forts de la proposition)
+      # 2. Vérification de l'existence du prestataire (pour les messages d'erreur)
       @merch_user = User.find_by(id: @proposal.merch_id)
-
-      # 2. Vérification de l'existence du prestataire
       unless @merch_user
         return redirect_back fallback_location: fve_merch_index_path, alert: 'Prestataire cible introuvable.'
       end
 
-      @proposal.merch = @merch_user # Lier l'objet trouvé
-
-      # --- 3. VERIFICATION DU CONTRAT (Contrainte : Contrat avec l'Agence du FVE) ---
-      agency_name = current_user.agency # Récupère le nom de l'agence du FVE connecté
-
-      unless @merch_user.contracts.exists?(agency: agency_name)
+      # 3. Vérification du contrat (Contrainte métier)
+      unless @merch_user.contracts.exists?(agency: current_user.agency)
         return redirect_back fallback_location: fve_merch_path(@merch_user),
-                             alert: "Action refusée : Le prestataire doit avoir un contrat actif avec votre agence (#{agency_name.capitalize})."
+                             alert: "Action refusée : Le prestataire doit avoir un contrat actif avec votre agence (#{current_user.agency.capitalize})."
       end
 
-      # --- 4. VERIFICATION DE LA DISPONIBILITÉ (Contrainte Requise) ---
-      if is_merch_unavailable?(@merch_user, @proposal.date, @proposal.start_time, @proposal.end_time)
-        return redirect_back fallback_location: fve_merch_path(@merch_user),
-                             alert: "Action refusée : Le prestataire n'est pas disponible à cette date/heure (conflit de planning ou indisponibilité personnelle)."
-      end
-
-      # 5. Sauvegarde
-      @proposal.status = :pending
-
+      # 4. Sauvegarde
+      # Le statut est automatiquement :pending (par défaut dans le modèle)
+      # Les validations du modèle gèrent : alignement des dates, chevauchement avec PROPOSALS et WORK_SESSIONS.
       if @proposal.save
         # TODO: Ajouter ici l'envoi de notification (SMS/Email) au Merch
-        redirect_to fve_merch_path(@merch_user), notice: 'Proposition envoyée avec succès ! En attente de la réponse du Merch.'
+        redirect_to fve_planning_path(@merch_user, year: @proposal.date.year, month: @proposal.date.month),
+                    notice: "Proposition envoyée avec succès à #{@merch_user.firstname} !"
       else
-        # Si les validations du modèle MissionProposal échouent
-        redirect_to fve_merch_path(@merch_user), alert: "Erreur lors de la proposition : #{@proposal.errors.full_messages.join(', ')}"
+        # Si les validations du modèle échouent (chevauchement, champs manquants...)
+        redirect_back fallback_location: fve_merch_path(@merch_user),
+                      alert: "Erreur lors de la proposition : #{@proposal.errors.full_messages.to_sentence}"
       end
     end
+
+    # =========================================================
+    # DESTROY (Suppression sécurisée du suivi)
+    # =========================================================
+    def destroy
+      merch_name = @proposal.merch.full_name
+
+      # Suppression de la proposition (sans affecter la WorkSession si elle est acceptée)
+      @proposal.destroy
+
+      # Redirection vers la vue du mois concerné par la suppression
+      redirect_to fve_mission_proposals_path(year: @proposal.date.year, month: @proposal.date.month),
+                  notice: "La proposition pour #{merch_name} a été supprimée de votre suivi."
+    end
+
 
     private
 
@@ -64,31 +93,10 @@ module Fve
       redirect_to root_path, alert: 'Accès réservé aux FVE' unless current_user&.fve?
     end
 
-    # Logique de vérification de la disponibilité du prestataire
-    # app/controllers/fve/mission_proposals_controller.rb
-
-  def is_merch_unavailable?(merch_user, date, start_time, end_time)
-    # 1. Vérifie les indisponibilités personnelles
-    is_unavailable_personally = merch_user.unavailabilities.exists?(date: date)
-    return true if is_unavailable_personally
-
-    # 2. Vérifie les WorkSessions (missions déjà acceptées)
-    is_booked = merch_user.work_sessions
-                          .where(date: date)
-                          .overlapping(start_time, end_time)
-                          .exists?
-    return true if is_booked
-
-    # 3. ✨ NOUVEAU : Vérifie les propositions en attente (pending)
-    has_pending_conflict = merch_user.received_mission_proposals
-                                    .pending
-                                    .where(date: date)
-                                    .where('(start_time < ?) AND (end_time > ?)', end_time, start_time)
-                                    .exists?
-    return true if has_pending_conflict
-
-    return false
-  end
+    # Chargement de la proposition pour destroy
+    def set_proposal
+      @proposal = current_user.sent_mission_proposals.find(params[:id])
+    end
 
     def proposal_params
       params.require(:mission_proposal).permit(

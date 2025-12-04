@@ -9,7 +9,28 @@
     <% end %>
   </div>
 
-  <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+  <%# ========================================================== %>
+  <%# NAVIGATION MENSUELLE %>
+  <%# ========================================================== %>
+  <div class="d-flex justify-content-center align-items-center mb-4 bg-light rounded-pill p-2 shadow-sm" style="max-width: 400px; margin: 0 auto;">
+
+    <%= link_to fve_mission_proposals_path(year: @prev_date.year, month: @prev_date.month),
+                class: "btn btn-light rounded-circle border-0 text-orange" do %>
+      <i class="fa-solid fa-chevron-left"></i>
+    <% end %>
+
+    <h4 class="fw-bold m-0 mx-4 text-capitalize" style="min-width: 150px; text-align: center;">
+      <%= l @target_date, format: "%B %Y" %>
+    </h4>
+
+    <%= link_to fve_mission_proposals_path(year: @next_date.year, month: @next_date.month),
+                class: "btn btn-light rounded-circle border-0 text-orange" do %>
+      <i class="fa-solid fa-chevron-right"></i>
+    <% end %>
+
+  </div>
+
+  <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active fw-bold" id="pills-pending-tab" data-bs-toggle="pill" data-bs-target="#pills-pending" type="button" role="tab">
         ⏳ En attente (<%= @pending_proposals.count %>)
@@ -22,7 +43,7 @@
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link fw-bold" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" type="button" role="tab">
-        ❌ Refusées / Annulées
+        ❌ Refus / Annul. (<%= @history_proposals.count %>)
       </button>
     </li>
   </ul>
@@ -36,9 +57,7 @@
         </div>
       <% else %>
         <div class="alert alert-light text-center py-5 rounded-4 border">
-          <i class="fa-solid fa-check-circle fa-3x text-muted mb-3"></i>
-          <h4 class="fw-bold text-muted">Aucune proposition en attente</h4>
-          <p class="text-muted">Vos merchandisers sont à jour !</p>
+          <h4 class="fw-bold text-muted">Aucune proposition en attente ce mois-ci</h4>
         </div>
       <% end %>
     </div>
@@ -49,18 +68,17 @@
           <%= render partial: "proposal_card", collection: @accepted_proposals, as: :proposal %>
         </div>
       <% else %>
-        <div class="text-center py-5 text-muted">Aucune proposition validée récemment.</div>
+        <div class="text-center py-5 text-muted">Rien à afficher pour ce mois.</div>
       <% end %>
     </div>
 
     <div class="tab-pane fade" id="pills-history" role="tabpanel">
-      <% history = @declined_proposals %>
-      <% if history.any? %>
+      <% if @history_proposals.any? %>
         <div class="row g-4">
-          <%= render partial: "proposal_card", collection: history, as: :proposal %>
+          <%= render partial: "proposal_card", collection: @history_proposals, as: :proposal %>
         </div>
       <% else %>
-        <div class="text-center py-5 text-muted">Aucun historique de refus.</div>
+        <div class="text-center py-5 text-muted">Aucun refus ou annulation ce mois-ci.</div>
       <% end %>
     </div>
 
