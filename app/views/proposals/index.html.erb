@@ -106,7 +106,7 @@
                 <div class="col-12 col-md-6">
                   <strong><i class="fa-solid fa-road me-1"></i> KM Estimés :</strong>
                   <span class="fw-semibold">
-                    <%= proposal.estimated_km.to_i %> km
+                    <%= proposal.effective_km.to_i %> km
                   </span>
                 </div>
 
@@ -121,7 +121,7 @@
               </div>
 
               <%# ADRESSE COMPLÈTE (Optionnel, affiché si KM estimés sont présents pour le contexte) %>
-              <% if proposal.estimated_km.present? %>
+              <% if proposal.effective_km.present? %>
                 <p class="small text-muted mt-2 mb-0">
                   Adresse complète: <%= proposal.store_address %>
                 </p>
@@ -139,7 +139,7 @@
               <%# BOUTONS D'ACTION (Gérer l'Acceptation/Refus/Suppression) %>
               <div class="d-flex justify-content-between align-items-center">
 
-                <%# 🚨 NOUVEAU : Bouton de Suppression (Autorisé pour Pending, Declined et Accepted) %>
+                <%# Bouton de Suppression %>
                 <%= button_to "Supprimer",
                       merch_proposal_path(proposal),
                       method: :delete,

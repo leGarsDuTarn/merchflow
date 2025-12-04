@@ -57,7 +57,7 @@ class MissionProposal < ApplicationRecord
         store: store_name,
         store_full_address: store_address,
         hourly_rate: hourly_rate,
-        estimated_km: estimated_km,
+        effective_km: effective_km,
         status: :accepted,
         notes: "Mission acceptée via proposition FVE. Message initial : #{message}"
       )

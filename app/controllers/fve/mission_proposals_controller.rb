@@ -79,7 +79,7 @@ module Fve
         :store_address,
         :hourly_rate,
         :message,
-        :estimated_km
+        :effective_km
       )
     end
   end
