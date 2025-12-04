@@ -10,25 +10,106 @@
   </div>
 
   <%# ========================================================== %>
+  <%# 🚨 BLOC DE FILTRES RAPIDES ET AVANCÉS %>
+  <%# ========================================================== %>
+  <div class="card shadow-sm rounded-4 p-4 mb-5">
+    <%= form_with url: fve_mission_proposals_path, method: :get, local: true, class: "row g-3" do %>
+
+      <div class="col-12"><h6 class="fw-bold mb-1">Filtre Rapide (Nom & Client)</h6></div>
+
+      <div class="col-md-6 col-lg-4">
+        <%= text_field_tag :query,
+                           params[:query],
+                           class: "form-control",
+                           placeholder: "Nom, Prénom ou Pseudo du Merch..." %>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <%= text_field_tag :company,
+                           params[:company],
+                           class: "form-control",
+                           placeholder: "Nom du Client / Compagnie..." %>
+      </div>
+
+      <%# Placeholder pour alignement %>
+      <div class="col-md-6 col-lg-4"></div>
+
+      <div class="col-12"><hr class="mt-4 mb-3"></div>
+
+      <div class="col-12"><h6 class="fw-bold mb-3">Filtres Période et Rôle</h6></div>
+
+      <div class="col-md-6 col-lg-3">
+        <%= label_tag :start_date, "Mission à partir du", class: "form-label fw-semibold" %>
+        <%= date_field_tag :start_date,
+                           params[:start_date],
+                           class: "form-control" %>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <%= label_tag :end_date, "Mission jusqu'au", class: "form-label fw-semibold" %>
+        <%= date_field_tag :end_date,
+                           params[:end_date],
+                           class: "form-control" %>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <%= label_tag :preference, "Rôle Merch souhaité", class: "form-label fw-semibold" %>
+        <%= select_tag :preference,
+                       options_for_select([['Tous les rôles', nil], ['Merchandising', :merch], ['Animation / Démo', :anim]], params[:preference]),
+                       class: "form-select" %>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-end justify-content-end">
+        <%= button_tag type: :submit, class: "btn btn-orange fw-semibold px-4 me-2" do %>
+            <i class="fa-solid fa-filter me-2"></i> Rechercher
+        <% end %>
+        <%= link_to "Réinit.", fve_mission_proposals_path, class: "btn btn-outline-secondary" %>
+      </div>
+
+    <% end %>
+  </div>
+  <%# ========================================================== %>
+
+
+  <%# Détection si des filtres spécifiques sont actifs (pour le message de décompte) %>
+  <% filter_params = %w[query company start_date end_date preference] %>
+  <% is_filtered = filter_params.any? { |key| params[key].present? } %>
+
+  <p class="text-muted mb-3">
+    <strong><%= @proposals.count %></strong> proposition(s) trouvée(s)
+    <% if is_filtered %>
+      <span class="small fst-italic">(Filtre appliqué, navigation mensuelle désactivée)</span>
+    <% end %>
+  </p>
+
+
+  <%# ========================================================== %>
   <%# NAVIGATION MENSUELLE %>
   <%# ========================================================== %>
-  <div class="d-flex justify-content-center align-items-center mb-4 bg-light rounded-pill p-2 shadow-sm" style="max-width: 400px; margin: 0 auto;">
+  <% unless is_filtered %>
+    <div class="d-flex justify-content-center align-items-center mb-4 bg-light rounded-pill p-2 shadow-sm" style="max-width: 400px; margin: 0 auto;">
 
-    <%= link_to fve_mission_proposals_path(year: @prev_date.year, month: @prev_date.month),
-                class: "btn btn-light rounded-circle border-0 text-orange" do %>
-      <i class="fa-solid fa-chevron-left"></i>
-    <% end %>
+      <%= link_to fve_mission_proposals_path(year: @prev_date.year, month: @prev_date.month),
+                  class: "btn btn-light rounded-circle border-0 text-orange" do %>
+        <i class="fa-solid fa-chevron-left"></i>
+      <% end %>
 
-    <h4 class="fw-bold m-0 mx-4 text-capitalize" style="min-width: 150px; text-align: center;">
-      <%= l @target_date, format: "%B %Y" %>
-    </h4>
+      <h4 class="fw-bold m-0 mx-4 text-capitalize" style="min-width: 150px; text-align: center;">
+        <%= l @target_date, format: "%B %Y" %>
+      </h4>
 
-    <%= link_to fve_mission_proposals_path(year: @next_date.year, month: @next_date.month),
-                class: "btn btn-light rounded-circle border-0 text-orange" do %>
-      <i class="fa-solid fa-chevron-right"></i>
-    <% end %>
+      <%= link_to fve_mission_proposals_path(year: @next_date.year, month: @next_date.month),
+                  class: "btn btn-light rounded-circle border-0 text-orange" do %>
+        <i class="fa-solid fa-chevron-right"></i>
+      <% end %>
 
-  </div>
+    </div>
+  <% end %>
+
+
+  <%# ========================================================== %>
+  <%# CONTENU PRINCIPAL PAR ONGLETS %>
+  <%# ========================================================== %>
 
   <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
@@ -50,6 +131,7 @@
 
   <div class="tab-content" id="pills-tabContent">
 
+    <%# ONGLET 1 : EN ATTENTE %>
     <div class="tab-pane fade show active" id="pills-pending" role="tabpanel">
       <% if @pending_proposals.any? %>
         <div class="row g-4">
@@ -57,28 +139,30 @@
         </div>
       <% else %>
         <div class="alert alert-light text-center py-5 rounded-4 border">
-          <h4 class="fw-bold text-muted">Aucune proposition en attente ce mois-ci</h4>
+          <h4 class="fw-bold text-muted">Aucune proposition en attente.</h4>
         </div>
       <% end %>
     </div>
 
+    <%# ONGLET 2 : VALIDÉES %>
     <div class="tab-pane fade" id="pills-accepted" role="tabpanel">
       <% if @accepted_proposals.any? %>
         <div class="row g-4">
           <%= render partial: "proposal_card", collection: @accepted_proposals, as: :proposal %>
         </div>
       <% else %>
-        <div class="text-center py-5 text-muted">Rien à afficher pour ce mois.</div>
+        <div class="text-center py-5 text-muted">Rien à afficher dans les missions validées.</div>
       <% end %>
     </div>
 
+    <%# ONGLET 3 : HISTORIQUE %>
     <div class="tab-pane fade" id="pills-history" role="tabpanel">
       <% if @history_proposals.any? %>
         <div class="row g-4">
           <%= render partial: "proposal_card", collection: @history_proposals, as: :proposal %>
         </div>
       <% else %>
-        <div class="text-center py-5 text-muted">Aucun refus ou annulation ce mois-ci.</div>
+        <div class="text-center py-5 text-muted">Aucun historique de refus ou annulation.</div>
       <% end %>
     </div>
 

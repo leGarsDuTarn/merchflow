@@ -3,14 +3,13 @@ module Fve
   class MissionProposalsController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
-    # On charge la proposition pour l'action destroy
     before_action :set_proposal, only: [:destroy]
 
     # =========================================================
     # INDEX (Suivi des propositions envoyées)
     # =========================================================
     def index
-      # 1. Gestion de la date (Navigation par mois)
+      # 1. Gestion de la date de navigation (Mois/Année)
       @year = (params[:year] || Date.current.year).to_i
       @month = (params[:month] || Date.current.month).to_i
 
@@ -20,19 +19,43 @@ module Fve
         @target_date = Date.current.beginning_of_month
       end
 
-      # 2. Récupération des propositions du mois choisi
+      # 2. Base de la requête (Toutes les propositions envoyées par ce FVE)
       @proposals = current_user.sent_mission_proposals
-                               .for_month(@target_date) # 👈 Scope par mois
-                               .includes(:merch)
+                               .includes(merch: :merch_setting)
                                .order(date: :desc, created_at: :desc)
 
-      # 3. Séparation pour les onglets
+      # 3. FILTRES DE RECHERCHE
+
+      # Filtre : Nom/Pseudo du Merch
+      if params[:query].present?
+        @proposals = @proposals.search_by_merch_name(params[:query])
+      end
+
+      # Filtre : Compagnie
+      if params[:company].present?
+        @proposals = @proposals.by_company(params[:company])
+      end
+
+      # Filtre : Préférence (Merch/Anim)
+      if params[:preference].present?
+        @proposals = @proposals.by_merch_preference(params[:preference])
+      end
+
+      # Filtre : Plage de Dates (PRIORITAIRE sur la navigation mensuelle)
+      if params[:start_date].present? || params[:end_date].present?
+        @proposals = @proposals.by_date_range(params[:start_date], params[:end_date])
+      else
+        # Si pas de filtre spécifique, on applique le filtre mensuel de navigation
+        @proposals = @proposals.for_month(@target_date)
+      end
+
+
+      # 4. Séparation pour les onglets
       @pending_proposals   = @proposals.select(&:pending?)
       @accepted_proposals  = @proposals.select(&:accepted?)
-      # On regroupe refusées et annulées
       @history_proposals   = @proposals.select { |p| p.declined? || p.cancelled? }
 
-      # Variables pour la navigation (Mois suivant / Précédent)
+      # Variables pour la navigation
       @prev_date = @target_date - 1.month
       @next_date = @target_date + 1.month
     end
@@ -41,32 +64,27 @@ module Fve
     # CREATE (Envoi d'une nouvelle proposition)
     # =========================================================
     def create
-      # 1. Instanciation, assignation FVE et Agence
       @proposal = MissionProposal.new(proposal_params)
       @proposal.fve = current_user
       @proposal.agency = current_user.agency
 
-      # 2. Vérification de l'existence du prestataire (pour les messages d'erreur)
       @merch_user = User.find_by(id: @proposal.merch_id)
       unless @merch_user
         return redirect_back fallback_location: fve_merch_index_path, alert: 'Prestataire cible introuvable.'
       end
 
-      # 3. Vérification du contrat (Contrainte métier)
+      # Vérification du contrat (Contrainte métier : avant la validation finale)
       unless @merch_user.contracts.exists?(agency: current_user.agency)
         return redirect_back fallback_location: fve_merch_path(@merch_user),
                              alert: "Action refusée : Le prestataire doit avoir un contrat actif avec votre agence (#{current_user.agency.capitalize})."
       end
 
-      # 4. Sauvegarde
-      # Le statut est automatiquement :pending (par défaut dans le modèle)
-      # Les validations du modèle gèrent : alignement des dates, chevauchement avec PROPOSALS et WORK_SESSIONS.
+      # Sauvegarde (Le modèle gère le chevauchement et l'alignement des dates)
       if @proposal.save
         # TODO: Ajouter ici l'envoi de notification (SMS/Email) au Merch
         redirect_to fve_planning_path(@merch_user, year: @proposal.date.year, month: @proposal.date.month),
                     notice: "Proposition envoyée avec succès à #{@merch_user.firstname} !"
       else
-        # Si les validations du modèle échouent (chevauchement, champs manquants...)
         redirect_back fallback_location: fve_merch_path(@merch_user),
                       alert: "Erreur lors de la proposition : #{@proposal.errors.full_messages.to_sentence}"
       end
@@ -93,8 +111,8 @@ module Fve
       redirect_to root_path, alert: 'Accès réservé aux FVE' unless current_user&.fve?
     end
 
-    # Chargement de la proposition pour destroy
     def set_proposal
+      # Sécurité : on s'assure que la proposition appartient bien au FVE connecté
       @proposal = current_user.sent_mission_proposals.find(params[:id])
     end
 

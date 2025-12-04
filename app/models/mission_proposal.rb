@@ -35,6 +35,52 @@ class MissionProposal < ApplicationRecord
   scope :for_month, ->(date) {
     where(date: date.beginning_of_month..date.end_of_month)
   }
+
+  scope :search_by_merch_name, ->(query) {
+    return all if query.blank?
+
+    search_term = "%#{query}%"
+
+    # Jointure avec la table users via l'alias 'merch' et recherche sur les colonnes du Merch
+    joins(:merch)
+      .where("users.firstname ILIKE :search OR users.lastname ILIKE :search OR users.username ILIKE :search", search: search_term)
+  }
+
+  scope :by_company, ->(company_name) {
+    return all if company_name.blank?
+    where("company ILIKE ?", "%#{company_name}%")
+  }
+
+  scope :by_date_range, ->(start_date_param, end_date_param) {
+    start_date = start_date_param.present? ? (Date.parse(start_date_param) rescue nil) : nil
+    end_date = end_date_param.present? ? (Date.parse(end_date_param) rescue nil) : nil
+
+    if start_date && end_date
+      where(date: start_date..end_date)
+    elsif start_date
+      where("date >= ?", start_date)
+    elsif end_date
+      where("date <= ?", end_date)
+    else
+      all
+    end
+  }
+
+  scope :by_merch_preference, ->(preference) {
+    return all unless preference.present?
+
+    case preference.to_sym
+    when :merch
+      # Joindre merch -> merch_setting
+      joins(merch: :merch_setting).where(merch_settings: { role_merch: true })
+    when :anim
+      joins(merch: :merch_setting).where(merch_settings: { role_anim: true })
+    else
+      all
+    end
+  }
+
+
   # =========================================================
   # TRANSFORMER EN MISSION
   # =========================================================
