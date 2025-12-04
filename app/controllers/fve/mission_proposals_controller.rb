@@ -4,6 +4,19 @@ module Fve
     before_action :authenticate_user!
     before_action :require_fve!
 
+    def index
+      # On récupère toutes les propositions envoyées par ce FVE
+      # On inclut :merch pour éviter les requêtes N+1 (performance)
+      @proposals = current_user.sent_mission_proposals
+                               .includes(:merch)
+                               .order(date: :desc, created_at: :desc)
+
+      # On peut séparer pour l'affichage dans des onglets
+      @pending_proposals  = @proposals.select(&:pending?)
+      @accepted_proposals = @proposals.select(&:accepted?)
+      @declined_proposals = @proposals.select(&:declined?)
+    end
+
     def create
       @proposal = MissionProposal.new(proposal_params)
       @proposal.fve = current_user

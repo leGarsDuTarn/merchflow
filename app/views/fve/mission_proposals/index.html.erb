@@ -1,0 +1,68 @@
+<div class="container my-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange">
+      <i class="fa-solid fa-paper-plane me-2"></i> Suivi des Propositions
+    </h1>
+    <%= link_to fve_merch_index_path, class: "btn btn-orange fw-semibold" do %>
+      <i class="fa-solid fa-plus me-2"></i> Nouvelle Proposition
+    <% end %>
+  </div>
+
+  <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold" id="pills-pending-tab" data-bs-toggle="pill" data-bs-target="#pills-pending" type="button" role="tab">
+        ⏳ En attente (<%= @pending_proposals.count %>)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold" id="pills-accepted-tab" data-bs-toggle="pill" data-bs-target="#pills-accepted" type="button" role="tab">
+        ✅ Validées (<%= @accepted_proposals.count %>)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" type="button" role="tab">
+        ❌ Refusées / Annulées
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="pills-tabContent">
+
+    <div class="tab-pane fade show active" id="pills-pending" role="tabpanel">
+      <% if @pending_proposals.any? %>
+        <div class="row g-4">
+          <%= render partial: "proposal_card", collection: @pending_proposals, as: :proposal %>
+        </div>
+      <% else %>
+        <div class="alert alert-light text-center py-5 rounded-4 border">
+          <i class="fa-solid fa-check-circle fa-3x text-muted mb-3"></i>
+          <h4 class="fw-bold text-muted">Aucune proposition en attente</h4>
+          <p class="text-muted">Vos merchandisers sont à jour !</p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="tab-pane fade" id="pills-accepted" role="tabpanel">
+      <% if @accepted_proposals.any? %>
+        <div class="row g-4">
+          <%= render partial: "proposal_card", collection: @accepted_proposals, as: :proposal %>
+        </div>
+      <% else %>
+        <div class="text-center py-5 text-muted">Aucune proposition validée récemment.</div>
+      <% end %>
+    </div>
+
+    <div class="tab-pane fade" id="pills-history" role="tabpanel">
+      <% history = @declined_proposals %>
+      <% if history.any? %>
+        <div class="row g-4">
+          <%= render partial: "proposal_card", collection: history, as: :proposal %>
+        </div>
+      <% else %>
+        <div class="text-center py-5 text-muted">Aucun historique de refus.</div>
+      <% end %>
+    </div>
+
+  </div>
+</div>

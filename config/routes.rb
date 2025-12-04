@@ -82,7 +82,7 @@ Rails.application.routes.draw do
     post 'invitations/:token', to: 'invitations#complete', as: 'complete_invitation'
 
     # Proposition de missions (Création par le FVE)
-    resources :mission_proposals, only: [:create]
+    resources :mission_proposals, only: %i[create index]
   end
 
   # ============================================================
