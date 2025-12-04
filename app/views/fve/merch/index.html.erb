@@ -7,6 +7,33 @@
   <div class="card shadow-sm rounded-4 p-4 mb-5">
     <%= form_with url: fve_merch_index_path, method: :get, local: true, class: "row g-3" do |f| %>
 
+      <%# ========================================================== %>
+      <%# 🚨 NOUVEAU BLOC 1 : RECHERCHE NOM/PRENOM/PSEUDO (En tête) %>
+      <%# ========================================================== %>
+      <div class="col-12">
+        <h6 class="fw-bold mb-1">Recherche rapide par nom</h6>
+      </div>
+      <div class="col-md-12 col-lg-6">
+        <%= text_field_tag :query,
+                           params[:query],
+                           class: "form-control form-control-lg",
+                           placeholder: "Nom, Prénom ou Pseudo du Merchandiser..." %>
+      </div>
+      <div class="col-md-12 col-lg-6 d-flex align-items-center">
+        <%= f.submit "Rechercher", class: "btn btn-orange fw-semibold px-4 btn-lg me-2" %>
+        <%= link_to "Réinitialiser", fve_merch_index_path, class: "btn btn-outline-secondary btn-lg" %>
+      </div>
+
+      <div class="col-12"><hr class="mt-4 mb-3"></div>
+
+      <div class="col-12">
+        <h6 class="fw-bold mb-3">Filtres Géographiques et Horaires</h6>
+      </div>
+
+      <%# ========================================================== %>
+      <%# BLOC 2 : GÉOGRAPHIE & PÉRIODE %>
+      <%# ========================================================== %>
+
       <div class="col-md-6 col-lg-4">
         <%= f.label :city, "Ville", class: "form-label fw-semibold" %>
         <%= f.text_field :city,
@@ -45,6 +72,11 @@
             class: "form-control" %>
       </div>
 
+      <%# ========================================================== %>
+      <%# BLOC 3 : PRÉFÉRENCES & CONTRATS %>
+      <%# ========================================================== %>
+      <div class="col-12"><h6 class="mt-3 fw-bold">Préférences et Historique</h6></div>
+
       <div class="col-md-6 col-lg-4">
         <%= f.label :company, "A travaillé pour", class: "form-label fw-semibold" %>
         <%= f.text_field :company,
@@ -53,8 +85,6 @@
             placeholder: "Nom de l'entreprise" %>
       </div>
 
-      <%# NOUVEAU BLOC : PRÉFÉRENCES DE RÔLES %>
-      <div class="col-12"><h6 class="mt-3">Préférences de Missions</h6></div>
 
       <div class="col-md-6 col-lg-4">
         <div class="form-check">
@@ -63,9 +93,6 @@
               "1", "0" %>
           <%= f.label :prefers_merch, "Recherche missions Merchandising", class: "form-check-label" %>
         </div>
-      </div>
-
-      <div class="col-md-6 col-lg-4">
         <div class="form-check">
           <%= f.check_box :prefers_anim,
               { class: "form-check-input", checked: params[:prefers_anim] == "1" },
@@ -73,19 +100,15 @@
           <%= f.label :prefers_anim, "Recherche missions Animation / Démo", class: "form-check-label" %>
         </div>
       </div>
-      <%# FIN NOUVEAU BLOC %>
 
       <div class="col-md-6 col-lg-4">
-        <div class="form-check mt-3">
+        <div class="form-check">
           <%= f.check_box :has_contract_with_me,
               { class: "form-check-input", checked: params[:has_contract_with_me] == "1" },
               "1", "0" %>
           <%= f.label :has_contract_with_me, "A déjà un contrat avec votre FVE", class: "form-check-label" %>
         </div>
-      </div>
-
-      <div class="col-md-6 col-lg-4">
-        <div class="form-check mt-3">
+        <div class="form-check">
           <%= f.check_box :only_with_contact,
               { class: "form-check-input", checked: params[:only_with_contact] == "1" },
               "1", "0" %>
@@ -93,18 +116,23 @@
         </div>
       </div>
 
-      <div class="col-12 d-flex gap-2 justify-content-end mt-4">
-        <%= f.submit "Rechercher", class: "btn btn-orange fw-semibold px-4" %>
-        <%= link_to "Réinitialiser", fve_merch_index_path, class: "btn btn-green" %>
-      </div>
+
+      <%# Les boutons de soumission sont maintenant en haut pour une meilleure UX %>
+      <%# 🚨 J'ai déplacé les boutons principaux en haut, mais si vous voulez les garder ici pour l'UX traditionnelle: %>
+
+      <%# <div class="col-12 d-flex gap-2 justify-content-end mt-4"> %>
+        <%# <%= f.submit "Rechercher", class: "btn btn-orange fw-semibold px-4" %>
+        <%# <%= link_to "Réinitialiser", fve_merch_index_path, class: "btn btn-green" %>
+      <%# </div> %>
+
 
     <% end %>
   </div>
 
-  <% search_params = %w[city zipcode department start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim] %>
+  <% search_params = %w[query city zipcode department start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim] %>
   <% has_search = search_params.any? { |key| params[key].present? } %>
 
-  <% if has_search %>
+  <% if has_search || params[:query].present? %>
     <p class="text-muted mb-3">
       <strong><%= @merch.count %></strong> résultat(s) trouvé(s)
     </p>
@@ -121,14 +149,12 @@
               <%= m.displayable_name(current_user) %>
             </h5>
 
-            <%# NOUVEAU BLOC : PRÉFÉRENCES DE MISSIONS %>
             <% if m.merch_setting.present? %>
               <p class="small mb-1 text-muted">
                 <i class="bi bi-briefcase-fill"></i> Missions :
                 <strong><%= m.merch_setting.mission_preferences %></strong>
               </p>
             <% end %>
-            <%# FIN NOUVEAU BLOC %>
 
             <p class="text-muted mb-2">
               <strong>Ville :</strong>
@@ -175,7 +201,7 @@
   <% else %>
     <div class="text-center mt-5">
       <p class="text-muted">
-        <%= has_search ?
+        <%= has_search || params[:query].present? ?
             "🔍 Aucun merchandiser ne correspond à vos critères." :
             "📋 Utilisez les filtres ci-dessus pour rechercher des merchandisers." %>
       </p>

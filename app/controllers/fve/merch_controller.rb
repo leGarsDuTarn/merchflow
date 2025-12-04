@@ -11,6 +11,12 @@ module Fve
       # Ajout de :merch_setting pour les filtres de confidentialité (évite N+1)
       @merch = User.merch.includes(:contracts, :work_sessions, :unavailabilities, :merch_setting)
 
+      # FILTRE : Nom, prenom ou username
+      if params[:query].present?
+        search_term = "%#{params[:query]}%"
+        @merch = @merch.where("firstname ILIKE :search OR lastname ILIKE :search OR username ILIKE :search", search: search_term)
+      end
+
       # FILTRE : Ville
       if params[:city].present?
         @merch = @merch.where("LOWER(city) LIKE ?", "%#{params[:city].downcase}%")
