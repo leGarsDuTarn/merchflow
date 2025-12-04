@@ -10,7 +10,7 @@
   </div>
 
   <%# ========================================================== %>
-  <%# 🚨 BLOC DE FILTRES RAPIDES ET AVANCÉS %>
+  <%# BLOC DE FILTRES RAPIDES ET AVANCÉS %>
   <%# ========================================================== %>
   <div class="card shadow-sm rounded-4 p-4 mb-5">
     <%= form_with url: fve_mission_proposals_path, method: :get, local: true, class: "row g-3" do %>
@@ -61,7 +61,7 @@
 
       <div class="col-md-6 col-lg-3 d-flex align-items-end justify-content-end">
         <%= button_tag type: :submit, class: "btn btn-orange fw-semibold px-4 me-2" do %>
-            <i class="fa-solid fa-filter me-2"></i> Rechercher
+            <i class="fa-solid fa-filter me-2"></i> Filtrer
         <% end %>
         <%= link_to "Réinit.", fve_mission_proposals_path, class: "btn btn-outline-secondary" %>
       </div>
@@ -71,40 +71,12 @@
   <%# ========================================================== %>
 
 
-  <%# Détection si des filtres spécifiques sont actifs (pour le message de décompte) %>
   <% filter_params = %w[query company start_date end_date preference] %>
   <% is_filtered = filter_params.any? { |key| params[key].present? } %>
 
   <p class="text-muted mb-3">
     <strong><%= @proposals.count %></strong> proposition(s) trouvée(s)
-    <% if is_filtered %>
-      <span class="small fst-italic">(Filtre appliqué, navigation mensuelle désactivée)</span>
-    <% end %>
   </p>
-
-
-  <%# ========================================================== %>
-  <%# NAVIGATION MENSUELLE %>
-  <%# ========================================================== %>
-  <% unless is_filtered %>
-    <div class="d-flex justify-content-center align-items-center mb-4 bg-light rounded-pill p-2 shadow-sm" style="max-width: 400px; margin: 0 auto;">
-
-      <%= link_to fve_mission_proposals_path(year: @prev_date.year, month: @prev_date.month),
-                  class: "btn btn-light rounded-circle border-0 text-orange" do %>
-        <i class="fa-solid fa-chevron-left"></i>
-      <% end %>
-
-      <h4 class="fw-bold m-0 mx-4 text-capitalize" style="min-width: 150px; text-align: center;">
-        <%= l @target_date, format: "%B %Y" %>
-      </h4>
-
-      <%= link_to fve_mission_proposals_path(year: @next_date.year, month: @next_date.month),
-                  class: "btn btn-light rounded-circle border-0 text-orange" do %>
-        <i class="fa-solid fa-chevron-right"></i>
-      <% end %>
-
-    </div>
-  <% end %>
 
 
   <%# ========================================================== %>

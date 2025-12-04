@@ -41,12 +41,9 @@ module Fve
         @proposals = @proposals.by_merch_preference(params[:preference])
       end
 
-      # Filtre : Plage de Dates (PRIORITAIRE sur la navigation mensuelle)
+      # Filtre : Plage de Dates 
       if params[:start_date].present? || params[:end_date].present?
         @proposals = @proposals.by_date_range(params[:start_date], params[:end_date])
-      else
-        # Si pas de filtre spécifique, on applique le filtre mensuel de navigation
-        @proposals = @proposals.for_month(@target_date)
       end
 
 
