@@ -52,21 +52,30 @@ module Fve
     end
 
     # Logique de vérification de la disponibilité du prestataire
-    def is_merch_unavailable?(merch_user, date, start_time, end_time)
-      # Vérifie si la date est dans les indisponibilités personnelles
-      is_unavailable_personally = merch_user.unavailabilities.exists?(date: date)
-      return true if is_unavailable_personally
+    # app/controllers/fve/mission_proposals_controller.rb
 
-      # Vérifie les sessions de travail planifiées (WorkSession) pour le chevauchement
-      # Utilisation du scope :overlapping que nous avons ajouté au modèle WorkSession
-      is_booked = merch_user.work_sessions
-                            .overlapping(start_time, end_time)
-                            .exists?
+  def is_merch_unavailable?(merch_user, date, start_time, end_time)
+    # 1. Vérifie les indisponibilités personnelles
+    is_unavailable_personally = merch_user.unavailabilities.exists?(date: date)
+    return true if is_unavailable_personally
 
-      return true if is_booked
+    # 2. Vérifie les WorkSessions (missions déjà acceptées)
+    is_booked = merch_user.work_sessions
+                          .where(date: date)
+                          .overlapping(start_time, end_time)
+                          .exists?
+    return true if is_booked
 
-      return false
-    end
+    # 3. ✨ NOUVEAU : Vérifie les propositions en attente (pending)
+    has_pending_conflict = merch_user.received_mission_proposals
+                                    .pending
+                                    .where(date: date)
+                                    .where('(start_time < ?) AND (end_time > ?)', end_time, start_time)
+                                    .exists?
+    return true if has_pending_conflict
+
+    return false
+  end
 
     def proposal_params
       params.require(:mission_proposal).permit(

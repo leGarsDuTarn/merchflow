@@ -9,7 +9,7 @@ module Fve
 
       @merch_user = User.merch.find(params[:id])
 
-      # 🚨 VÉRIFICATION DE SÉCURITÉ CRITIQUE : Droit de voir le planning
+      # Droit de voir le planning
       # On vérifie si l'utilisateur Merch a autorisé le partage du planning.
       # On s'assure d'abord que le merch_setting existe pour éviter un crash.
       unless @merch_user.merch_setting&.share_planning?

@@ -11,7 +11,7 @@ class WorkSession < ApplicationRecord
   validates :date, :start_time, :end_time, presence: { message: 'Ce champ est requis' }
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
-  # 🚨 AJOUT : Validation du chevauchement horaire pour éviter les double-réservations
+  # Validation du chevauchement horaire pour éviter les double-réservations
   validate :no_overlap_with_existing_sessions
 
   # ============================================================
@@ -86,8 +86,7 @@ class WorkSession < ApplicationRecord
       start_time: proposal.start_time,
       end_time: proposal.end_time,
       hourly_rate: proposal.hourly_rate,
-      # 🚨 MISE À JOUR : Utilise le champ estimated_km de la proposition
-      effective_km: proposal.estimated_km || 0.0,
+      effective_km: proposal.effective_km || 0.0,
       store: proposal.store_name,
       company: proposal.company,
       recommended: false,
