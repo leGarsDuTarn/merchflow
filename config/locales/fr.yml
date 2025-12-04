@@ -17,6 +17,7 @@ fr:
       default: "%H:%M"
       short: "%H:%M"
       long: "%H:%M:%S"
+      short_time: "%H:%M"
 
   # ============================================================
   # NUMBER (formats pour l'affichage des devises)

@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  # Importe les constantes et la logique d'agence
+  include AgencyConstants
+
   # ============================================================
   # DEVISE MODULES
   # ============================================================
@@ -22,13 +25,14 @@ class User < ApplicationRecord
   # Propositions de Missions reçues (Merch)
   has_many :received_mission_proposals, class_name: 'MissionProposal', foreign_key: 'merch_id', dependent: :destroy
   # ============================================================
-  # RÔLE
+  # RÔLE + ENUM
   # ============================================================
   after_initialize :set_default_role, if: :new_record?
 
   enum :role, { merch: 0, fve: 1, admin: 2 }, default: :merch
-  # On réutilise l'enum défini dans Contract pour ne pas avoir à le réécrire
-  enum :agency, Contract.agencies, prefix: :works_for
+
+  # Utilise l'énumération définie dans le Concern
+  enum :agency, AgencyConstants::AGENCY_ENUMS, prefix: :works_for
 
   # ============================================================
   # PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM

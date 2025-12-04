@@ -1,4 +1,7 @@
 class Contract < ApplicationRecord
+  # Importe les constantes et la méthode d'affichage d'agence
+  include AgencyConstants
+
   belongs_to :user
   belongs_to :fve, class_name: 'User', optional: true
   # L'utilisateur Prestataire (Merch)
@@ -13,57 +16,12 @@ class Contract < ApplicationRecord
   # AGENCIES ENUM + LABELS
   # ============================================================
 
-  enum :agency, {
-    actiale: "actiale",
-    rma: "rma",
-    edelvi: "edelvi",
-    mdf: "dmf",
-    cpm: "cpm",
-    idtt: "idtt",
-    sarawak: "sarawak",
-    optimark: "optimark",
-    strada: "strada",
-    andeol: "andeol",
-    demosthene: "demosthene",
-    altavia: "altavia",
-    marcopolo: "marcopolo",
-    virageconseil: "virageconseil",
-    upsell: "upsell",
-    idal: "idal",
-    armada: "armada",
-    sellbytel: "sellbytel"
-  }
-
-  AGENCY_LABELS = {
-    "actiale" => "Actiale",
-    "rma" => "RMA SA",
-    "edelvi" => "Edelvi",
-    "mdf" => "DMF",
-    "cpm" => "CPM",
-    "idtt" => "Idtt Interim Distribution",
-    "sarawak" => "Sarawak",
-    "optimark" => "Optimark",
-    "strada" => "Strada Marketing",
-    "andeol" => "Andéol",
-    "demosthene" => "Démosthène",
-    "altavia" => "Altavia Fil Conseil",
-    "marcopolo" => "MarcoPolo Performance",
-    "virageconseil" => "Virage Conseil",
-    "upsell" => "Upsell",
-    "idal" => "iDal",
-    "armada" => "Armada",
-    "sellbytel" => "Sellbytel"
-  }.freeze
-
-  def agency_label
-    return "Agence inconnue" if agency.blank?
-
-    AGENCY_LABELS[agency] || agency.to_s.humanize
-  end
-
+  # Utilise l'énumération définie dans le Concern
+  enum :agency, AgencyConstants::AGENCY_ENUMS
 
   def self.agency_options
-    agencies.keys.map { |key| [AGENCY_LABELS[key], key] }
+    # Utilise la constante AGENCY_LABELS du Concern pour générer les options
+    AgencyConstants::AGENCY_ENUMS.keys.map { |key| [AgencyConstants::AGENCY_LABELS[key], key] }
   end
 
   # ============================================================
@@ -137,8 +95,16 @@ class Contract < ApplicationRecord
   # PRIVATE
   # ============================================================
 
+  private
+
   def normalize_decimal_fields
-    %i[km_custom hourly_rate].each do |field|
+    # NOTE: L'ancienne boucle utilisait %i[km_custom hourly_rate]
+    # qui sont des champs de WorkSession, pas Contract.
+    # Si ces champs existent vraiment dans Contract, laissez-les.
+    # Sinon, seuls les champs spécifiques à Contract (km_rate, night_rate, etc.) devraient être là.
+
+    # En supposant que vous normalisez les taux :
+    %i[km_rate night_rate ifm_rate cp_rate].each do |field|
       value = self[field]
       next if value.blank?
 
