@@ -17,13 +17,11 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # ENUM
   # ============================================================
-
   enum :status, { pending: 0, accepted: 1, declined: 2 }
 
   # ============================================================
   # SCOPES - pour le planning
   # ============================================================
-
   scope :for_month, ->(year, month) {
     where(date: Date.new(year, month).all_month)
   }
@@ -53,23 +51,15 @@ class WorkSession < ApplicationRecord
     )
   }
 
-  # Vérifie si la période proposée chevauche une session existante
-  scope :overlapping, ->(start_time, end_time) {
-    where("
-      (work_sessions.start_time < :end_time) AND (work_sessions.end_time > :start_time)
-    ", start_time: start_time, end_time: end_time)
-  }
-
   # ============================================================
   # SCOPES - pour le dashboard
   # ============================================================
-
   scope :current_month, -> {
     where(date: Date.current.beginning_of_month..Date.current.end_of_month)
   }
 
   # ============================================================
-  # CLASSE METHOD (NOUVEAU)
+  # CLASSE METHOD
   # ============================================================
   def self.create_from_proposal(proposal)
     # Trouver le contrat Merch-Agence le plus récent pour l'agence donnée
@@ -93,7 +83,6 @@ class WorkSession < ApplicationRecord
       status: :accepted
     )
   end
-
 
   # ============================================================
   # CONSTANTES
@@ -164,7 +153,7 @@ class WorkSession < ApplicationRecord
       return
     end
 
-    # 2) KM provenant des logs (si l’API a écrit dedans)
+    # 2) KM provenant des logs (si l'API a écrit dedans)
     api_km = kilometer_logs.sum(:distance).to_f
     if api_km.positive?
       self.effective_km = api_km
@@ -227,22 +216,49 @@ class WorkSession < ApplicationRecord
   # ============================================================
   private
 
-  # Garde-fou de Chevauchement
+  # ============================================================
+  # VALIDATION : Pas de chevauchement entre sessions 
+  # ============================================================
   def no_overlap_with_existing_sessions
-    # Vérifie si les données critiques sont présentes
     return unless contract.present? && date.present? && start_time.present? && end_time.present?
 
     user_id = contract.user_id
 
-    # 1. Scope qui trouve les sessions du même utilisateur, sur la même date, et n'est pas l'enregistrement courant
-    overlapping_sessions = WorkSession
+    # 1. Construire les datetime complets pour la nouvelle session
+    new_start_dt = date.to_datetime.change(hour: start_time.hour, min: start_time.min)
+    new_end_dt   = date.to_datetime.change(hour: end_time.hour, min: end_time.min)
+
+    # Ajuster si mission de nuit (end_time a été modifié par ensure_end_time_is_on_correct_day)
+    new_end_dt += 1.day if end_time.day != start_time.day
+
+    # 2. Récupérer toutes les sessions de l'utilisateur (sauf la session courante)
+    existing_sessions = WorkSession
       .joins(:contract)
-      .where(contracts: { user_id: user_id }, date: date)
+      .where(contracts: { user_id: user_id })
       .where.not(id: id)
 
-    # 2. Utilise le scope overlapping sur la portée trouvée
-    if overlapping_sessions.overlapping(start_time, end_time).exists?
-      errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée pour vous ce jour-là. Vérifiez votre planning.')
+    # 3. Vérifier le chevauchement avec .any? (préféré à find_each avec return)
+    has_overlap = existing_sessions.any? do |session|
+      # Construire les datetime de la session existante
+      existing_start = session.date.to_datetime.change(
+        hour: session.start_time.hour,
+        min: session.start_time.min
+      )
+      existing_end = session.date.to_datetime.change(
+        hour: session.end_time.hour,
+        min: session.end_time.min
+      )
+
+      # Ajuster si la session existante est une mission de nuit
+      existing_end += 1.day if session.end_time.day != session.start_time.day
+
+      # Logique de chevauchement :
+      # Deux intervalles [A,B] et [C,D] se chevauchent si : C < B ET D > A
+      existing_start < new_end_dt && existing_end > new_start_dt
+    end
+
+    if has_overlap
+      errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée pour vous. Vérifiez votre planning.')
     end
   end
 
