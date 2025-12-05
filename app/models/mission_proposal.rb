@@ -30,15 +30,18 @@ class MissionProposal < ApplicationRecord
   # Scope pour afficher uniquement les propositions non expirées
   # Cette scope s'assure que la mission n'est pas déjà passée.
   scope :active_opportunities, -> {
-    now = Time.current # Utiliser Time.current pour la zone horaire
+    # Heure du serveur local, mais demandons à PostgreSQL de faire la conversion
+    # pour garantir la cohérence des colonnes non-zonées.
 
     where("
-      (date > :today)
+      (date > CURRENT_DATE)
       OR
-      (date = :today AND (date::timestamp + (start_time - date::timestamp)) > :now)
-    ", today: now.to_date, now: now)
+      (date = CURRENT_DATE
+          AND (date::timestamp + start_time::time::interval) >
+          NOW() AT TIME ZONE 'Europe/Paris')::timestamp
+      )
+    ")
   }
-
 
   scope :search_by_merch_name, ->(query) {
     return all if query.blank?
