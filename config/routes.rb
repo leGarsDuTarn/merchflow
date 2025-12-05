@@ -64,7 +64,7 @@ Rails.application.routes.draw do
   # ============================================================
   # MERCH ROUTES (Actions du Prestataire)
   # ============================================================
-  # Géré par Merch::MissionProposalsController (doit être créé)
+  # Géré par Merch::MissionProposalsController
   scope module: :merch do
     resources :mission_proposals, only: [:update], as: :merch_mission_proposals
   end
@@ -82,7 +82,7 @@ Rails.application.routes.draw do
     post 'invitations/:token', to: 'invitations#complete', as: 'complete_invitation'
 
     # Proposition de missions (Création par le FVE)
-    resources :mission_proposals, only: %i[create index destroy]
+    resources :mission_proposals, only: %i[create index destroy show]
   end
 
   # ============================================================

@@ -16,14 +16,20 @@
 
   <div class="row g-3 mb-4">
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm border-0 bg-orange-light h-100"> <div class="card-body text-center">
-          <h6 class="text-muted text-uppercase small fw-bold">Sur le terrain ce jour</h6>
-          <p class="display-5 fw-bold text-orange mb-0"><%= @missions_today_count %></p>
-          <small class="text-muted">Missions actives</small>
-        </div>
+   <div class="col-md-6 col-lg-4">
+  <%= link_to fve_mission_proposals_path(date_filter: 'today', status_filter: 'accepted'), class: "text-decoration-none" do %>
+
+    <div class="card shadow-sm border-0 bg-orange-light h-100"> <div class="card-body text-center">
+        <h6 class="text-muted text-uppercase small fw-bold">Sur le terrain ce jour</h6>
+        <p class="display-5 fw-bold text-orange mb-0">
+          <%= @missions_today_count %>
+        </p>
+        <small class="text-muted">Missions actives</small>
       </div>
     </div>
+
+  <% end %>
+</div>
 
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm border-0 h-100">

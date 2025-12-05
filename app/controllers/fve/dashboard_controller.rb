@@ -10,7 +10,7 @@ module Fve
 
       # --- ZONE 1 : MÉTÉO (KPIs) ---
 
-      # CORRECTION ICI : On utilise directement le champ "date" de la proposition
+      # On utilise directement le champ "date" de la proposition
       @missions_today_count = current_user.sent_mission_proposals
                                           .where(status: 'accepted') # ou :accepted si enum
                                           .where(date: Date.today)
@@ -22,7 +22,7 @@ module Fve
 
       # --- ZONE 2 : ALERTES (Refus) ---
 
-      # CORRECTION ICI : On retire :mission du includes car il n'existe pas
+      # On retire :mission du includes car il n'existe pas
       @alerts = current_user.sent_mission_proposals
                             .includes(:merch) # On garde merch pour éviter les requêtes N+1
                             .where(status: 'refused')
@@ -31,7 +31,7 @@ module Fve
 
       # --- ZONE 3 : ÉQUIPE ---
 
-      # Si tu as mis en place les favoris :
+      # Mis en place les favoris :
       @favorite_merchs = current_user.try(:favorites) || []
 
       # Les autres (exclure les favoris)
