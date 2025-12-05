@@ -2,7 +2,8 @@ module Fve
   class MissionProposalsController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
-    before_action :set_proposal, only: [:destroy]
+    # ⬅️ MODIFIÉ : set_proposal n'est plus nécessaire car destroy est supprimé
+    # before_action :set_proposal, only: [:destroy]
 
     # =========================================================
     # INDEX (Suivi des propositions)
@@ -22,9 +23,9 @@ module Fve
       @prev_date = @target_date - 1.month
       @next_date = @target_date + 1.month
 
-      # 2. Base de la requête (Tout ce que le FVE a envoyé)
-      # On utilise .includes pour charger les infos du merch et ses settings d'un coup (Performance)
+      # 2. Base de la requête (Tout ce que le FVE a envoyé et qui n'est pas archivé par le temps)
       @proposals = current_user.sent_mission_proposals
+                               .active_opportunities # Utilise le scope d'archivage automatique
                                .includes(merch: :merch_setting)
                                .order(date: :desc, created_at: :desc)
 
@@ -33,8 +34,6 @@ module Fve
       # A. Filtre venant du Dashboard (ex: 'today', 'upcoming')
       if params[:date_filter] == 'today'
         @proposals = @proposals.where(date: Date.today)
-      elsif params[:date_filter] == 'upcoming'
-        @proposals = @proposals.where('date >= ?', Date.today)
       end
 
       # B. Filtre de Statut (ex: 'accepted' depuis le dashboard)
@@ -93,21 +92,6 @@ module Fve
       end
     end
 
-    # =========================================================
-    # DESTROY (Annulation / Suppression)
-    # =========================================================
-    def destroy
-      merch_name = @proposal.merch.try(:full_name) || "Le prestataire"
-
-      # On stocke la date pour la redirection avant de supprimer
-      redirect_date = @proposal.date
-
-      @proposal.destroy
-
-      redirect_to fve_mission_proposals_path(year: redirect_date.year, month: redirect_date.month),
-                  notice: "Proposition pour #{merch_name} supprimée."
-    end
-
     private
 
     # Vérification des droits d'accès
@@ -119,8 +103,10 @@ module Fve
 
     # Récupération de la proposition (sécurisée au scope de l'utilisateur)
     def set_proposal
-      @proposal = current_user.sent_mission_proposals.find(params[:id])
+      # Recherche parmi les propositions actives (active_opportunities)
+      @proposal = current_user.sent_mission_proposals.active_opportunities.find(params[:id])
     rescue ActiveRecord::RecordNotFound
+      # Redirige si la proposition est introuvable ou si elle est déjà passée/archivée.
       redirect_to fve_mission_proposals_path, alert: "Proposition introuvable ou vous n'avez pas les droits."
     end
 

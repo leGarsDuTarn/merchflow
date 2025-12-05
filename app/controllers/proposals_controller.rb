@@ -1,7 +1,7 @@
 # app/controllers/proposals_controller.rb
 class ProposalsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_proposal, only: %i[update destroy] # Ajout d'un before_action
+  before_action :set_proposal, only: %i[update] 
 
   def index
     # ==========================================================
@@ -62,17 +62,6 @@ class ProposalsController < ApplicationController
       end
     else
       redirect_to merch_proposals_path, alert: 'Action non valide.'
-    end
-  end
-
-  def destroy
-    proposal_title = @proposal.company.presence || @proposal.fve&.agency_label || "Proposition (ID: #{@proposal.id})"
-
-    # La suppression de la proposition n'affecte PAS la WorkSession déjà créée
-    if @proposal.destroy
-      redirect_to merch_proposals_path, notice: "La proposition de #{proposal_title} a été définitivement supprimée de votre liste d'opportunités."
-    else
-      redirect_to merch_proposals_path, alert: "Erreur lors de la suppression de la proposition."
     end
   end
 

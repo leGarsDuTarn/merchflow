@@ -79,7 +79,6 @@ class MissionProposal < ApplicationRecord
     end
   }
 
-
   # =========================================================
   # TRANSFORMER EN MISSION
   # =========================================================
