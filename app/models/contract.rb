@@ -1,14 +1,19 @@
+# app/models/contract.rb
 class Contract < ApplicationRecord
-  # 1. On supprime ou commente l'include de l'ancien fichier
-  # include AgencyConstants
-
+  # ============================================================
+  # RELATIONS
+  # ============================================================
   belongs_to :user
   belongs_to :fve, class_name: 'User', optional: true
   belongs_to :merch, class_name: 'User', optional: true
+
   has_many :work_sessions, dependent: :destroy
   has_many :declarations, dependent: :destroy
 
- enum :contract_type, {
+  # ============================================================
+  # ENUM & CONSTANTES
+  # ============================================================
+  enum :contract_type, {
     cdd: "cdd",
     cidd: "cidd",
     interim: "interim"
@@ -17,53 +22,88 @@ class Contract < ApplicationRecord
   CONTRACT_TYPE_LABELS = {
     "cdd" => "CDD",
     "cidd" => "CIDD",
-    "interim" => "Intérim",
-    "cdi" => "CDI"
+    "interim" => "Intérim"
   }.freeze
 
-  # 3. Nouvelle Validation : On vérifie que le code existe en DB
+  # ============================================================
+  # VALIDATIONS
+  # ============================================================
   validates :agency, presence: { message: 'Vous devez sélectionner une agence' }
   validate :agency_must_exist_in_db
 
-  # 4. Helper pour les listes déroulantes (Select) dans vos vues
-  def self.agency_options
-    # Renvoie un tableau : [["Actiale", "actiale"], ["RMA", "rma"], ...]
-    Agency.where.not(code: 'other').order(:label).pluck(:label, :code)
-  end
-
-  # 5. Méthode d'affichage (pour afficher "Actiale" au lieu de "actiale")
-  def agency_label
-    # Cherche le label en base, sinon affiche le code 'humanisé'
-    Agency.find_by(code: agency)&.label || agency.to_s.humanize
-  end
-
-  def contract_type_label
-    # Utilise le hash des labels pour retourner le nom lisible
-    CONTRACT_TYPE_LABELS[contract_type] || contract_type.to_s.humanize
-  end
-
-  # ... Vos autres validations existantes (km_rate, etc.) ...
   validates :night_rate, :ifm_rate, :cp_rate, numericality: { greater_than_or_equal_to: 0 }
   validates :km_rate, presence: true, numericality: true
   validates :km_limit, numericality: { greater_than_or_equal_to: 0 }
 
+  # ============================================================
+  # CALLBACKS
+  # ============================================================
   before_validation :normalize_decimal_fields
 
+  # ============================================================
+  # CALCULS FINANCIERS
+  # ============================================================
+
+  # --- Frais kilométriques ---
+  def km_payment(kilometers, recommended: false)
+    rate = km_rate.to_f
+
+    effective_km =
+      if recommended
+        kilometers
+      elsif km_limit.positive?
+        [kilometers, km_limit.to_f].min
+      else
+        kilometers
+      end
+
+    (effective_km * rate).round(2)
+  end
+
+  # --- IFM (taux dynamique via ifm_rate) ---
+  def ifm(brut_salary)
+    rate = (ifm_rate.presence || 0).to_d
+    (brut_salary * rate).round(2)
+  end
+
+  # --- CP (calculé sur brut + IFM, taux dynamique via cp_rate) ---
+  def cp(brut_salary)
+    base = brut_salary
+    rate = (cp_rate.presence || 0).to_d
+    (base * rate).round(2)
+  end
+
+  # ============================================================
+  # HELPERS
+  # ============================================================
+  def self.agency_options
+    Agency.where.not(code: 'other').order(:label).pluck(:label, :code)
+  end
+
+  def agency_label
+    Agency.find_by(code: agency)&.label || agency.to_s.humanize
+  end
+
+  def contract_type_label
+    CONTRACT_TYPE_LABELS[contract_type] || contract_type.to_s.humanize
+  end
+
+  # ============================================================
+  # PRIVÉ
+  # ============================================================
   private
 
-  # La validation personnalisée
   def agency_must_exist_in_db
     return if agency.blank?
-    # Si aucun enregistrement n'a ce code dans la table agencies -> erreur
-    unless Agency.exists?(code: agency)
-      errors.add(:agency, "n'est pas une agence valide")
-    end
+
+    errors.add(:agency, "n'est pas une agence valide") unless Agency.exists?(code: agency)
   end
 
   def normalize_decimal_fields
     %i[km_rate night_rate ifm_rate cp_rate].each do |field|
       value = self[field]
       next if value.blank?
+
       self[field] = value.to_s.tr(',', '.')
     end
   end
