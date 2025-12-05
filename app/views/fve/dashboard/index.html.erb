@@ -32,13 +32,16 @@
 </div>
 
     <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body text-center">
-          <h6 class="text-muted text-uppercase small fw-bold">Propositions en attente</h6>
-          <p class="display-5 fw-bold text-secondary mb-0"><%= @pending_proposals_count %></p>
-          <small class="text-muted">À relancer</small>
+      <%# Ajout du lien vers l'index des propositions avec le filtre 'pending' %>
+      <%= link_to fve_mission_proposals_path(status_filter: 'pending'), class: "text-decoration-none" do %>
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center">
+            <h6 class="text-muted text-uppercase small fw-bold">Propositions en attente</h6>
+            <p class="display-5 fw-bold text-secondary mb-0"><%= @pending_proposals_count %></p>
+            <small class="text-muted">À relancer</small>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
 
     <div class="col-md-12 col-lg-4">

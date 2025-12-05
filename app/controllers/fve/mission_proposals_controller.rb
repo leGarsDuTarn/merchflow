@@ -52,7 +52,9 @@ module Fve
       end
 
       # 4. SÉPARATION POUR L'AFFICHAGE (Onglets)
-      # Note : Ces variables dépendent des filtres ci-dessus.
+      # On s'assure que la valeur par défaut est un statut valide pour les onglets.
+      @active_tab = params[:status_filter].presence || 'pending'
+
       # Si on filtre par "Accepted", @pending_proposals sera vide. C'est le comportement attendu.
       @pending_proposals   = @proposals.select(&:pending?)
       @accepted_proposals  = @proposals.select(&:accepted?)

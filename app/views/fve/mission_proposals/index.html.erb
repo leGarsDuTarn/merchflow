@@ -70,7 +70,7 @@
   </div>
   <%# ========================================================== %>
 
-
+  <%# Ces variables étaient là pour un filtre de style, je les laisse au cas où. %>
   <% filter_params = %w[query company start_date end_date preference] %>
   <% is_filtered = filter_params.any? { |key| params[key].present? } %>
 
@@ -78,24 +78,44 @@
     <strong><%= @proposals.count %></strong> proposition(s) trouvée(s)
   </p>
 
-
   <%# ========================================================== %>
-  <%# CONTENU PRINCIPAL PAR ONGLETS %>
+  <%# CONTENU PRINCIPAL PAR ONGLETS (CORRIGÉ) %>
   <%# ========================================================== %>
 
   <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
+
+    <%# ONGLET EN ATTENTE : actif si @active_tab est 'pending' %>
     <li class="nav-item" role="presentation">
-      <button class="nav-link active fw-bold" id="pills-pending-tab" data-bs-toggle="pill" data-bs-target="#pills-pending" type="button" role="tab">
+      <button class="nav-link fw-bold <%= 'active' if @active_tab == 'pending' %>"
+              id="pills-pending-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-pending"
+              type="button"
+              role="tab">
         ⏳ En attente (<%= @pending_proposals.count %>)
       </button>
     </li>
+
+    <%# ONGLET VALIDÉES : actif si @active_tab est 'accepted' %>
     <li class="nav-item" role="presentation">
-      <button class="nav-link fw-bold" id="pills-accepted-tab" data-bs-toggle="pill" data-bs-target="#pills-accepted" type="button" role="tab">
+      <button class="nav-link fw-bold <%= 'active' if @active_tab == 'accepted' %>"
+              id="pills-accepted-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-accepted"
+              type="button"
+              role="tab">
         ✅ Validées (<%= @accepted_proposals.count %>)
       </button>
     </li>
+
+    <%# ONGLET HISTORIQUE : actif si @active_tab correspond à l'historique (rejected, declined, cancelled) %>
     <li class="nav-item" role="presentation">
-      <button class="nav-link fw-bold" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" type="button" role="tab">
+      <button class="nav-link fw-bold <%= 'active' if ['declined', 'cancelled', 'rejected'].include?(@active_tab) %>"
+              id="pills-history-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-history"
+              type="button"
+              role="tab">
         ❌ Refus / Annul. (<%= @history_proposals.count %>)
       </button>
     </li>
@@ -103,8 +123,8 @@
 
   <div class="tab-content" id="pills-tabContent">
 
-    <%# ONGLET 1 : EN ATTENTE %>
-    <div class="tab-pane fade show active" id="pills-pending" role="tabpanel">
+    <%# PANNEAU 1 : EN ATTENTE %>
+    <div class="tab-pane fade <%= 'show active' if @active_tab == 'pending' %>" id="pills-pending" role="tabpanel">
       <% if @pending_proposals.any? %>
         <div class="row g-4">
           <%= render partial: "proposal_card", collection: @pending_proposals, as: :proposal %>
@@ -116,8 +136,8 @@
       <% end %>
     </div>
 
-    <%# ONGLET 2 : VALIDÉES %>
-    <div class="tab-pane fade" id="pills-accepted" role="tabpanel">
+    <%# PANNEAU 2 : VALIDÉES %>
+    <div class="tab-pane fade <%= 'show active' if @active_tab == 'accepted' %>" id="pills-accepted" role="tabpanel">
       <% if @accepted_proposals.any? %>
         <div class="row g-4">
           <%= render partial: "proposal_card", collection: @accepted_proposals, as: :proposal %>
@@ -127,8 +147,8 @@
       <% end %>
     </div>
 
-    <%# ONGLET 3 : HISTORIQUE %>
-    <div class="tab-pane fade" id="pills-history" role="tabpanel">
+    <%# PANNEAU 3 : HISTORIQUE %>
+    <div class="tab-pane fade <%= 'show active' if ['declined', 'cancelled', 'rejected'].include?(@active_tab) %>" id="pills-history" role="tabpanel">
       <% if @history_proposals.any? %>
         <div class="row g-4">
           <%= render partial: "proposal_card", collection: @history_proposals, as: :proposal %>
