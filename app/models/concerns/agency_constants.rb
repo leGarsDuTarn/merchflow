@@ -55,11 +55,27 @@ module AgencyConstants
   included do
     # Si le modèle a la colonne 'agency', il obtient la méthode d'affichage.
     if column_names.include?('agency')
-      # Définit la méthode agency_label pour le modèle
+
+      # Définit la méthode agency_label pour le modèle.
+      # Elle cherche désormais le label dans la table Agency
+      # au lieu d'utiliser le Hash statique AGENCY_LABELS.
       def agency_label
-        return "Agence inconnue" if agency.blank?
-        AGENCY_LABELS[agency] || agency.to_s.humanize
+        return "Non renseigné" if agency.blank?
+
+        # Le code de l'agence (ex: 'actimum') est dans self.agency
+        # On interroge la base de données.
+        found_agency = Agency.find_by(code: agency)
+
+        if found_agency
+          # Si l'enregistrement est trouvé, on retourne le label saisi par l'admin
+          found_agency.label
+        else
+          # Si l'agence n'est pas trouvée en DB, on retourne le code humanisé
+          # (cas d'une ancienne donnée ou d'une erreur de saisie)
+          agency.to_s.humanize
+        end
       end
+
     end
   end
 end

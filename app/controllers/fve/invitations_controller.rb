@@ -25,6 +25,8 @@ module Fve
 
       # On pré-remplit l'email pour le confort de l'utilisateur
       @user = User.new(email: @invitation.email)
+      # Ajout de la variable pour la vue
+      @agency_label = Agency.find_by(code: @invitation.agency)&.label || @invitation.agency.to_s.humanize
     end
 
     def complete

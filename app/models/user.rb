@@ -31,13 +31,10 @@ class User < ApplicationRecord
 
   enum :role, { merch: 0, fve: 1, admin: 2 }, default: :merch
 
-  # Utilise l'énumération définie dans le Concern
-  enum :agency, AgencyConstants::AGENCY_ENUMS, prefix: :works_for
-
   # ============================================================
   # SCOPE
   # ============================================================
-  
+
   # ============================================================
   # PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM
   # ============================================================
@@ -112,6 +109,11 @@ class User < ApplicationRecord
   validates :city,    presence: { message: 'Vous devez renseigner une ville' }, unless: :fve?
   # Validation : Un FVE doit obligatoirement avoir une agence
   validates :agency, presence: true, if: :fve?
+  # Vérifie que le code de l'agence existe bien dans la table Agency
+  validates :agency, inclusion: {
+    in: ->(_user) { Agency.pluck(:code) },
+    message: "%{value} n'est pas une agence valide."
+  }, if: -> { agency.present? && fve? } # On valide seulement si c'est un FVE
 
   # ============================================================
   # MOT DE PASSE FORT
