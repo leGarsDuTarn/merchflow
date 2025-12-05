@@ -15,18 +15,6 @@
         <% end %>
       </span>
 
-      <%= link_to fve_mission_proposal_path(proposal),
-          data: {
-            turbo_method: :delete,
-            turbo_confirm: proposal.accepted? ?
-              "ATTENTION : Cette mission a été ACCEPTÉE.\n\nLa supprimer ici l'effacera de votre suivi, mais la mission RESTERA dans le planning du Merch.\n\nVoulez-vous continuer ?" :
-              "Supprimer cette proposition de votre historique ?"
-          },
-          class: "text-dark opacity-50 hover-opacity-100",
-          title: "Supprimer de la liste" do %>
-        <i class="fa-solid fa-trash-can"></i>
-      <% end %>
-
     </div>
 
     <div class="card-body">

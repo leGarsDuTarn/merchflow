@@ -2,8 +2,10 @@ module Fve
   class MissionProposalsController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
-    # ⬅️ MODIFIÉ : set_proposal n'est plus nécessaire car destroy est supprimé
-    # before_action :set_proposal, only: [:destroy]
+    # set_proposal est conservé pour 'create' si nécessaire, mais est retiré de destroy
+    # Nous conservons set_proposal pour la sécurité future si l'on veut d'autres actions (show, edit)
+    # Pour l'instant, seul le before_action a été nettoyé, mais set_proposal n'est utilisé nulle part.
+    # Nous allons l'ajouter à une action bidon pour le conserver en tant que private method.
 
     # =========================================================
     # INDEX (Suivi des propositions)
@@ -23,15 +25,17 @@ module Fve
       @prev_date = @target_date - 1.month
       @next_date = @target_date + 1.month
 
-      # 2. Base de la requête (Tout ce que le FVE a envoyé et qui n'est pas archivé par le temps)
+      # 2. Base de la requête (Toutes les propositions envoyées)
       @proposals = current_user.sent_mission_proposals
-                               .active_opportunities # Utilise le scope d'archivage automatique
                                .includes(merch: :merch_setting)
                                .order(date: :desc, created_at: :desc)
 
-      # 3. APPLICATION DES FILTRES (Logique cumulative)
+      # 3. APPLICATION DES FILTRES
 
-      # A. Filtre venant du Dashboard (ex: 'today', 'upcoming')
+      # Filtre Temporel initial (par mois de navigation)
+      @proposals = @proposals.where(date: @target_date.all_month)
+
+      # A. Filtre venant du Dashboard (ex: 'today')
       if params[:date_filter] == 'today'
         @proposals = @proposals.where(date: Date.today)
       end
@@ -47,10 +51,22 @@ module Fve
       @proposals = @proposals.by_merch_preference(params[:preference]) if params[:preference].present?
 
       if params[:start_date].present? || params[:end_date].present?
+        # On utilise la plage manuelle si elle est présente (elle surcharge le filtre mensuel)
         @proposals = @proposals.by_date_range(params[:start_date], params[:end_date])
       end
 
-      # 4. SÉPARATION POUR L'AFFICHAGE (Onglets)
+      # 4. ARCHIVAGE AUTOMATIQUE FINAL (Logique de l'archivage par heure/date)
+      # On archive si on est sur le mois courant et qu'aucune plage manuelle n'a été spécifiée
+      is_current_month = @target_date.month == Date.current.month && @target_date.year == Date.current.year
+      is_manual_range_applied = params[:start_date].present? || params[:end_date].present?
+
+      if is_current_month && !is_manual_range_applied
+        # Applique le filtre temporel (masque si heure de début est passée)
+        @proposals = @proposals.active_opportunities
+      end
+
+
+      # 5. SÉPARATION POUR L'AFFICHAGE (Onglets)
       # On s'assure que la valeur par défaut est un statut valide pour les onglets.
       @active_tab = params[:status_filter].presence || 'pending'
 
@@ -92,6 +108,8 @@ module Fve
       end
     end
 
+    # ⬅️ SUPPRIMÉ : L'intégralité de l'action destroy
+
     private
 
     # Vérification des droits d'accès
@@ -101,12 +119,11 @@ module Fve
       end
     end
 
-    # Récupération de la proposition (sécurisée au scope de l'utilisateur)
+    # Récupération de la proposition (Non utilisé actuellement, mais conservé pour l'intégrité)
+    # NOTE: Cette méthode est désormais optionnelle car 'destroy' a été retiré.
     def set_proposal
-      # Recherche parmi les propositions actives (active_opportunities)
-      @proposal = current_user.sent_mission_proposals.active_opportunities.find(params[:id])
+      @proposal = current_user.sent_mission_proposals.find(params[:id])
     rescue ActiveRecord::RecordNotFound
-      # Redirige si la proposition est introuvable ou si elle est déjà passée/archivée.
       redirect_to fve_mission_proposals_path, alert: "Proposition introuvable ou vous n'avez pas les droits."
     end
 

@@ -10,6 +10,8 @@ class MissionProposal < ApplicationRecord
   # VALIDATIONS ET GARDE-FOU
   # =========================================================
   validates :date, :start_time, :end_time, :company, :agency, presence: true
+  # Assure que le champ KM est renseigné
+  validates :effective_km, presence: { message: "Vous devez renseigner le nombre de kilomètres effectifs." }
 
   # Validations du rôle
   validate :fve_must_be_fve
@@ -28,12 +30,15 @@ class MissionProposal < ApplicationRecord
   # Scope pour afficher uniquement les propositions non expirées
   # Cette scope s'assure que la mission n'est pas déjà passée.
   scope :active_opportunities, -> {
-    where('date > ?', Date.current)
-      .or(
-        where(date: Date.current)
-        .where("start_time::time > ?", Time.current.strftime('%H:%M:%S'))
-      )
+    now = Time.current # Utiliser Time.current pour la zone horaire
+
+    where("
+      (date > :today)
+      OR
+      (date = :today AND (date::timestamp + (start_time - date::timestamp)) > :now)
+    ", today: now.to_date, now: now)
   }
+
 
   scope :search_by_merch_name, ->(query) {
     return all if query.blank?
