@@ -36,9 +36,9 @@ class MissionProposal < ApplicationRecord
     where("
       (date > CURRENT_DATE)
       OR
-      (date = CURRENT_DATE
-          AND (date::timestamp + start_time::time::interval) >
-          NOW() AT TIME ZONE 'Europe/Paris')::timestamp
+      (
+        date = CURRENT_DATE AND
+        (date::timestamp + start_time::time::interval) > (NOW() AT TIME ZONE 'Europe/Paris')::timestamp
       )
     ")
   }
