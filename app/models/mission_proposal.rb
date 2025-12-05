@@ -15,6 +15,9 @@ class MissionProposal < ApplicationRecord
   validate :fve_must_be_fve
   validate :merch_must_be_merch
 
+  # Interdit les missions qui passent minuit
+  validate :end_time_must_be_after_start_time
+
   # Vérifie le chevauchement horaire
   validate :no_overlap_with_existing_proposals
 
@@ -127,25 +130,34 @@ class MissionProposal < ApplicationRecord
     errors.add(:merch, 'doit être un Merch') unless merch&.merch?
   end
 
+  def end_time_must_be_after_start_time
+    return if start_time.blank? || end_time.blank?
+
+    # Si l'heure de fin n'est pas après l'heure de début, c'est une mission qui passe minuit.
+    if end_time <= start_time
+      errors.add(:end_time, 'Saisie au-delà de minuit détectée. Veuillez diviser la mission en deux : Jour 1 (max 23:59) et Jour 2 (min 00:00).')
+    end
+  end
+
   # GARDE-FOU (Chevauchement)
   # Dans app/models/mission_proposal.rb (ou le fichier contenant cette méthode)
 
-def no_overlap_with_existing_proposals
-  return unless date.present? && start_time.present? && end_time.present? && merch_id.present?
+  def no_overlap_with_existing_proposals
+    return unless date.present? && start_time.present? && end_time.present? && merch_id.present?
 
-  # 1. Construire les datetime complets pour la NOUVELLE proposition (celle en cours de validation)
-  new_start_dt = date.to_datetime.change(hour: start_time.hour, min: start_time.min)
-  new_end_dt   = date.to_datetime.change(hour: end_time.hour, min: end_time.min)
+    # 1. Construire les datetime complets pour la NOUVELLE proposition (celle en cours de validation)
+    new_start_dt = date.to_datetime.change(hour: start_time.hour, min: start_time.min)
+    new_end_dt   = date.to_datetime.change(hour: end_time.hour, min: end_time.min)
 
-  # Ajuster si la proposition est une mission de nuit (end_time a été modifié)
-  new_end_dt += 1.day if end_time.day != start_time.day
+    # Ajuster si la proposition est une mission de nuit (end_time a été modifié)
+    new_end_dt += 1.day if end_time.day != start_time.day
 
-  # 2. Récupérer TOUTES les propositions pour le même Merch (sauf la courante)
-  existing_proposals = MissionProposal.where(merch_id: merch_id)
+    # 2. Récupérer TOUTES les propositions pour le même Merch (sauf la courante)
+    existing_proposals = MissionProposal.where(merch_id: merch_id)
                                       .where.not(id: id)
 
-  # 3. Vérifier le chevauchement en itérant en Ruby
-  has_overlap = existing_proposals.any? do |proposal|
+    # 3. Vérifier le chevauchement en itérant en Ruby
+    has_overlap = existing_proposals.any? do |proposal|
     # Construire les datetime de la proposition existante
     existing_start = proposal.date.to_datetime.change(
       hour: proposal.start_time.hour,
@@ -161,10 +173,10 @@ def no_overlap_with_existing_proposals
 
     # Logique de chevauchement : C < B AND D > A
     existing_start < new_end_dt && existing_end > new_start_dt
-  end
+    end
 
-  if has_overlap
-    errors.add(:base, 'Cette mission chevauche une autre proposition existante pour ce prestataire. Vérifiez vos horaires.')
+    if has_overlap
+      errors.add(:base, 'Cette mission chevauche une autre proposition existante pour ce prestataire. Vérifiez vos horaires.')
+    end
   end
-end
 end
