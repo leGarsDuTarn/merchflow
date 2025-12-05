@@ -30,7 +30,7 @@
           <div class="mb-3">
             <%= f.label :agency, "Agence", class: "form-label fw-semibold" %>
             <%= f.select :agency,
-                Contract.agencies.keys.map { |k| [Contract::AGENCY_LABELS[k], k] },
+                Contract.agency_options,
                 { prompt: "Sélectionnez une agence" },
                 class: "form-select" %>
           </div>

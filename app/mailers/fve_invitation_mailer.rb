@@ -2,11 +2,12 @@ class FveInvitationMailer < ApplicationMailer
   # Optionnel : si tu as une adresse d'envoi spécifique
   default from: 'grassiano.b@gmail.com'
 
-  def invite_fve(invitation)
+  # MODIFICATION : Accepte deux arguments (l'invitation ET le label)
+  def invite_fve(invitation, agency_label)
     @invitation = invitation
+    @agency_label = agency_label # <-- Nouvelle variable d'instance pour le template
 
-    # Récupération du "Joli Nom" de l'agence pour l'afficher dans le mail
-    @agency_label = Contract::AGENCY_LABELS[@invitation.agency] || @invitation.agency.humanize
+    # L'ancienne ligne @agency_label = Contract::AGENCY_LABELS[...] EST SUPPRIMÉE
 
     # Génération du lien unique
     # Rails saura utiliser localhost:3000 ou le domaine de prod selon la config

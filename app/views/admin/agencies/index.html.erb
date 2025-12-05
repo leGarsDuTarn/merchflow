@@ -1,0 +1,52 @@
+<div class="container mt-4">
+  <h2 class="fw-bold text-orange mb-4">Administration des Agences</h2>
+
+  <div class="row">
+
+   <%# Colonne de Création %>
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-bold">Ajouter une Nouvelle Agence</div>
+        <div class="card-body">
+          <%# Remplacer le simple_form_for par le render du partial %>
+          <%= render 'form', agency: @agency %>
+        </div>
+      </div>
+    </div>
+
+    <%# Colonne de Liste et Gestion %>
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light fw-bold">Liste des Agences (<%= @agencies.count %>)</div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Nom (Label)</th>
+                  <th>Code (DB Key)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @agencies.each do |agency| %>
+                  <tr>
+                    <td class="fw-bold"><%= agency.label %></td>
+                    <td class="text-muted small"><%= agency.code %></td>
+                    <td>
+                      <%= link_to "Modifier", edit_admin_agency_path(agency), class: "btn btn-sm btn-outline-secondary me-2" %>
+                      <%= button_to "Supprimer", admin_agency_path(agency),
+                          method: :delete,
+                          data: { confirm: "Êtes-vous sûr de vouloir supprimer l'agence #{agency.label} ? Cette action est irréversible s'il n'y a pas de contrats liés." },
+                          class: "btn btn-sm btn-outline-danger" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

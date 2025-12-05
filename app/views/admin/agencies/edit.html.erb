@@ -1,0 +1,17 @@
+<div class="container mt-4">
+  <h2 class="fw-bold text-orange mb-4">Modification de l'Agence : <%= @agency.label %></h2>
+
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <%# Appel du partial créé à l'étape 1 %>
+          <%= render 'form', agency: @agency %>
+
+          <hr>
+          <%= link_to "Annuler et revenir à la liste", admin_agencies_path, class: "btn btn-outline-secondary btn-sm" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

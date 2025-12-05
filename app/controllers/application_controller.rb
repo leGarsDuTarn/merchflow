@@ -6,6 +6,10 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_merch_notifications, if: :current_user_is_merch?
 
+  # Rendre les méthodes de garde disponibles dans les vues si nécessaire
+  helper_method :is_admin?
+  helper_method :is_fve?
+
   def after_sign_out_path_for(_resource_or_scope)
     root_path
   end
@@ -53,6 +57,34 @@ class ApplicationController < ActionController::Base
     ])
   end
 
+  # ============================================================
+  # 🔒 MÉTHODES DE GARDE (Sécurité)
+  # ============================================================
+
+  # Vérifie si l'utilisateur est un administrateur.
+  def require_admin
+    unless current_user&.admin?
+      redirect_to root_path, alert: 'Accès non autorisé : Réservé aux administrateurs.'
+    end
+  end
+
+  # Vérifie si l'utilisateur est FVE (peut être utilisé par d'autres contrôleurs FVE)
+  def require_fve
+    unless current_user&.fve? || current_user&.admin?
+      redirect_to root_path, alert: 'Accès non autorisé : Réservé aux forces de vente.'
+    end
+  end
+
+  # Helpers pour vérifier le rôle dans les vues
+  def is_admin?
+    current_user&.admin?
+  end
+
+  def is_fve?
+    current_user&.fve?
+  end
+
+
   private
 
   def user_not_authorized
@@ -60,13 +92,10 @@ class ApplicationController < ActionController::Base
   end
 
   def current_user_is_merch?
-    # Vérifie si l'utilisateur est connecté et a le rôle merch
     user_signed_in? && current_user.merch?
   end
 
   def set_merch_notifications
-    # Calcule le nombre de propositions reçues et en attente
-    # La variable @pending_proposals_count est utilisée dans la navbar.
     @pending_proposals_count = current_user.received_mission_proposals
                                            .where(status: :pending)
                                            .count

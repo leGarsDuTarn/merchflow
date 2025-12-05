@@ -67,6 +67,7 @@ Rails.application.routes.draw do
   # Géré par Merch::MissionProposalsController
   scope module: :merch do
     resources :mission_proposals, only: [:update], as: :merch_mission_proposals
+
   end
 
   # ============================================================
@@ -94,6 +95,8 @@ Rails.application.routes.draw do
     end
 
     resources :fve_invitations, only: %i[index new create destroy]
+    # Routes CRUD pour la gestion des agences
+    resources :agencies
 
     get 'dashboard', to: 'dashboard#index'
   end

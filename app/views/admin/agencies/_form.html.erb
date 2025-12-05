@@ -1,0 +1,27 @@
+<%# Ce partial est utilisé par new.html.erb et edit.html.erb %>
+
+<%= simple_form_for([:admin, agency]) do |f| %>
+
+  <%# Garde la notification d'erreur générale. %>
+  <%= f.error_notification %>
+
+  <div class="form-inputs">
+    <%= f.input :label, label: "Nom de l'Agence (Affichage)", placeholder: "Ex: Actiale" %>
+
+    <%# Gestion conditionnelle de l'édition du code %>
+    <% if agency.persisted? %>
+      <%= f.input :code, label: "Code Interne (Clé DB)",
+                           input_html: { readonly: true, class: 'bg-light' },
+                           hint: "Le code interne ne peut pas être modifié car il est utilisé par les contrats existants." %>
+    <% else %>
+      <%= f.input :code,
+                  label: "Code Interne (Optionnel)",
+                  placeholder: "Laisser vide pour générer depuis le Nom",
+                  required: false %>
+    <% end %>
+  </div>
+
+  <div class="form-actions mt-3">
+    <%= f.button :submit, class: "btn btn-red w-100" %>
+  </div>
+<% end %>

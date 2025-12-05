@@ -1,35 +1,70 @@
 # db/seeds.rb
 
 # ============================================================
-# 🔥 RESET DES DONNÉES MERCH UNIQUEMENT
+# 🔥 RESET DES DONNÉES
 # ============================================================
-puts "🔥 Suppression des données merchandisers..."
+puts "🔥 Nettoyage de la base de données..."
 
-# 1. Supprimer les WorkSessions (dépendance)
+# Suppression des tables dépendantes des Merchandisers
 WorkSession.joins(contract: :user).where(users: { role: :merch }).delete_all
-puts "  ✓ Missions supprimées"
+puts "  ✓ Missions (WorkSession) supprimées"
 
-# 2. Supprimer les MerchSettings (dépendance)
-# Note : on utilise joins(:merch) car l'association s'appelle 'merch' dans le model
 MerchSetting.joins(:merch).where(users: { role: :merch }).delete_all
 puts "  ✓ Paramètres de confidentialité supprimés"
 
-# 3. Supprimer les Contracts (dépendance)
 Contract.joins(:user).where(users: { role: :merch }).delete_all
 puts "  ✓ Contrats supprimés"
 
-# 4. Supprimer les Unavailabilities (dépendance bloquante)
 Unavailability.joins(:user).where(users: { role: :merch }).delete_all
 puts "  ✓ Indisponibilités supprimées"
 
-# 5. Supprimer les Merchandisers
+# CORRECTION DU BUG DE CLÉ ÉTRANGÈRE : Supprimer les propositions avant les utilisateurs
+MissionProposal.where(merch_id: User.where(role: :merch).select(:id)).delete_all
+puts "  ✓ Propositions de missions supprimées"
+
+# Suppression des Merchandisers
 User.where(role: :merch).delete_all
 puts "  ✓ Merchandisers supprimés"
 
 puts "  ℹ️  Admins et FVE préservés\n\n"
 
 # ============================================================
-# 📋 DONNÉES DE RÉFÉRENCE
+# 🏢 CRÉATION DES AGENCES (Référentiel dynamique)
+# ============================================================
+puts "🏢 Initialisation du référentiel Agences..."
+
+AGENCIES_DATA = {
+  "actiale" => "Actiale",
+  "rma" => "RMA SA",
+  "edelvi" => "Edelvi",
+  "mdf" => "DMF",
+  "cpm" => "CPM",
+  "idtt" => "Idtt Interim Distribution",
+  "sarawak" => "Sarawak",
+  "optimark" => "Optimark",
+  "strada" => "Strada Marketing",
+  "andeol" => "Andéol",
+  "demosthene" => "Démosthène",
+  "altavia" => "Altavia Fil Conseil",
+  "marcopolo" => "MarcoPolo Performance",
+  "virageconseil" => "Virage Conseil",
+  "upsell" => "Upsell",
+  "idal" => "iDal",
+  "armada" => "Armada",
+  "sellbytel" => "Sellbytel",
+  "other" => "Autre / Non défini"
+}
+
+AGENCIES_DATA.each do |code, label|
+  Agency.find_or_create_by!(code: code) do |a|
+    a.label = label
+  end
+end
+puts "  ✓ #{Agency.count} agences disponibles en base."
+
+
+# ============================================================
+# 📋 DONNÉES DE RÉFÉRENCE UTILISATEURS
 # ============================================================
 
 CITIES_FR = [
@@ -41,11 +76,11 @@ CITIES_FR = [
   ["Reims", "51100"], ["Metz", "57000"], ["Caen", "14000"]
 ].freeze
 
-AGENCIES = %w[actiale rma edelvi].freeze
+SAMPLE_AGENCIES_CODES = %w[actiale rma edelvi cpm sarawak upsell].freeze
+
 CONTACT_CHANNELS = %w[phone email message none].freeze
 STORE_NAMES = ['Carrefour', 'Auchan', 'Leclerc', 'Casino', 'Intermarché'].freeze
 
-# Les entreprises demandées
 CLIENT_COMPANIES = [
   "Panzani", "PepsiCo", "Carambar", "Coca Cola", "Bonduelle", "Barilla"
 ].freeze
@@ -62,7 +97,6 @@ LASTNAMES = %w[
   Faure André Mercier Boyer Blanchet Garnier Lefort Roger
 ].freeze
 
-# Génération de numéro de téléphone français valide
 def generate_phone
   "0#{[6, 7].sample}#{8.times.map { rand(0..9) }.join}"
 end
@@ -72,7 +106,7 @@ end
 # ============================================================
 
 nb_users = rand(50..80)
-puts "👤 Création de #{nb_users} merchandisers...\n"
+puts "\n👤 Création de #{nb_users} merchandisers..."
 
 nb_users.times do |i|
   firstname = FIRSTNAMES.sample
@@ -95,73 +129,69 @@ nb_users.times do |i|
       phone_number: generate_phone,
       role: :merch
     )
-  rescue ActiveRecord::RecordInvalid => e
-    puts "\n❌ ERREUR lors de la création de l'utilisateur #{firstname} #{lastname}:"
-    puts e.record.errors.full_messages.join(", ")
-    raise
+  rescue ActiveRecord::RecordInvalid
+    # Ignore les erreurs de validation User (ex: email déjà pris), pour ne pas bloquer le seed
+    next
   end
 
   # ============================================================
-  # ⚙️ CRÉATION DES PARAMÈTRES DE CONFIDENTIALITÉ (MerchSetting)
+  # ⚙️ CRÉATION DES PARAMÈTRES ET CONTRATS
   # ============================================================
   role_merch = [true, false].sample
   role_anim = [true, false].sample
-
-  if !role_merch && !role_anim
-    role_merch = true
-  end
-
-  # Logique pour 98% de partage du planning (2% ne partagent pas)
+  role_merch = true if !role_merch && !role_anim
   share_planning_status = (rand(1..100) > 2)
 
   MerchSetting.create!(
-    merch: user, # <--- CORRECTION ICI : 'merch' au lieu de 'user'
-    # Options de partage
+    merch: user,
     allow_identity: [true, true, false].sample,
     share_address: [true, false].sample,
     share_planning: share_planning_status,
-
-    # Autorisations de contact
     allow_contact_email: [true, true, false].sample,
     allow_contact_phone: [true, false].sample,
     allow_contact_message: [true, false].sample,
-
-    # Préférences
     preferred_contact_channel: CONTACT_CHANNELS.sample,
     accept_mission_proposals: true,
-
-    # Rôles
     role_merch: role_merch,
     role_anim: role_anim
   )
 
   print "." if (i + 1) % 10 == 0
 
-  # ============================================================
-  # 📄 CRÉATION DES CONTRATS (2 à 4 par merch)
-  # ============================================================
-
   rand(2..4).times do
-    agency = AGENCIES.sample
+    agency_code = SAMPLE_AGENCIES_CODES.sample
+    agency_label = Agency.find_by(code: agency_code)&.label || agency_code.capitalize
 
-    contract = Contract.create!(
-      user: user,
-      name: "Contrat #{agency.capitalize} - #{city}",
-      agency: agency,
-      contract_type: :cdd,
-      night_rate: 0.50,
-      ifm_rate: 0.10,
-      cp_rate: 0.10,
-      km_rate: [0.29, 0.35].sample,
-      km_limit: [40, 50, 60].sample,
-      km_unlimited: [true, false, false].sample
-    )
+    # Création du Contrat
+    begin
+      contract = Contract.create!(
+        user: user,
+        name: "Contrat #{agency_label} - #{city}",
+        agency: agency_code,
+        contract_type: :cdd,
+        night_rate: 0.50,
+        ifm_rate: 0.10,
+        cp_rate: 0.10,
+        km_rate: [0.29, 0.35].sample,
+        km_limit: [40, 50, 60].sample,
+        km_unlimited: [true, false, false].sample
+      )
+    rescue ActiveRecord::RecordInvalid
+      # Ignore les erreurs de validation de Contrat (ex: nom de contrat déjà pris)
+      next
+    end
+
 
     # ============================================================
-    # 📅 CRÉATION DES MISSIONS (8 à 15 par contrat)
+    # 📅 CRÉATION DES MISSIONS (avec WorkSession.create)
     # ============================================================
+    # On utilise create au lieu de create! pour que les chevauchements échouent SANS planter le seed.
 
-    rand(8..15).times do
+    nb_missions = rand(8..15)
+    missions_creees = 0
+
+    # On essaie de créer plus de missions que nécessaire, car certaines vont chevaucher
+    rand(nb_missions..nb_missions + 5).times do
       date = rand(90.days.ago.to_date..Date.today)
       start_hour = [7, 8, 9, 13, 14].sample
       start_minute = [0, 15, 30].sample
@@ -170,7 +200,7 @@ nb_users.times do |i|
       start_time = Time.zone.parse("#{date} #{start_hour}:#{start_minute}")
       end_time = start_time + duration_hours.hours
 
-      WorkSession.create!(
+      if WorkSession.create( # <-- CLÉ DE LA STABILITÉ : WorkSession.create
         contract: contract,
         date: date,
         start_time: start_time,
@@ -178,10 +208,14 @@ nb_users.times do |i|
         hourly_rate: [12.50, 13.00, 13.50, 14.00, 15.00].sample,
         effective_km: rand(5..80),
         store: "Magasin #{STORE_NAMES.sample}",
-        company: CLIENT_COMPANIES.sample, # <-- UTILISATION DES MARQUES
+        company: CLIENT_COMPANIES.sample,
         recommended: [true, false].sample,
         notes: ["Mission standard", "Mise en rayon", "Inventaire", nil].sample
       )
+        missions_creees += 1
+      end
+
+      break if missions_creees >= nb_missions
     end
   end
 end
@@ -192,12 +226,9 @@ end
 
 puts "\n\n✅ SEED TERMINÉ AVEC SUCCÈS !\n"
 puts "=" * 50
+puts "🏢 Agences en base : #{Agency.count}"
 puts "👥 Merchandisers créés : #{User.merch.count}"
-puts "⚙️ Paramètres de Merch créés : #{MerchSetting.count}"
 puts "📄 Contrats créés : #{Contract.count}"
 puts "📅 Missions créées : #{WorkSession.count}"
 puts "💼 FVE existants : #{User.fve.count}"
-puts "🔐 Admins existants : #{User.admin.count}"
 puts "=" * 50
-puts "\n💡 Mot de passe par défaut : Merch2025!"
-puts "📧 Format email : prenom.nom####@merch.fr\n\n"

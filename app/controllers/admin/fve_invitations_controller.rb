@@ -23,8 +23,14 @@ class Admin::FveInvitationsController < ApplicationController
 
     if @invitation.save
 
-      # L'appel à la classe de mailer définie
-      FveInvitationMailer.invite_fve(@invitation).deliver_now
+      # CORRECTION CRITIQUE ICI : Récupération dynamique du Label de l'Agence
+      # On cherche le label dans la table Agencies à partir du code stocké dans l'invitation.
+      agency_label = Agency.find_by(code: @invitation.agency)&.label || @invitation.agency.to_s.humanize
+
+      # L'appel à la classe de mailer doit être mis à jour pour prendre le label en paramètre
+      # NOTE: Si FveInvitationMailer.invite_fve n'accepte pas agency_label,
+      # vous devrez modifier la classe Mailer pour qu'elle utilise @invitation et agency_label.
+      FveInvitationMailer.invite_fve(@invitation, agency_label).deliver_now
 
       redirect_to admin_fve_invitations_path,
                   notice: "Invitation FVE créée et email envoyé à #{@invitation.email}."

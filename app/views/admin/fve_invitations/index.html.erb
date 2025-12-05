@@ -16,33 +16,53 @@
           <h5 class="fw-bold text-orange mb-1"><%= inv.email %></h5>
 
           <p class="text-muted mb-2">
-            <strong>Agence :</strong> <%= inv.agency.presence || "—" %><br>
+            <strong>Agence :</strong>
+            <%# CORRECTION ICI : On cherche le label dans la DB, sinon on affiche le code %>
+            <%= Agency.find_by(code: inv.agency)&.label || inv.agency.presence || "—" %>
+            <br>
+
             <strong>Premium :</strong>
-            <%= inv.premium? ? "Oui" : "Non" %><br>
+            <% if inv.premium? %>
+              <span class="text-success"><i class="bi bi-check-circle-fill"></i> Oui</span>
+            <% else %>
+              <span class="text-muted">Non</span>
+            <% end %>
+            <br>
+
             <strong>Expire :</strong>
-            <%= l inv.expires_at, format: :long %>
+            <%# Petit ajustement pour gérer les dates vides au cas où %>
+            <%= inv.expires_at ? l(inv.expires_at, format: :long) : "—" %>
           </p>
 
-          <% if inv.used? %>
-            <p class="badge bg-success">Utilisée</p>
-          <% elsif inv.expired? %>
-            <p class="badge bg-danger">Expirée</p>
-          <% else %>
-            <p class="badge bg-warning text-dark">Active</p>
-          <% end %>
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+              <% if inv.used? %>
+                <span class="badge bg-success rounded-pill">Utilisée</span>
+              <% elsif inv.expired? %>
+                <span class="badge bg-danger rounded-pill">Expirée</span>
+              <% else %>
+                <span class="badge bg-warning text-dark rounded-pill">Active</span>
+              <% end %>
+            </div>
 
-          <div class="mt-3">
             <%= link_to "Supprimer",
                         admin_fve_invitation_path(inv),
                         data: {
-                        turbo_method: :delete,
-                        turbo_confirm: "Supprimer cette invitation ?" },
-                        class: "btn btn-sm btn-danger" %>
+                          turbo_method: :delete,
+                          turbo_confirm: "Êtes-vous sûr de vouloir supprimer cette invitation ?"
+                        },
+                        class: "btn btn-sm btn-outline-danger" %>
           </div>
 
         </div>
       </div>
     <% end %>
   </div>
+
+  <% if @invitations.empty? %>
+    <div class="text-center text-muted mt-5">
+      <p>Aucune invitation trouvée.</p>
+    </div>
+  <% end %>
 
 </div>

@@ -10,9 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_04_134558) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_05_095748) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "agencies", force: :cascade do |t|
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_agencies_on_code", unique: true
+  end
 
   create_table "contracts", force: :cascade do |t|
     t.string "agency", default: "other", null: false
