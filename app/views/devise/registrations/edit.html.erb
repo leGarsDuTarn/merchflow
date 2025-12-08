@@ -8,15 +8,19 @@
 
         <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
 
+          <%# --- Données utilisateur (Requis par le modèle) --- %>
+
           <div class="mb-3">
-            <%= f.label :firstname, "Prénom", class: "form-label fw-semibold" %>
-            <%= f.text_field :firstname, class: "form-control" %>
-            <%= inline_error_for(resource, :firstname) %>
+            <%= f.label :firstname, "Prénom *", class: "form-label fw-semibold" %>
+            <%# REQUIREMENT: firstname est requis %>
+            <%= f.text_field :firstname, class: "form-control", required: true %>
+            <%= inline_error_for(resource, :firstname)%>
           </div>
 
           <div class="mb-3">
-            <%= f.label :lastname, "Nom", class: "form-label fw-semibold" %>
-            <%= f.text_field :lastname, class: "form-control" %>
+            <%= f.label :lastname, "Nom *", class: "form-label fw-semibold" %>
+            <%# REQUIREMENT: lastname est requis %>
+            <%= f.text_field :lastname, class: "form-control", required: true %>
             <%= inline_error_for(resource, :lastname) %>
           </div>
 
@@ -27,10 +31,13 @@
           </div>
 
           <div class="mb-3">
-            <%= f.label :email, "Adresse email", class: "form-label fw-semibold" %>
-            <%= f.email_field :email, autofocus: true, class: "form-control" %>
+            <%= f.label :email, "Adresse email *", class: "form-label fw-semibold" %>
+            <%# REQUIREMENT: email est requis %>
+            <%= f.email_field :email, autofocus: true, class: "form-control", required: true %>
             <%= inline_error_for(resource, :email) %>
           </div>
+
+          <%# --- Données optionnelles (Non requises par le modèle, mais importantes) --- %>
 
           <div class="mb-3">
             <%= f.label :phone_number, "Numéro de téléphone", class: "form-label fw-semibold" %>
@@ -48,7 +55,7 @@
             <div class="col-md-6 mb-3">
               <%= f.label :zipcode, "Code postal", class: "form-label fw-semibold" %>
               <%= f.text_field :zipcode, class: "form-control" %>
-              <%= inline_error_for(resource, :zipcode) %>
+            <%= inline_error_for(resource, :zipcode) %>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -58,11 +65,17 @@
             </div>
           </div>
 
+          <%# --- Gestion des Mots de Passe --- %>
+
           <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
             <p class="text-orange small">
               En attente de confirmation pour : <%= resource.unconfirmed_email %>
             </p>
           <% end %>
+
+          <hr class="my-4">
+
+          <h5 class="fw-bold mb-3">Gestion du Mot de Passe</h5>
 
           <div class="mb-3">
             <%= f.label :password, "Nouveau mot de passe", class: "form-label fw-semibold" %>
@@ -80,17 +93,20 @@
           </div>
 
           <div class="mb-3">
-            <%= f.label :current_password, "Mot de passe actuel", class: "form-label fw-semibold" %>
-            <%= f.password_field :current_password, autocomplete: "current-password", class: "form-control" %>
+            <%= f.label :current_password, "Mot de passe actuel *", class: "form-label fw-semibold" %>
+            <%# REQUIREMENT: current_password est requis par Devise %>
+            <%= f.password_field :current_password,
+                                 autocomplete: "current-password",
+                                 class: "form-control",
+                                 required: true %>
             <small class="text-muted">
-              Obligatoire pour valider les modifications.
+              Obligatoire pour valider **toutes** les modifications.
             </small>
             <%= inline_error_for(resource, :current_password) %>
           </div>
 
-
-
-          <div class="d-grid mt-3">
+          <%# --- Boutons --- %>
+          <div class="d-grid mt-4">
             <%= f.submit "Mettre à jour", class: "btn btn-orange btn-lg fw-bold" %>
           </div>
 
@@ -98,14 +114,12 @@
 
         <hr class="my-4">
 
-        <!-- Suppression du compte -->
         <div class="text-center">
-          <h5 class="fw-bold text-danger">Supprimer mon compte</h5>
           <%= button_to "Supprimer mon compte",
                         registration_path(resource_name),
                         method: :delete,
-                        data: { confirm: "Êtes-vous sûr de vouloir supprimer votre compte ?" },
-                        class: "btn btn-orange-outline mt-2" %>
+                        data: { confirm: "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible." },
+                        class: "btn btn-red mt-2 fw-semibold" %>
         </div>
 
         <div class="text-center mt-3">
@@ -117,7 +131,3 @@
     </div>
   </div>
 </div>
-
-<footer class="text-center text-muted mt-2 mb-3">
-  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
-</footer>
