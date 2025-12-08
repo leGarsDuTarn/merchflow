@@ -1,57 +1,38 @@
 <div class="container mt-4 mb-5">
 
-  <!-- TITRE -->
-  <h1 class="fw-bold text-orange text-center mb-4">
+  <h1 class="fw-bold text-orange text-center mb-1">
     Tableau de bord — Administration
   </h1>
-
   <p class="text-center text-muted mb-5">
-    Vue d'ensemble de l’activité de la plateforme.
+    Vue d'ensemble et indicateurs clés de performance (KPIs) de la plateforme.
   </p>
 
-  <!-- LIGNE 1 : Users / Merch / FVE -->
-  <div class="row g-4">
+  <%# ========================================================== %>
+  <%# SECTION 1 : SANTÉ GLOBALE ET CROISSANCE %>
+  <%# ========================================================== %>
+  <h3 class="fw-bold text-dark mb-4 mt-5"><i class="fa-solid fa-chart-line me-2 text-orange"></i> 1. Santé Globale et Croissance</h3>
+  <hr class="opacity-25 my-3">
 
-    <!-- Total utilisateurs -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">Utilisateurs</h6>
+  <div class="row g-4 justify-content-center">
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-start border-3 border-dark">
+        <h6 class="text-muted mb-1">Total Utilisateurs</h6>
         <p class="display-6 fw-bold mt-2"><%= @total_users %></p>
       </div>
     </div>
 
-    <!-- Merch -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">Merch</h6>
-        <p class="display-6 fw-bold mt-2"><%= @total_merch %></p>
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-start border-3 border-success">
+        <h6 class="text-muted mb-1">Engagement (7 jours)</h6>
+        <p class="display-6 fw-bold mt-2 text-success">
+          <%= @engagement_rate %>%
+        </p>
       </div>
     </div>
 
-    <!-- FVE -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">FVE</h6>
-        <p class="display-6 fw-bold mt-2"><%= @total_fve %></p>
-      </div>
-    </div>
-
-    <!-- FVE Premium -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">FVE Premium</h6>
-        <p class="display-6 fw-bold mt-2 text-orange"><%= @total_premium_fve %></p>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- LIGNE 2 : nouveaux inscrits / sessions -->
-  <div class="row g-4 mt-4">
-
-    <!-- Nouveaux inscrits ce mois -->
-    <div class="col-md-6 col-lg-6">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-start border-3 border-info">
         <h6 class="text-muted mb-1">Nouveaux inscrits (mois)</h6>
         <p class="display-6 fw-bold mt-2">
           <%= @new_users_month %>
@@ -59,8 +40,57 @@
       </div>
     </div>
 
-    <!-- Missions effectuées -->
-    <div class="col-md-6 col-lg-6">
+  </div>
+
+  <%# ========================================================== %>
+  <%# SECTION 2 : SEGMENTATION ET MONÉTISATION %>
+  <%# ========================================================== %>
+  <h3 class="fw-bold text-dark mb-4 mt-5"><i class="fa-solid fa-money-bill-transfer me-2 text-orange"></i> 2. Segmentation et Monétisation</h3>
+  <hr class="opacity-25 my-3">
+
+  <div class="row g-4">
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Total Merch</h6>
+        <p class="display-6 fw-bold mt-2"><%= @total_merch %></p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Total FVE</h6>
+        <p class="display-6 fw-bold mt-2"><%= @total_fve %></p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-end border-3 border-orange">
+        <h6 class="text-muted mb-1">FVE Premium</h6>
+        <p class="display-6 fw-bold mt-2 text-orange"><%= @total_premium_fve %></p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-end border-3 border-warning">
+        <h6 class="text-muted mb-1">Taux de Conversion Premium</h6>
+        <p class="display-6 fw-bold mt-2 text-warning">
+          <%= @premium_conversion_rate %>%
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <%# ========================================================== %>
+  <%# SECTION 3 : FLUX DE TRAVAIL ET EFFICACITÉ (MISSIONS / INVITATIONS) %>
+  <%# ========================================================== %>
+  <h3 class="fw-bold text-dark mb-4 mt-5"><i class="fa-solid fa-briefcase me-2 text-orange"></i> 3. Flux de Travail et Efficacité</h3>
+  <hr class="opacity-25 my-3">
+
+  <div class="row g-4">
+
+    <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm p-4 rounded-4 text-center h-100">
         <h6 class="text-muted mb-1">Missions réalisées (mois)</h6>
         <p class="display-6 fw-bold mt-2">
@@ -69,44 +99,41 @@
       </div>
     </div>
 
-  </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
+        <h6 class="text-muted mb-1">Temps Moyen / Mission</h6>
+        <p class="display-6 fw-bold mt-2 text-info">
+          <%= @avg_mission_time_formatted %>
+        </p>
+      </div>
+    </div>
 
-  <!-- LIGNE 3 : Invitations -->
-  <div class="row g-4 mt-4">
-
-    <div class="col-lg-12">
-      <div class="card shadow-sm p-4 rounded-4">
+    <div class="col-lg-4">
+      <div class="card shadow-sm p-4 rounded-4 h-100 d-flex flex-column">
 
         <h5 class="fw-bold text-orange mb-3 text-center">
-          Invitations FVE
+          <i class="fa-solid fa-envelope me-2"></i> Invitations FVE
         </h5>
 
-        <div class="table-responsive">
-          <table class="table table-borderless align-middle mb-0">
-            <thead>
-              <tr class="text-muted">
-                <th>Total</th>
-                <th>Utilisées</th>
-                <th>Actives</th>
-                <th>Expirées</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td><%= @invitations_total %></td>
-                <td><%= @invitations_used %></td>
-                <td><%= @invitations_unused %></td>
-                <td><%= @invitations_expired %></td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="d-flex justify-content-around text-center mb-3">
+            <div class="flex-fill">
+                <p class="text-muted small mb-0">Total</p>
+                <h4 class="fw-bold text-dark"><%= @invitations_total %></h4>
+            </div>
+            <div class="flex-fill border-start">
+                <p class="text-muted small mb-0">Non Utilisées</p>
+                <h4 class="fw-bold text-danger"><%= @invitations_unused %></h4>
+            </div>
         </div>
 
-        <div class="text-center mt-4">
+        <p class="text-muted small text-center">Ratio invitations actives:
+            <span class="fw-bold"><%= @unused_invitations_ratio %>%</span>
+        </p>
+
+        <div class="text-center mt-3">
           <%= link_to "Gérer les invitations",
                       admin_fve_invitations_path,
-                      class: "btn btn-orange fw-bold px-4" %>
+                      class: "btn btn-sm btn-orange fw-bold px-4 w-100" %>
         </div>
 
       </div>
@@ -119,4 +146,3 @@
 <footer class="text-center text-muted mt-5">
   <small>© <%= Time.current.year %> MerchFlow — Administration</small>
 </footer>
-
