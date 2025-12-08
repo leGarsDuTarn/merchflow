@@ -217,7 +217,8 @@ class WorkSession < ApplicationRecord
   private
 
   # ============================================================
-  # VALIDATION : Pas de chevauchement entre sessions 
+  # VALIDATION : Pas de chevauchement entre sessions
+  # VERSION CORRIGÉE ET OPTIMISÉE
   # ============================================================
   def no_overlap_with_existing_sessions
     return unless contract.present? && date.present? && start_time.present? && end_time.present?
@@ -225,35 +226,48 @@ class WorkSession < ApplicationRecord
     user_id = contract.user_id
 
     # 1. Construire les datetime complets pour la nouvelle session
-    new_start_dt = date.to_datetime.change(hour: start_time.hour, min: start_time.min)
-    new_end_dt   = date.to_datetime.change(hour: end_time.hour, min: end_time.min)
+    new_start_dt = DateTime.new(date.year, date.month, date.day, start_time.hour, start_time.min, start_time.sec)
+    new_end_dt = DateTime.new(date.year, date.month, date.day, end_time.hour, end_time.min, end_time.sec)
 
-    # Ajuster si mission de nuit (end_time a été modifié par ensure_end_time_is_on_correct_day)
-    new_end_dt += 1.day if end_time.day != start_time.day
+    # Si end_time <= start_time, la mission passe minuit
+    new_end_dt += 1.day if end_time <= start_time
 
-    # 2. Récupérer toutes les sessions de l'utilisateur (sauf la session courante)
+    # 2. Récupérer toutes les sessions de l'utilisateur dans une fenêtre de ±1 jour
+    # (pour capturer les missions de nuit qui peuvent déborder)
+    date_range = (date - 1.day)..(date + 1.day)
+
     existing_sessions = WorkSession
       .joins(:contract)
       .where(contracts: { user_id: user_id })
+      .where(date: date_range)
       .where.not(id: id)
 
-    # 3. Vérifier le chevauchement avec .any? (préféré à find_each avec return)
+    # 3. Vérifier le chevauchement
     has_overlap = existing_sessions.any? do |session|
       # Construire les datetime de la session existante
-      existing_start = session.date.to_datetime.change(
-        hour: session.start_time.hour,
-        min: session.start_time.min
-      )
-      existing_end = session.date.to_datetime.change(
-        hour: session.end_time.hour,
-        min: session.end_time.min
+      existing_start = DateTime.new(
+        session.date.year,
+        session.date.month,
+        session.date.day,
+        session.start_time.hour,
+        session.start_time.min,
+        session.start_time.sec
       )
 
-      # Ajuster si la session existante est une mission de nuit
-      existing_end += 1.day if session.end_time.day != session.start_time.day
+      existing_end = DateTime.new(
+        session.date.year,
+        session.date.month,
+        session.date.day,
+        session.end_time.hour,
+        session.end_time.min,
+        session.end_time.sec
+      )
 
-      # Logique de chevauchement :
-      # Deux intervalles [A,B] et [C,D] se chevauchent si : C < B ET D > A
+      # Ajuster si la session existante passe minuit
+      existing_end += 1.day if session.end_time <= session.start_time
+
+      # Logique de chevauchement : deux intervalles se chevauchent si
+      # l'un commence avant que l'autre ne finisse ET vice versa
       existing_start < new_end_dt && existing_end > new_start_dt
     end
 

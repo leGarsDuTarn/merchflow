@@ -1,14 +1,18 @@
 class MissionProposal < ApplicationRecord
+  # ============================================================
   # RELATIONS
+  # ============================================================
   belongs_to :fve, class_name: 'User'
   belongs_to :merch, class_name: 'User'
 
+  # ============================================================
   # STATUTS
+  # ============================================================
   enum :status, { pending: 'pending', accepted: 'accepted', declined: 'declined', cancelled: 'cancelled' }
 
-  # =========================================================
+  # ============================================================
   # VALIDATIONS ET GARDE-FOU
-  # =========================================================
+  # ============================================================
   validates :date, :start_time, :end_time, :company, :agency, presence: true
   # Assure que le champ KM est renseigné
   validates :effective_km, presence: { message: "Vous devez renseigner le nombre de kilomètres effectifs." }
@@ -20,12 +24,15 @@ class MissionProposal < ApplicationRecord
   # Interdit les missions qui passent minuit
   validate :end_time_must_be_after_start_time
 
-  # Vérifie le chevauchement horaire
+  # Vérifie le chevauchement horaire avec d'autres propositions
   validate :no_overlap_with_existing_proposals
 
-  # =========================================================
-  # SCOPE
-  # =========================================================
+  # NOTE: On permet plusieurs propositions sur le même créneau
+  # Le conflit avec les WorkSession sera vérifié au moment de l'acceptation
+
+  # ============================================================
+  # SCOPES
+  # ============================================================
 
   # Scope pour afficher uniquement les propositions non expirées
   # Cette scope s'assure que la mission n'est pas déjà passée.
@@ -93,13 +100,19 @@ class MissionProposal < ApplicationRecord
     ", start_time: start_time, end_time: end_time)
   }
 
-  # =========================================================
-  # TRANSFORMER EN MISSION
-  # =========================================================
+  # ============================================================
+  # TRANSFORMER EN MISSION - VERSION OPTIMISÉE
+  # ============================================================
   def accept!
     return unless pending?
 
     ActiveRecord::Base.transaction do
+      # 0. VÉRIFICATION CRITIQUE : Pas de conflit avec des missions déjà validées
+      if conflicts_with_existing_work_session?
+        errors.add(:base, "Impossible d'accepter : Ce créneau chevauche une mission déjà validée dans votre planning.")
+        raise ActiveRecord::Rollback
+      end
+
       # 1. On cherche le contrat EXISTANT entre ce Merch et cette Agence.
       contract = Contract.find_by!(
         user: merch,
@@ -123,17 +136,118 @@ class MissionProposal < ApplicationRecord
         status: :accepted,
         notes: "Mission acceptée via proposition FVE. Message initial : #{message}"
       )
+
+      # 4. BONUS : Décliner automatiquement les autres propositions qui chevauchent
+      decline_conflicting_proposals!
     end
   rescue ActiveRecord::RecordNotFound
     errors.add(:base, "Impossible d'accepter : Aucun contrat actif trouvé pour l'agence #{agency}.")
     false
   end
 
+  # ============================================================
+  # VÉRIFIER CONFLIT AVEC WORKSESSION EXISTANTE
+  # Appelé au moment de l'acceptation pour éviter les double-bookings
+  # ============================================================
+  def conflicts_with_existing_work_session?
+    return false unless date.present? && start_time.present? && end_time.present? && merch_id.present?
+
+    new_start_dt = DateTime.new(date.year, date.month, date.day, start_time.hour, start_time.min, start_time.sec)
+    new_end_dt = DateTime.new(date.year, date.month, date.day, end_time.hour, end_time.min, end_time.sec)
+    new_end_dt += 1.day if end_time <= start_time
+
+    date_range = (date - 1.day)..(date + 1.day)
+
+    conflicting_sessions = WorkSession
+      .joins(:contract)
+      .where(contracts: { user_id: merch_id })
+      .where(date: date_range)
+      .where(status: [:accepted, :pending]) # Vérifier les sessions validées ou en attente
+
+    conflicting_sessions.any? do |session|
+      existing_start = DateTime.new(
+        session.date.year,
+        session.date.month,
+        session.date.day,
+        session.start_time.hour,
+        session.start_time.min,
+        session.start_time.sec
+      )
+
+      existing_end = DateTime.new(
+        session.date.year,
+        session.date.month,
+        session.date.day,
+        session.end_time.hour,
+        session.end_time.min,
+        session.end_time.sec
+      )
+
+      existing_end += 1.day if session.end_time <= session.start_time
+
+      existing_start < new_end_dt && existing_end > new_start_dt
+    end
+  end
+
+  # ============================================================
+  # DÉCLINER AUTOMATIQUEMENT LES PROPOSITIONS CONFLICTUELLES
+  # Appelé après l'acceptation d'une proposition
+  # ============================================================
+  def decline_conflicting_proposals!
+    return unless date.present? && start_time.present? && end_time.present? && merch_id.present?
+
+    new_start_dt = DateTime.new(date.year, date.month, date.day, start_time.hour, start_time.min, start_time.sec)
+    new_end_dt = DateTime.new(date.year, date.month, date.day, end_time.hour, end_time.min, end_time.sec)
+    new_end_dt += 1.day if end_time <= start_time
+
+    date_range = (date - 1.day)..(date + 1.day)
+
+    # Trouver toutes les autres propositions en attente pour ce Merch
+    conflicting_proposals = MissionProposal
+      .where(merch_id: merch_id)
+      .where(date: date_range)
+      .where(status: :pending)
+      .where.not(id: id)
+
+    conflicting_proposals.each do |proposal|
+      proposal_start = DateTime.new(
+        proposal.date.year,
+        proposal.date.month,
+        proposal.date.day,
+        proposal.start_time.hour,
+        proposal.start_time.min,
+        proposal.start_time.sec
+      )
+
+      proposal_end = DateTime.new(
+        proposal.date.year,
+        proposal.date.month,
+        proposal.date.day,
+        proposal.end_time.hour,
+        proposal.end_time.min,
+        proposal.end_time.sec
+      )
+
+      proposal_end += 1.day if proposal.end_time <= proposal.start_time
+
+      # Si chevauchement, décliner automatiquement
+      if proposal_start < new_end_dt && proposal_end > new_start_dt
+        proposal.update(
+          status: :declined,
+          notes: "Déclinée automatiquement : créneau déjà pris par une autre mission acceptée."
+        )
+
+        # BONUS : Vous pouvez ajouter une notification ici
+        # ProposalMailer.auto_declined(proposal).deliver_later
+      end
+    end
+  end
+
   private
 
-  # =========================================================
+  # ============================================================
   # VALIDATIONS PERSONNELLES
-  # =========================================================
+  # ============================================================
 
   def fve_must_be_fve
     errors.add(:fve, 'doit être un FVE') unless fve&.fve?
@@ -152,22 +266,63 @@ class MissionProposal < ApplicationRecord
     end
   end
 
-  # GARDE-FOU (Chevauchement)
-  # Dans app/models/mission_proposal.rb (ou le fichier contenant cette méthode)
-
-  # app/models/mission_proposal.rb (Logique simplifiée pour no_overlap_with_existing_proposals)
-
+  # ============================================================
+  # GARDE-FOU : Chevauchement entre propositions
+  # VERSION CORRIGÉE ET OPTIMISÉE
+  # ============================================================
   def no_overlap_with_existing_proposals
     return unless date.present? && start_time.present? && end_time.present? && merch_id.present?
 
-    # 1. Scope qui trouve les propositions du même Merch, sur la MÊME DATE, excluant la proposition courante
-    overlapping_sessions = MissionProposal
-      .where(merch_id: merch_id, date: date) # ⬅️ AJOUTÉ : FILTRAGE ESSENTIEL PAR DATE
-      .where.not(id: id)
+    # 1. Construire les datetime complets pour la nouvelle proposition
+    new_start_dt = DateTime.new(date.year, date.month, date.day, start_time.hour, start_time.min, start_time.sec)
+    new_end_dt = DateTime.new(date.year, date.month, date.day, end_time.hour, end_time.min, end_time.sec)
 
-    # 2. Utilise le scope overlapping (Logique SQL) sur la portée trouvée.
-    # Ceci ne compare que les heures des missions du même jour.
-    if overlapping_sessions.overlapping(start_time, end_time).exists?
+    # NOTE : Normalement end_time > start_time car vous interdisez les missions passant minuit
+    # Mais on ajoute une sécurité au cas où
+    if end_time <= start_time
+      # Ce cas devrait déjà être bloqué par end_time_must_be_after_start_time
+      # mais on l'ajoute pour la cohérence
+      new_end_dt += 1.day
+    end
+
+    # 2. Récupérer les propositions du même Merch dans une fenêtre de ±1 jour
+    # (au cas où il y aurait des missions qui débordent, même si interdites)
+    date_range = (date - 1.day)..(date + 1.day)
+
+    overlapping_proposals = MissionProposal
+      .where(merch_id: merch_id)
+      .where(date: date_range)
+      .where.not(id: id)
+      .where.not(status: [:declined, :cancelled]) # Ignorer les propositions annulées/refusées
+
+    # 3. Vérifier le chevauchement en Ruby (plus fiable que SQL pour ce cas)
+    has_overlap = overlapping_proposals.any? do |proposal|
+      existing_start = DateTime.new(
+        proposal.date.year,
+        proposal.date.month,
+        proposal.date.day,
+        proposal.start_time.hour,
+        proposal.start_time.min,
+        proposal.start_time.sec
+      )
+      
+      existing_end = DateTime.new(
+        proposal.date.year,
+        proposal.date.month,
+        proposal.date.day,
+        proposal.end_time.hour,
+        proposal.end_time.min,
+        proposal.end_time.sec
+      )
+
+      # Ajuster si la proposition existante passe minuit (normalement impossible)
+      existing_end += 1.day if proposal.end_time <= proposal.start_time
+
+      # Logique de chevauchement
+      existing_start < new_end_dt && existing_end > new_start_dt
+    end
+
+    if has_overlap
       errors.add(:base, 'Cette mission chevauche une autre proposition existante pour ce prestataire. Vérifiez vos horaires.')
     end
   end
