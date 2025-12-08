@@ -74,7 +74,14 @@ Rails.application.routes.draw do
   # FVE (force de vente externalisée)
   # ============================================================
   namespace :fve do
-    resources :merch, only: %i[index show]
+
+    resources :merch, only: %i[index show] do
+      # NOUVEAU : Route pour afficher la liste des favoris de l'utilisateur FVE
+      collection do
+        get :favorites # Crée le chemin fve_merch_favorites_path
+      end
+    end
+
     get 'planning/:id', to: 'plannings#show', as: 'planning'
     get 'dashboard', to: 'dashboard#index'
 
@@ -85,7 +92,7 @@ Rails.application.routes.draw do
     # Proposition de missions
     resources :mission_proposals, only: %i[create index destroy show]
 
-    # Favoris
+    # Favoris (Utilisé pour les actions POST/DELETE sur les cartes)
     resources :favorites, only: %i[create destroy]
   end
 
