@@ -1,0 +1,67 @@
+<div class="container my-5">
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <%# Bouton Retour %>
+      <div class="mb-4">
+        <%= link_to root_path, class: "btn btn-sm btn-orange px-3 fw-bold transition hover-shadow" do %>
+          <i class="fa-solid fa-arrow-left me-2"></i> Retour
+        <% end %>
+      </div>
+
+      <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+
+        <div class="text-center mb-5">
+          <h1 class="fw-bold text-orange mb-3">
+            <i class="fa-solid fa-headset me-2"></i> Nous Contacter
+          </h1>
+          <p class="lead text-muted">
+            Que ce soit pour une question sur l'application, un support technique ou une demande légale, nous sommes là pour vous répondre.
+          </p>
+        </div>
+
+        <div class="row g-4 text-center">
+
+          <%# Contact Email (MIS À JOUR AVEC BTN-ORANGE) %>
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 h-100 d-flex flex-column">
+              <i class="fa-solid fa-envelope fs-2 text-orange mb-3"></i>
+              <h5 class="fw-bold">Support Technique & Général</h5>
+              <p class="text-muted mt-auto mb-3">Pour toute question sur l'utilisation de MerchFlow.</p>
+
+              <a href="mailto:grassiano.b@gmail.com" class="btn btn-orange rounded-pill fw-bold mt-auto">
+                <i class="fa-solid fa-paper-plane me-2"></i> grassiano.b@gmail.com
+              </a>
+            </div>
+          </div>
+
+          <%# Contact Adresse/Téléphone %>
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 h-100">
+              <i class="fa-solid fa-location-dot fs-2 text-orange mb-3"></i>
+              <h5 class="fw-bold">Administration & Courrier</h5>
+              <p class="text-muted">
+                11 Route d'Albi, 81350 Valderiès
+              </p>
+              <p class="text-muted mb-0">
+                Tél. : 06.45.56.28.14
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <hr class="my-5 opacity-25">
+
+        <h4 class="fw-bold text-center mb-4">
+          Vous préférez un formulaire ?
+        </h4>
+        <div class="alert alert-warning text-center">
+          La fonctionnalité de formulaire de contact est en cours de développement. Veuillez utiliser l'email ci-dessus pour le moment.
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

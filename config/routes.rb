@@ -4,6 +4,7 @@ Rails.application.routes.draw do
 
   resources :users, only: [:show]
   get 'confidentialite', to: 'static_pages#privacy', as: :privacy
+  get 'contact', to: 'static_pages#contact', as: :contact
 
   # ============================================================
   # HOME + DASHBOARD
