@@ -6,22 +6,34 @@
   <%= f.error_notification %>
 
   <div class="form-inputs">
-    <%= f.input :label, label: "Nom de l'Agence (Affichage)", placeholder: "Ex: Actiale" %>
+    <%# CHAMPS : APPLICATION DES CLASSES PREMIUM %>
+    <%= f.input :label,
+                label: "Nom de l'Agence (Affichage)",
+                placeholder: "Ex: Actiale",
+                input_html: { class: 'form-control rounded-3 shadow-sm' },
+                required: true %>
 
     <%# Gestion conditionnelle de l'édition du code %>
     <% if agency.persisted? %>
       <%= f.input :code, label: "Code Interne (Clé DB)",
-                           input_html: { readonly: true, class: 'bg-light' },
-                           hint: "Le code interne ne peut pas être modifié car il est utilisé par les contrats existants." %>
+                           hint: "Le code interne ne peut pas être modifié car il est utilisé par les contrats existants.",
+                           input_html: {
+                             readonly: true,
+                             class: 'bg-light form-control rounded-3 shadow-sm' # Ajout des classes premium
+                           } %>
     <% else %>
       <%= f.input :code,
                   label: "Code Interne (Optionnel)",
                   placeholder: "Laisser vide pour générer depuis le Nom",
-                  required: false %>
+                  required: false,
+                  input_html: { class: 'form-control rounded-3 shadow-sm' } # Ajout des classes premium
+                   %>
     <% end %>
   </div>
 
-  <div class="form-actions mt-3">
-    <%= f.button :submit, class: "btn btn-red w-100" %>
+  <div class="form-actions mt-4 d-grid">
+    <%# BOUTON : CHANGEMENT DE COULEUR ET STYLE PREMIUM %>
+    <%= f.button :submit,
+                 class: "btn btn-orange fw-bold py-2 shadow-sm" %>
   </div>
 <% end %>

@@ -1,52 +1,76 @@
-<div class="container mt-4">
-  <h2 class="fw-bold text-orange mb-4">Administration des Agences</h2>
+<div class="container mt-5 mb-5">
 
-  <div class="row">
+  <%# EN-TÊTE %>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-dark m-0">
+      <i class="fa-solid fa-building me-3 text-orange"></i> Administration des Agences
+    </h1>
+    <span class="badge bg-orange-light text-orange fw-bold fs-6 px-3 py-2 rounded-pill shadow-sm">
+      <%= @agencies.count %> Agences Actives
+    </span>
+  </div>
 
-   <%# Colonne de Création %>
-    <div class="col-md-4">
-      <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light fw-bold">Ajouter une Nouvelle Agence</div>
-        <div class="card-body">
-          <%# Remplacer le simple_form_for par le render du partial %>
+  <hr class="opacity-10 my-4">
+
+  <div class="row g-4">
+
+    <%# ========================================================== %>
+    <%# 1. ZONE DE CRÉATION (Formulaire - Pleine largeur sur mobile) %>
+    <%# ========================================================== %>
+    <div class="col-12 col-lg-8 offset-lg-2 mb-5">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-orange text-white fw-bold fs-5 rounded-top-4 p-3">
+          <i class="fa-solid fa-plus-circle me-2"></i> Ajouter une Nouvelle Agence
+        </div>
+        <div class="card-body p-4">
+          <%# Rendu du formulaire %>
           <%= render 'form', agency: @agency %>
         </div>
       </div>
     </div>
 
-    <%# Colonne de Liste et Gestion %>
-    <div class="col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-header bg-light fw-bold">Liste des Agences (<%= @agencies.count %>)</div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Nom (Label)</th>
-                  <th>Code (DB Key)</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% @agencies.each do |agency| %>
-                  <tr>
-                    <td class="fw-bold"><%= agency.label %></td>
-                    <td class="text-muted small"><%= agency.code %></td>
-                    <td>
-                      <%= link_to "Modifier", edit_admin_agency_path(agency), class: "btn btn-sm btn-outline-secondary me-2" %>
+    <div class="col-12">
+        <h3 class="fw-bold text-dark mb-4 mt-2">
+            <i class="fa-solid fa-list-check me-2 text-orange"></i> Liste des Agences enregistrées
+        </h3>
+    </div>
+
+    <%# ========================================================== %>
+    <%# 2. LISTE DES AGENCES (Cartes individuelles - Pleine largeur) %>
+    <%# ========================================================== %>
+    <div class="col-12">
+        <% if @agencies.empty? %>
+             <p class="text-muted text-center py-4">Aucune agence n'est enregistrée pour le moment.</p>
+        <% else %>
+            <div class="row g-3">
+              <% @agencies.each do |agency| %>
+                <%# Carte individuelle (col-md-6 pour deux par ligne, col-lg-4 pour trois par ligne) %>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card card-body shadow-sm border-0 rounded-3 p-3 h-100 d-flex flex-column">
+
+                    <%# Contenu de l'agence (Nom et Code) %>
+                    <div class="mb-3">
+                      <h5 class="fw-bold text-dark mb-1">
+                        <%= agency.label %>
+                      </h5>
+                      <p class="text-secondary small mb-0">
+                        Code : <%= agency.code %>
+                      </p>
+                    </div>
+
+                    <%# Actions (Modif/Suppr) - Collées en bas et alignées à droite %>
+                    <div class="mt-auto d-flex justify-content-center gap-2">
+                      <%= link_to "Modifier", edit_admin_agency_path(agency), class: "btn btn-sm btn-orange" %>
                       <%= button_to "Supprimer", admin_agency_path(agency),
                           method: :delete,
-                          data: { confirm: "Êtes-vous sûr de vouloir supprimer l'agence #{agency.label} ? Cette action est irréversible s'il n'y a pas de contrats liés." },
-                          class: "btn btn-sm btn-outline-danger" %>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                          data: { turbo_confirm: "Êtes-vous sûr de vouloir supprimer l'agence #{agency.label} ? Cette action est irréversible." },
+                          class: "btn btn-sm btn-red" %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+        <% end %>
     </div>
   </div>
 </div>
