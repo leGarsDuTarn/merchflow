@@ -31,13 +31,13 @@
 
             <strong>Expire :</strong>
             <%# Petit ajustement pour gérer les dates vides au cas où %>
-            <%= inv.expires_at ? l(inv.expires_at, format: :long) : "—" %>
+           <%= inv.expires_at ? inv.expires_at.strftime("%d/%m à %H:%M") : "—" %>
           </p>
 
           <div class="d-flex justify-content-between align-items-center mt-3">
             <div>
               <% if inv.used? %>
-                <span class="badge bg-success rounded-pill">Utilisée</span>
+                <span class="badge p-2 bg-success rounded-pill">Utilisée</span>
               <% elsif inv.expired? %>
                 <span class="badge bg-danger rounded-pill">Expirée</span>
               <% else %>
@@ -51,7 +51,7 @@
                           turbo_method: :delete,
                           turbo_confirm: "Êtes-vous sûr de vouloir supprimer cette invitation ?"
                         },
-                        class: "btn btn-sm btn-outline-danger" %>
+                        class: "btn btn-sm btn-red" %>
           </div>
 
         </div>
