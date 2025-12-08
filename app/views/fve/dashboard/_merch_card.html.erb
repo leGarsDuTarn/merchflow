@@ -11,27 +11,38 @@
         </p>
       </div>
 
-      <%# Logique FAVORIS : L'icône de la feature qui arrive %>
-      <div data-controller="favorite">
-         <% if is_favorite %>
-            <i class="bi bi-heart-fill text-danger fs-5" style="cursor: pointer;" title="Retirer des favoris"></i>
-         <% else %>
-            <i class="bi bi-heart text-muted fs-5" style="cursor: pointer;" title="Ajouter aux favoris"></i>
-         <% end %>
+      <%# --- LOGIQUE FAVORIS (CORRIGÉE FA) --- %>
+      <div>
+        <% if current_user.favorite_merchs.exists?(merch.id) %>
+
+          <%# CŒUR PLEIN (fas = Font Awesome Solid) %>
+          <%= button_to fve_favorite_path(merch.id),
+              method: :delete,
+              class: "btn p-0 border-0 bg-transparent",
+              form: { style: 'display:inline-block;', data: { turbo_frame: '_top' } } do %>
+            <i class="fas fa-heart text-danger fs-5" style="cursor: pointer;" title="Retirer des favoris"></i>
+          <% end %>
+        <% else %>
+
+          <%# CŒUR VIDE (far = Font Awesome Regular/Outline) %>
+          <%= button_to fve_favorites_path(merch_id: merch.id),
+              method: :post,
+              class: "btn p-0 border-0 bg-transparent",
+              form: { style: 'display:inline-block;', data: { turbo_frame: '_top' } } do %>
+            <i class="far fa-heart text-muted fs-5" style="cursor: pointer;" title="Ajouter aux favoris"></i>
+          <% end %>
+        <% end %>
       </div>
+      <%# ---------------------------------------------------------- %>
+
     </div>
 
-    <%# ========================================================== %>
-    <%# ACCÈS AUX COORDONNÉES (Le "Premium Value" de la carte) %>
-    <%# ========================================================== %>
-
-    <%# On assume que la variable @premium est disponible ici, sinon utiliser current_user.premium? %>
+    <%# ... LE RESTE DU CODE (PREMIUM INFO) ... %>
     <% is_premium_fve = @premium || current_user.premium? %>
     <% merch_settings = merch.merch_setting || MerchSetting.new %>
 
     <div class="mb-3 border-top pt-3">
-
-      <%# AFFICHAGE CONDITIONNEL : TÉLÉPHONE %>
+        <%# AFFICHAGE CONDITIONNEL : TÉLÉPHONE %>
       <% if is_premium_fve && merch_settings.allow_contact_phone %>
         <div class="d-flex align-items-center mb-2">
           <i class="bi bi-telephone-fill me-2 text-orange small"></i>
@@ -69,8 +80,6 @@
         </div>
       <% end %>
     </div>
-
-    <%# ========================================================== %>
 
     <div class="d-grid gap-2 mt-auto pt-3 border-top">
       <div class="d-flex gap-2">

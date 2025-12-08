@@ -24,6 +24,10 @@ class User < ApplicationRecord
   has_many :sent_mission_proposals, class_name: 'MissionProposal', foreign_key: 'fve_id', dependent: :destroy
   # Propositions de Missions reçues (Merch)
   has_many :received_mission_proposals, class_name: 'MissionProposal', foreign_key: 'merch_id', dependent: :destroy
+  has_many :favorites_given, class_name: "Favorite", foreign_key: :fve_id, dependent: :destroy
+  has_many :favorite_merchs, through: :favorites_given, source: :merch
+  has_many :favorites_received, class_name: "Favorite", foreign_key: :merch_id, dependent: :destroy
+  has_many :fans, through: :favorites_received, source: :fve
   # ============================================================
   # RÔLE + ENUM
   # ============================================================

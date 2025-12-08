@@ -82,8 +82,11 @@ Rails.application.routes.draw do
     get  'invitations/:token', to: 'invitations#accept',   as: 'accept_invitation'
     post 'invitations/:token', to: 'invitations#complete', as: 'complete_invitation'
 
-    # Proposition de missions (Création par le FVE)
+    # Proposition de missions
     resources :mission_proposals, only: %i[create index destroy show]
+
+    # Favoris
+    resources :favorites, only: %i[create destroy]
   end
 
   # ============================================================

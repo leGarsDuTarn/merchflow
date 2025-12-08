@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_05_095748) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_08_093538) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_095748) do
     t.index ["contract_id"], name: "index_declarations_on_contract_id"
     t.index ["user_id", "year", "month"], name: "index_declarations_on_user_id_and_year_and_month"
     t.index ["user_id"], name: "index_declarations_on_user_id"
+  end
+
+  create_table "favorites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "fve_id", null: false
+    t.bigint "merch_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fve_id", "merch_id"], name: "index_favorites_on_fve_id_and_merch_id", unique: true
+    t.index ["fve_id"], name: "index_favorites_on_fve_id"
+    t.index ["merch_id"], name: "index_favorites_on_merch_id"
   end
 
   create_table "fve_invitations", force: :cascade do |t|
@@ -181,6 +191,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_095748) do
   add_foreign_key "contracts", "users"
   add_foreign_key "declarations", "contracts"
   add_foreign_key "declarations", "users"
+  add_foreign_key "favorites", "users", column: "fve_id"
+  add_foreign_key "favorites", "users", column: "merch_id"
   add_foreign_key "kilometer_logs", "work_sessions"
   add_foreign_key "merch_settings", "users"
   add_foreign_key "mission_proposals", "users", column: "fve_id"
