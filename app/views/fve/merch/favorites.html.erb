@@ -1,0 +1,37 @@
+<div class="container mt-4 mb-5">
+
+  <div class="text-center mb-5">
+    <h1 class="fw-bold text-orange mb-2">
+      Mon Équipe
+    </h1>
+    <p class="text-muted">
+      Retrouvez rapidement tous les profils que vous avez mis en favori.
+    </p>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <h4 class="fw-bold text-dark mb-0">Vos profils favoris</h4>
+    <span class="badge bg-orange rounded-pill px-3 py-2"><%= @merch.count %> Profils</span>
+  </div>
+
+  <% if @merch.any? %>
+    <div class="row g-4">
+      <% @merch.each do |merch| %>
+        <%# Réutilisation de votre partial de carte premium %>
+        <%= render partial: "fve/dashboard/merch_card", locals: { merch: merch } %>
+      <% end %>
+    </div>
+  <% else %>
+
+    <%# État "vide" si aucun favori n'est présent (Empty State) %>
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
+      <div class="mb-3 text-muted opacity-50">
+        <i class="bi bi-heart-fill fs-1"></i>
+      </div>
+      <h4 class="fw-bold text-dark">Votre équipe est vide</h4>
+      <p class="text-muted">Commencez par ajouter des profils en favori depuis l'annuaire !</p>
+      <%= link_to "Accéder à l'Annuaire", fve_merch_index_path, class: "btn btn-outline-orange rounded-pill px-4 fw-bold" %>
+    </div>
+  <% end %>
+
+</div>

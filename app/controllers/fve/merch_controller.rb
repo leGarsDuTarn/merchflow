@@ -148,6 +148,13 @@ module Fve
       @total_missions = @merch_user.work_sessions.count
     end
 
+    def favorites
+      # On récupère les favoris de l'utilisateur connecté
+      @merch = current_user.favorite_merchs.includes(:merch_setting)
+
+      # Rails va chercher automatiquement la vue : app/views/fve/merch/favorites.html.erb
+    end
+
     private
 
     def require_fve!
