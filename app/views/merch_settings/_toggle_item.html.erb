@@ -4,7 +4,7 @@
   <label class="fw-semibold mb-0"><%= label %></label>
   <div class="form-check form-switch m-0">
     <%= button_to path, method: :post,
-                  class: "btn btn-sm #{status ? 'btn-success' : 'btn-light text-muted'}",
+                  class: "btn btn-sm #{status ? 'btn-green' : 'btn-gray'}",
                   form: { data: { turbo_frame: "_top" } } do %>
       <%= status ? 'Activé' : 'Désactivé' %>
     <% end %>
