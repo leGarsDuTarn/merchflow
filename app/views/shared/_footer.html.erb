@@ -1,7 +1,9 @@
 <footer class="text-center text-muted mt-2 mb-3">
   <small>
     <%# Ce lien apparaîtra dans toutes les vues qui rendent ce footer %>
-     <%= link_to "Politique de Confidentialité", privacy_path, class: "text-muted text-decoration-none" %>
-     | <%= link_to "Contact", contact_path, class: "text-muted text-decoration-none" %>
+    © <%= Time.current.year %> MerchFlow - Votre assistant administratif merch.
+    <br>
+    <%= link_to "Politique de Confidentialité", privacy_path, class: "text-muted text-decoration-none" %>
+    | <%= link_to "Contact", contact_path, class: "text-muted text-decoration-none" %>
   </small>
 </footer>

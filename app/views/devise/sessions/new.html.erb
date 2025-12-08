@@ -6,12 +6,10 @@
       <div class="card shadow-sm p-4 rounded-4">
         <h1 class="fw-bold mb-4 text-center text-orange">Connexion</h1>
 
-        <!-- Notices classiques -->
         <% if flash[:notice].present? %>
           <div class="alert alert-success"><%= flash[:notice] %></div>
         <% end %>
 
-        <!-- Erreurs INLINE pour email + password -->
         <% if flash[:alert].present? %>
           <div class="text-orange small mb-3 text-center">
             <%= flash[:alert] %>
@@ -22,14 +20,21 @@
 
           <div class="mb-3">
             <%= f.label :email, "Adresse email", class: "form-label fw-semibold" %>
-            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control" %>
-            <%= inline_error_for(resource, :email) %>
+            <%# AJOUT DE required: true ICI %>
+            <%= f.email_field :email,
+                              autofocus: true,
+                              autocomplete: "email",
+                              class: "form-control",
+                              required: true %>
           </div>
 
           <div class="mb-3">
             <%= f.label :password, "Mot de passe", class: "form-label fw-semibold" %>
-            <%= f.password_field :password, autocomplete: "current-password", class: "form-control" %>
-            <%= inline_error_for(resource, :password) %>
+            <%# AJOUT DE required: true ICI %>
+            <%= f.password_field :password,
+                                 autocomplete: "current-password",
+                                 class: "form-control",
+                                 required: true %>
           </div>
 
           <% if devise_mapping.rememberable? %>
@@ -39,17 +44,28 @@
             </div>
           <% end %>
 
-          <div class="d-grid">
+          <div class="d-grid mb-4">
             <%= f.submit "Se connecter", class: "btn btn-orange btn-lg fw-bold" %>
           </div>
 
         <% end %>
 
-        <div class="text-center mt-3">
-          <%= link_to "Mot de passe oublié ?", new_user_password_path, class: "text-decoration-none text-muted" %>
-        </div>
+        <%# -------------------------------------------------------------------------------- %>
+        <%# BLOC DE SECOURS (REMPLACE LE LIEN BRISE new_user_password_path) %>
+        <div class="mt-3 mb-2 p-3 border rounded-4 bg-light">
 
-        <div class="text-center mt-2">
+          <p class="small text-muted mb-2 text-center">
+            Mot de passe oublié ? Contactez l'administration pour obtenir un lien de secours :
+          </p>
+
+          <%= link_to 'Demander un lien de secours',
+                      "mailto:grassiano.b@gmail.com?subject=Demande de réinitialisation de mot de passe MerchFlow",
+                      class: 'btn btn-sm btn-orange-outline w-100' %>
+
+        </div>
+        <%# -------------------------------------------------------------------------------- %>
+
+        <div class="text-center mt-4">
           <%= link_to "Créer un compte", new_user_registration_path, class: "text-decoration-none text-orange fw-semibold" %>
         </div>
 
@@ -58,7 +74,3 @@
     </div>
   </div>
 </div>
-
-<footer class="text-center text-muted mt-2 mb-3">
-  <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
-</footer>

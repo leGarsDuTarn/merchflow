@@ -6,7 +6,7 @@ class User < ApplicationRecord
   # DEVISE MODULES
   # ============================================================
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :rememberable, :validatable
 
   # ============================================================
   # RELATIONS
