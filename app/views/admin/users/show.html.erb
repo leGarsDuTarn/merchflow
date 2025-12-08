@@ -1,6 +1,5 @@
 <div class="container mt-5 mb-5">
 
-  <!-- EN-TÊTE AVEC RETOUR -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <%= link_to admin_users_path, class: "btn btn-orange-outline rounded-pill px-3" do %>
       <i class="fa-solid fa-arrow-left me-2"></i>Retour
@@ -12,14 +11,13 @@
       </span>
     <% else %>
       <span class="badge bg-gray text-orange fs-6 px-3 py-2 rounded-pill">
-        <i class="fa-solid fa-user me-2"></i>Compte Merch
+        <i class="fa-solid fa-user me-2"></i>Compte Standard
       </span>
     <% end %>
   </div>
 
   <div class="row">
 
-    <!-- COLONNE GAUCHE : IDENTITÉ -->
     <div class="col-lg-8">
       <div class="card shadow-sm rounded-4 border-0 mb-4 h-100">
         <div class="card-body p-4">
@@ -38,7 +36,6 @@
 
           <div class="row g-4">
 
-            <!-- Email -->
             <div class="col-md-6">
               <label class="text-muted small fw-bold text-uppercase mb-1">Email</label>
               <div class="d-flex align-items-center">
@@ -47,7 +44,6 @@
               </div>
             </div>
 
-            <!-- Téléphone -->
             <div class="col-md-6">
               <label class="text-muted small fw-bold text-uppercase mb-1">Téléphone</label>
               <div class="d-flex align-items-center">
@@ -56,7 +52,6 @@
               </div>
             </div>
 
-            <!-- 🔥 SPECIFIQUE FVE : AGENCE -->
             <% if @user.fve? %>
               <div class="col-12">
                 <div class="bg-light p-3 rounded-3 border border-primary border-opacity-25">
@@ -72,7 +67,6 @@
               </div>
             <% end %>
 
-            <!-- SPECIFIQUE MERCH : ADRESSE -->
             <% if @user.merch? %>
               <div class="col-12">
                 <label class="text-muted small fw-bold text-uppercase mb-1">Adresse</label>
@@ -92,45 +86,44 @@
       </div>
     </div>
 
-    <!-- COLONNE DROITE : STATUT & ACTIONS -->
     <div class="col-lg-4">
 
-      <!-- Carte Premium -->
-      <div class="card shadow-sm rounded-4 border-0 mb-4">
-        <div class="card-body p-4">
-          <h5 class="fw-bold mb-3">Statut du compte</h5>
+      <%# -------------------------------------------------------------------------------- %>
+      <%# NOUVEAU : La carte Premium n'est affichée QUE si l'utilisateur est un FVE. %>
+      <%# -------------------------------------------------------------------------------- %>
+      <% if @user.fve? %>
+        <div class="card shadow-sm rounded-4 border-0 mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Statut du compte</h5>
 
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="fw-semibold">Premium</span>
-            <% if @user.premium? %>
-              <span class="badge bg-success rounded-pill px-3">Actif</span>
-            <% else %>
-              <span class="badge bg-secondary rounded-pill px-3">Inactif</span>
-            <% end %>
-          </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="fw-semibold">Premium</span>
+              <% if @user.premium? %>
+                <span class="badge bg-success rounded-pill px-3">Actif</span>
+              <% else %>
+                <span class="badge bg-secondary rounded-pill px-3">Inactif</span>
+              <% end %>
+            </div>
 
-          <p class="text-muted small mb-3">
-            <% if @user.fve? %>
+            <p class="text-muted small mb-3">
               Le Premium permet au FVE de voir les coordonnées (téléphone/email) des Merchs.
-            <% else %>
-              Le Premium permet au Merch d'accéder aux fonctionnalités avancées.
-            <% end %>
-          </p>
+            </p>
 
-          <%= link_to toggle_premium_admin_user_path(@user),
-                      class: "btn btn-red w-100  #{@user.premium? ? 'btn-outline-danger' : 'btn-orange'}",
-                      data: { turbo_method: :patch } do %>
-            <% if @user.premium? %>
-              <i class="fa-solid fa-ban me-2"></i>Désactiver Premium
-            <% else %>
-              <i class="fa-solid fa-star me-2"></i>Activer Premium
+            <%= link_to toggle_premium_admin_user_path(@user),
+                        class: "btn btn-red w-100  #{@user.premium? ? 'btn-outline-danger' : 'btn-orange'}",
+                        data: { turbo_method: :patch } do %>
+              <% if @user.premium? %>
+                <i class="fa-solid fa-ban me-2"></i>Désactiver Premium
+              <% else %>
+                <i class="fa-solid fa-star me-2"></i>Activer Premium
+              <% end %>
             <% end %>
-          <% end %>
 
+          </div>
         </div>
-      </div>
+      <% end %>
+      <%# -------------------------------------------------------------------------------- %>
 
-      <!-- Actions Admin (Suppression, Edit...) -->
       <div class="card shadow-sm rounded-4 border-0">
         <div class="card-body p-4">
           <h5 class="fw-bold mb-3 text-danger">Zone de danger</h5>
