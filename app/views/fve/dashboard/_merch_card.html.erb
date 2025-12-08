@@ -1,7 +1,7 @@
 <div class="col-md-6 col-lg-4">
-  <div class="card shadow-sm p-3 rounded-4 h-100 border-0 position-relative">
+  <div class="card shadow-sm p-3 rounded-4 h-100 border-0 position-relative card-hover-effect">
 
-    <div class="d-flex justify-content-between align-items-start mb-2">
+    <div class="d-flex justify-content-between align-items-start mb-3">
       <div>
         <h5 class="fw-bold text-orange mb-1">
           <%= merch.firstname %> <%= merch.lastname %>
@@ -11,17 +11,71 @@
         </p>
       </div>
 
-      <% if is_favorite %>
-         <i class="bi bi-heart-fill text-danger fs-5"></i>
+      <%# Logique FAVORIS : L'icône de la feature qui arrive %>
+      <div data-controller="favorite">
+         <% if is_favorite %>
+            <i class="bi bi-heart-fill text-danger fs-5" style="cursor: pointer;" title="Retirer des favoris"></i>
+         <% else %>
+            <i class="bi bi-heart text-muted fs-5" style="cursor: pointer;" title="Ajouter aux favoris"></i>
+         <% end %>
+      </div>
+    </div>
+
+    <%# ========================================================== %>
+    <%# ACCÈS AUX COORDONNÉES (Le "Premium Value" de la carte) %>
+    <%# ========================================================== %>
+
+    <%# On assume que la variable @premium est disponible ici, sinon utiliser current_user.premium? %>
+    <% is_premium_fve = @premium || current_user.premium? %>
+    <% merch_settings = merch.merch_setting || MerchSetting.new %>
+
+    <div class="mb-3 border-top pt-3">
+
+      <%# AFFICHAGE CONDITIONNEL : TÉLÉPHONE %>
+      <% if is_premium_fve && merch_settings.allow_contact_phone %>
+        <div class="d-flex align-items-center mb-2">
+          <i class="bi bi-telephone-fill me-2 text-orange small"></i>
+          <span class="fw-semibold text-dark"><%= merch.phone_number %></span>
+        </div>
       <% else %>
-         <i class="bi bi-heart text-muted fs-5"></i>
+        <div class="d-flex align-items-center mb-2 text-muted">
+          <i class="bi bi-telephone-fill me-2 small"></i>
+          <span>
+            <% if is_premium_fve %>
+              Numéro non partagé par le Merch
+            <% else %>
+              <span class="fst-italic small">Premium requis pour voir</span>
+            <% end %>
+          </span>
+        </div>
+      <% end %>
+
+      <%# AFFICHAGE CONDITIONNEL : EMAIL %>
+      <% if is_premium_fve && merch_settings.allow_contact_email %>
+        <div class="d-flex align-items-center">
+          <i class="bi bi-envelope-fill me-2 text-orange small"></i>
+          <span class="fw-semibold text-dark text-truncate"><%= merch.email %></span>
+        </div>
+      <% else %>
+        <div class="d-flex align-items-center text-muted">
+          <i class="bi bi-envelope-fill me-2 small"></i>
+          <span>
+             <% if is_premium_fve %>
+              Email non partagé par le Merch
+            <% else %>
+              <span class="fst-italic small">Premium requis pour voir</span>
+            <% end %>
+          </span>
+        </div>
       <% end %>
     </div>
 
-    <div class="d-grid gap-2 mt-auto pt-3">
+    <%# ========================================================== %>
+
+    <div class="d-grid gap-2 mt-auto pt-3 border-top">
       <div class="d-flex gap-2">
-        <%= link_to "Profil", fve_merch_path(merch), class: "btn btn-sm btn-orange flex-grow-1" %>
-        <%= link_to "Planning", fve_planning_path(merch), class: "btn btn-sm btn-orange flex-grow-1" %>
+        <%= link_to "Profil", fve_merch_path(merch), class: "btn btn-sm btn-orange flex-grow-1 fw-semibold" %>
+        <%= link_to "Planning", fve_planning_path(merch), class: "btn btn-sm btn-orange-outline flex-grow-1 fw-semibold" %>
       </div>
     </div>
 

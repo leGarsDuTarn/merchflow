@@ -1,0 +1,15 @@
+.card-hover-effect {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover-effect:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    border-color: #ff7f50 !important; /* Ta couleur orange */
+    cursor: pointer;
+  }
+  .bg-orange-light {
+    background-color: rgba(255, 127, 80, 0.1); /* Ajuste avec ton code hexa orange exact */
+  }
+  .border-dashed {
+    border-style: dashed !important;
+  }
