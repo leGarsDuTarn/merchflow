@@ -5,41 +5,27 @@ module Fve
     before_action :verify_fve
 
     def index
+      # Assurez-vous que l'autorisation est faite s'il y a Pundit ou CanCanCan
+      # Supprimez cette ligne si vous n'utilisez pas de gem d'autorisation (Pundit/CanCanCan)
       authorize %i[fve dashboard]
+
       @premium = current_user.premium?
 
-      # --- ZONE 1 : MÉTÉO (Ce qui se passe MAINTENANT) ---
-      # Logique : Uniquement ce qui est validé pour aujourd'hui.
-      @missions_today_count = current_user.sent_mission_proposals
-                                          .where(status: 'accepted')
-                                          .where(date: Date.today)
-                                          .count
+      # 1. Récupération des Merchs favoris (objets User) pour la section "Mon Équipe"
+      #    On inclut les paramètres pour éviter les requêtes N+1 sur les cartes (includes(:merch_setting)).
+      @favorite_merchs = current_user.favorite_merchs.includes(:merch_setting)
 
-      # --- ZONE 2 : PLANIFICATION (Ce qu'il faut relancer) ---
-      # Logique : Tout ce qui est en attente pour AUJOURD'HUI ou le FUTUR.
-      # On exclut les vieilles missions passées (date < Date.today).
-      @pending_proposals_count = current_user.sent_mission_proposals
-                                             .where(status: 'pending')
-                                             .where('date >= ?', Date.today) # <-- AJOUT : On regarde devant nous
-                                             .count
+      # 2. On récupère les IDs des Merchs déjà en favoris pour les exclure de la section "Découverte"
+      excluded_ids = @favorite_merchs.pluck(:id)
 
-      # --- ZONE 3 : ALERTES (Ce qu'il faut re-staffer d'urgence) ---
-      # Logique : Les refus pour des missions qui n'ont pas encore eu lieu (ou qui sont aujourd'hui).
-      # Si une mission était hier et a été refusée, c'est trop tard, on ne l'affiche plus en alerte prioritaire.
-      @alerts = current_user.sent_mission_proposals
-                            .includes(:merch)
-                            .where(status: 'declined')
-                            .where('date >= ?', Date.today)
-                            .order(updated_at: :desc)
-                            .limit(3)
-
-      # --- ZONE 4 : ÉQUIPE ---
-      @favorite_merchs = current_user.try(:favorites) || []
-      excluded_ids = @favorite_merchs.any? ? @favorite_merchs.pluck(:id) : []
+      # 3. Récupération des autres Merchs (non favoris) pour la section "Découverte/Suggestions"
+      #    On utilise le scope User.merch (si défini) ou User.where(role: X)
       @other_merchs = User.merch
                           .where.not(id: excluded_ids)
+                          .includes(:merch_setting)
                           .order(created_at: :desc)
-                          .limit(9)
+                          .limit(3) # Limité à 9 pour un affichage propre
+
     end
 
     private
