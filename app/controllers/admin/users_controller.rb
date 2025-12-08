@@ -6,8 +6,39 @@ class Admin::UsersController < ApplicationController
   # GET /admin/users
   def index
     authorize [:admin, User]
-    @users = User.order(:firstname)
+
+    if params[:query].present?
+      query = params[:query].downcase
+      search_pattern = "%#{query}%"
+
+      # 1. Gestion intelligente des Rôles (Enum)
+      # On regarde si le texte tapé correspond à un rôle (ex: "adm" correspond à "admin" -> 0)
+      # User.roles renvoie un hash {"admin" => 0, "fve" => 1, ...}
+      matching_roles = User.roles.select { |name, _val| name.include?(query) }.values
+
+      # 2. Construction de la requête
+      # On commence par les champs TEXTE classiques
+      sql_query = "LOWER(firstname) LIKE :search OR
+                   LOWER(lastname) LIKE :search OR
+                   LOWER(email) LIKE :search OR
+                   CAST(id AS TEXT) LIKE :search" # Recherche sur l'ID converti en texte
+
+      # 3. Si on a trouvé des rôles correspondants, on ajoute la condition sur l'entier
+      if matching_roles.any?
+        sql_query += " OR role IN (:role_ids)"
+      end
+
+      # 4. Exécution de la requête
+      @users = User.where(sql_query, search: search_pattern, role_ids: matching_roles).order(:firstname)
+
+    else
+      # Pas de recherche : on affiche tout
+      @users = User.order(:firstname)
+    end
   end
+
+  # ... Le reste du contrôleur (show, edit, etc.) reste identique ...
+  # (Assurez-vous de garder les autres méthodes en dessous)
 
   # GET /admin/users/:id
   def show
@@ -53,14 +84,10 @@ class Admin::UsersController < ApplicationController
 
   def export_data
     @user = User.find(params[:id])
-
-    # Définition du nom de fichier
     filename = "donnees_utilisateur_#{@user.lastname.downcase}_#{@user.id}.pdf"
-
-    # Wicked PDF rend le PDF basé sur une vue spéciale
     render pdf: filename,
-           template: 'admin/users/export_data_pdf', # Vue à créer ci-dessous
-           layout: 'pdf' # Assurez-vous d'avoir un layout 'pdf.html.erb' simple (voir documentation Wicked PDF)
+           template: 'admin/users/export_data_pdf',
+           layout: 'pdf'
   end
 
   private

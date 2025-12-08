@@ -1,17 +1,44 @@
 <div class="container mt-4">
 
-  <!-- TITRE -->
   <h1 class="fw-bold text-orange mb-4 text-center">
     Gestion des utilisateurs
   </h1>
 
-  <!-- LISTE DES USERS -->
+  <%# ========================================================== %>
+  <%# ZONE DE RECHERCHE (Formulaire simple avec bouton de reset) %>
+  <%# ========================================================== %>
+  <div class="row justify-content-center mb-5">
+    <div class="col-12 col-md-8 col-lg-6">
+      <%= form_with url: admin_users_path, method: :get, class: "d-flex shadow-sm rounded-pill overflow-hidden border" do %>
+
+        <input type="search"
+               name="query"
+               class="form-control border-0 py-3 ps-4"
+               placeholder="Rechercher par nom, email ou rôle (admin, fve, merch, etc.)..."
+               value="<%= params[:query] %>">
+
+        <%# BOUTON DE RECHERCHE AMÉLIORÉ (Orange) %>
+        <button type="submit" class="btn btn-orange px-4 flex-shrink-0">
+          <i class="fa-solid fa-search"></i>
+        </button>
+
+      <% end %>
+
+      <%# Bouton de réinitialisation (Affiché seulement si une recherche est active) %>
+      <% if params[:query].present? %>
+        <%= link_to admin_users_path, class: "btn btn-sm btn-green mt-2 w-100" do %>
+          <i class="fa-solid fa-xmark me-2"></i> Réinitialiser la recherche
+        <% end %>
+      <% end %>
+
+    </div>
+  </div>
+
   <div class="row g-4">
     <% @users.each do |user| %>
       <div class="col-md-6 col-lg-4">
         <div class="card shadow-sm rounded-4 p-4 h-100 d-flex flex-column">
 
-          <!-- HEADER -->
           <h5 class="fw-bold text-orange mb-1">
             <%= user.full_name %>
           </h5>
@@ -21,19 +48,18 @@
             <%= user.email %>
             <br>
 
-            <!-- BADGE ROLE -->
             <span class="badge rounded-pill
                          <%=
                             case user.role
                             when 'admin' then 'bg-dark'
                             when 'fve' then 'bg-primary'
+                            when 'merch' then 'bg-info'
                             else 'bg-secondary'
                             end
                          %>">
               <%= user.role.upcase %>
             </span>
 
-            <!-- BADGE PREMIUM -->
             <% if user.premium? %>
               <span class="badge bg-gold text-dark rounded-pill ms-1">
                 ★ Premium
@@ -46,24 +72,20 @@
             <% end %>
           </p>
 
-          <!-- FOOTER ACTIONS -->
           <div class="mt-4 d-flex gap-2 justify-content-around">
 
-            <!-- VOIR -->
             <%= link_to admin_user_path(user),
               class: "btn btn-sm btn-orange-outline fw-semibold",
               aria: { label: "Modifier l'abonnement #{user.full_name}" } do %>
               <i class="fa-solid fa-pen me-1"></i>
             <% end %>
 
-            <!-- EDIT (readonly mais laissé pour usage support) -->
             <%= link_to edit_admin_user_path(user),
               class: "btn btn-sm btn-orange-outline fw-semibold",
               aria: { label: "Voir l'utilisateur #{user.full_name}" } do %>
               <i class="fa-solid fa-eye me-1"></i>
             <% end %>
 
-            <!-- DELETE -->
             <%= link_to admin_user_path(user),
               data: {
               turbo_method: :delete,
