@@ -44,9 +44,6 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-gem 'whenever', require: false
-# 'require: false' est standard pour whenever, car vous l'utilisez via une commande Rake, et non dans votre application.
-
 gem "devise"
 gem "sassc-rails"
 gem "bootstrap", "~> 5.3"
