@@ -63,8 +63,9 @@
                   <label class="text-primary small fw-bold text-uppercase mb-2">
                     <i class="fa-solid fa-building me-1"></i> Agence de rattachement
                   </label>
+
                   <div class="fs-4 fw-bold text-dark">
-                    <%= Contract::AGENCY_LABELS[@user.agency] || @user.agency.to_s.humanize %>
+                    <%= @user.agency_label %>
                   </div>
                   <small class="text-muted">Cet utilisateur ne voit que les missions de cette agence.</small>
                 </div>

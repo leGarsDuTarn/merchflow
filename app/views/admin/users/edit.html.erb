@@ -8,25 +8,21 @@
 
     <div class="row g-3">
 
-      <!-- Prénom -->
       <div class="col-md-6">
         <label class="form-label fw-semibold">Prénom</label>
         <input class="form-control" value="<%= @user.firstname %>" readonly>
       </div>
 
-      <!-- Nom -->
       <div class="col-md-6">
         <label class="form-label fw-semibold">Nom</label>
         <input class="form-control" value="<%= @user.lastname %>" readonly>
       </div>
 
-      <!-- Email -->
       <div class="col-md-12">
         <label class="form-label fw-semibold">Email</label>
         <input class="form-control" value="<%= @user.email %>" readonly>
       </div>
 
-      <!-- Téléphone -->
       <div class="col-md-12">
         <label class="form-label fw-semibold">Téléphone</label>
         <input class="form-control" value="<%= @user.phone_number %>" readonly>
@@ -34,20 +30,22 @@
 
       <hr>
 
-      <!-- Confidentialité -->
       <div class="col-md-4">
         <label class="form-label fw-semibold">Autorise email</label>
-        <input class="form-control" value="<%= @user.allow_email ? 'Oui' : 'Non' %>" readonly>
+        <%# CORRECTION : Accède à l'attribut allow_contact_email via merch_setting %>
+        <input class="form-control" value="<%= @user.merch_setting&.allow_contact_email ? 'Oui' : 'Non' %>" readonly>
       </div>
 
       <div class="col-md-4">
         <label class="form-label fw-semibold">Autorise téléphone</label>
-        <input class="form-control" value="<%= @user.allow_phone ? 'Oui' : 'Non' %>" readonly>
+        <%# CORRECTION : Accède à l'attribut allow_contact_phone via merch_setting %>
+        <input class="form-control" value="<%= @user.merch_setting&.allow_contact_phone ? 'Oui' : 'Non' %>" readonly>
       </div>
 
       <div class="col-md-4">
         <label class="form-label fw-semibold">Autorise identité</label>
-        <input class="form-control" value="<%= @user.allow_identity ? 'Oui' : 'Non' %>" readonly>
+        <%# CORRECTION : Accède à l'attribut allow_identity via merch_setting %>
+        <input class="form-control" value="<%= @user.merch_setting&.allow_identity ? 'Oui' : 'Non' %>" readonly>
       </div>
 
     </div>
@@ -59,4 +57,3 @@
   </div>
 
 </div>
-
