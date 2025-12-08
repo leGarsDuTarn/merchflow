@@ -94,6 +94,8 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :users do
       patch :toggle_premium, on: :member
+      # Route pour exporter les données d'un utilisateur spécifique
+      get :export_data, on: :member # Crée export_data_admin_user_path(@user)
     end
 
     resources :fve_invitations, only: %i[index new create destroy]
@@ -101,5 +103,5 @@ Rails.application.routes.draw do
     resources :agencies
 
     get 'dashboard', to: 'dashboard#index'
-  end
+end
 end

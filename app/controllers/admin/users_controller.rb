@@ -51,6 +51,18 @@ class Admin::UsersController < ApplicationController
                   notice: "Premium #{@user.premium? ? 'activé' : 'désactivé'} pour #{@user.username}."
   end
 
+  def export_data
+    @user = User.find(params[:id])
+
+    # Définition du nom de fichier
+    filename = "donnees_utilisateur_#{@user.lastname.downcase}_#{@user.id}.pdf"
+
+    # Wicked PDF rend le PDF basé sur une vue spéciale
+    render pdf: filename,
+           template: 'admin/users/export_data_pdf', # Vue à créer ci-dessous
+           layout: 'pdf' # Assurez-vous d'avoir un layout 'pdf.html.erb' simple (voir documentation Wicked PDF)
+  end
+
   private
 
   def set_user

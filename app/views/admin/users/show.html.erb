@@ -88,9 +88,7 @@
 
     <div class="col-lg-4">
 
-      <%# -------------------------------------------------------------------------------- %>
-      <%# NOUVEAU : La carte Premium n'est affichée QUE si l'utilisateur est un FVE. %>
-      <%# -------------------------------------------------------------------------------- %>
+      <%# Carte Premium (Affichée uniquement pour les FVE) %>
       <% if @user.fve? %>
         <div class="card shadow-sm rounded-4 border-0 mb-4">
           <div class="card-body p-4">
@@ -122,7 +120,24 @@
           </div>
         </div>
       <% end %>
-      <%# -------------------------------------------------------------------------------- %>
+
+      <%# ========================================================== %>
+      <%# NOUVELLE CARTE : EXPORT RGPD (Droit à la portabilité) %>
+      <%# ========================================================== %>
+      <div class="card shadow-sm rounded-4 border-0 mb-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">Conformité RGPD</h5>
+          <p class="text-muted small">Exporter l'intégralité des données utilisateurs au format PDF.</p>
+
+          <%= link_to export_data_admin_user_path(@user, format: :pdf),
+                      class: "btn btn-outline-secondary w-100 fw-bold",
+                      target: "_blank" do %>
+            <i class="fa-solid fa-file-pdf me-2"></i>Exporter les données
+          <% end %>
+        </div>
+      </div>
+      <%# ========================================================== %>
+
 
       <div class="card shadow-sm rounded-4 border-0">
         <div class="card-body p-4">

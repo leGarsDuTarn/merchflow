@@ -1,0 +1,53 @@
+<div class="section">
+  <h1>Export des donnees personnelles (RGPD)</h1>
+  <hr>
+</div>
+
+<div class="section">
+  <h2>Identite du compte</h2>
+  <p><span class="label">Nom :</span> <%= @user.lastname %></p>
+  <p><span class="label">Prenom :</span> <%= @user.firstname %></p>
+  <p><span class="label">Nom complet :</span> <%= @user.firstname %> <%= @user.lastname %></p>
+  <p><span class="label">Nom d'utilisateur :</span> <%= @user.username %></p>
+  <p><span class="label">Role :</span> <%= @user.role %></p>
+</div>
+
+<div class="section">
+  <h2>Informations de contact</h2>
+  <p><span class="label">Email :</span> <%= @user.email %></p>
+  <p><span class="label">Telephone :</span> <%= @user.phone_number.presence || "Non renseigne" %></p>
+</div>
+
+<div class="section">
+  <h2>Adresse</h2>
+  <p><span class="label">Adresse :</span> <%= @user.address.presence || "Non renseignee" %></p>
+  <p><span class="label">Code postal :</span> <%= @user.zipcode.presence || "Non renseigne" %></p>
+  <p><span class="label">Ville :</span> <%= @user.city.presence || "Non renseignee" %></p>
+</div>
+
+<div class="section">
+  <h2>Agences et statut</h2>
+  <p><span class="label">Agence :</span> <%= @user.agency.presence || "Aucune" %></p>
+  <p><span class="label">Premium :</span> <%= @user.premium ? "Oui" : "Non" %></p>
+</div>
+
+<div class="section">
+  <h2>Informations de compte</h2>
+  <p><span class="label">Date de creation du compte :</span> <%= @user.created_at.strftime("%d/%m/%Y %H:%M") %></p>
+  <p><span class="label">Derniere mise a jour :</span> <%= @user.updated_at.strftime("%d/%m/%Y %H:%M") %></p>
+</div>
+
+<div class="section">
+  <h2>Securite et Authentification (Devise)</h2>
+  <p><span class="label">Reset password token present :</span>
+    <%= @user.reset_password_token.present? ? "Oui" : "Non" %>
+  </p>
+
+  <p><span class="label">Reset password envoye le :</span>
+    <%= @user.reset_password_sent_at&.strftime("%d/%m/%Y %H:%M") || "Aucun" %>
+  </p>
+
+  <p><span class="label">Remember created at :</span>
+    <%= @user.remember_created_at&.strftime("%d/%m/%Y %H:%M") || "Aucun" %>
+  </p>
+</div>
