@@ -20,16 +20,16 @@ Rails.application.routes.draw do
   # PARAMÈTRES PRESTATAIRE (MERCH SETTINGS)
   # ============================================================
   resource :merch_settings, path: 'settings/merch', only: %i[show update] do
-    # Routes spécifiques pour les toggles (basculement rapide par POST)
-    post :toggle_identity
-    post :toggle_share_address
-    post :toggle_share_planning
-    post :toggle_allow_email
-    post :toggle_allow_phone
-    post :toggle_allow_message
-    post :toggle_accept_mission_proposals
-    post :toggle_role_merch
-    post :toggle_role_anim
+    # On utilise 'patch' au lieu de 'post' pour correspondre au JS
+    patch :toggle_identity
+    patch :toggle_share_address
+    patch :toggle_share_planning
+    patch :toggle_allow_email
+    patch :toggle_allow_phone
+    patch :toggle_allow_message
+    patch :toggle_accept_mission_proposals
+    patch :toggle_role_merch
+    patch :toggle_role_anim
   end
 
   # ============================================================

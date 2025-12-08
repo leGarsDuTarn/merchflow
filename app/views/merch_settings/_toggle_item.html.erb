@@ -1,12 +1,25 @@
-<%# Local variables: label, status, path %>
+<%#
+  Partial: _toggle_item.html.erb
+  Variables: label, icon, status (bool), path (url)
+%>
+<div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-white border border-light shadow-sm"
+     style="transition: all 0.2s ease-in-out;"
+     data-controller="toggle-switch"
+     data-toggle-switch-url-value="<%= path %>">
 
-<div class="d-flex justify-content-between align-items-center">
-  <label class="fw-semibold mb-0"><%= label %></label>
-  <div class="form-check form-switch m-0">
-    <%= button_to path, method: :post,
-                  class: "btn btn-sm #{status ? 'btn-green' : 'btn-gray'}",
-                  form: { data: { turbo_frame: "_top" } } do %>
-      <%= status ? 'Activé' : 'Désactivé' %>
-    <% end %>
+  <div class="d-flex align-items-center">
+    <div class="text-muted me-3 opacity-50 text-center" style="width: 24px;">
+      <i class="fa-solid <%= local_assigns[:icon] || 'fa-circle' %>"></i>
+    </div>
+    <span class="fw-semibold text-dark"><%= label %></span>
   </div>
+
+  <div class="form-check form-switch m-0" style="min-height: auto;">
+    <input class="form-check-input"
+           type="checkbox"
+           style="cursor: pointer; width: 3em; height: 1.5em;"
+           <%= 'checked' if status %>
+           data-action="change->toggle-switch#toggle">
+  </div>
+
 </div>

@@ -1,107 +1,105 @@
-# app/controllers/merch_settings_controller.rb
 class MerchSettingsController < ApplicationController
-  # Assure que seul un utilisateur connecté peut accéder à ses paramètres
+  # Sécurité : connexion requise
   before_action :authenticate_user!
 
-  # Charge ou crée le MerchSetting de l'utilisateur courant pour toutes les actions
+  # Chargement du modèle pour toutes les actions
   before_action :set_merch_setting
 
   # GET /settings/merch
-  # Affiche le formulaire de modification des paramètres
   def show
-    # @merch_setting est disponible pour la vue
+    # @merch_setting est disponible
   end
 
-  # PATCH/PUT /settings/merch
-  # Met à jour les paramètres via un formulaire
+  # PATCH/PUT /settings/merch (Formulaire principal)
   def update
     if @merch_setting.update(merch_setting_params)
-      redirect_to merch_settings_path, notice: 'Vos paramètres de profil ont été mis à jour avec succès.'
+      redirect_to merch_settings_path, notice: 'Vos préférences générales ont été enregistrées.'
     else
-      # Si la validation échoue, rend la vue 'show' avec les erreurs
       render :show, status: :unprocessable_entity
     end
   end
 
   # ==========================================================
-  # ACTIONS DE BASCULEMENT RAPIDE (TOGGLES)
+  # ACTIONS TOGGLES (AJAX COMPATIBLE)
   # ==========================================================
 
-  # Visibilité de l'identité
+  # Note : J'utilise une méthode privée 'respond_with_toggle' (voir plus bas)
+  # pour éviter de répéter le bloc 'respond_to' à chaque fois.
+
   def toggle_identity
     @merch_setting.toggle_identity!
-    redirect_to merch_settings_path, notice: "Visibilité de l'identité basculée."
+    respond_with_toggle("Visibilité de l'identité modifiée.")
   end
 
-  # Partage de l'adresse
   def toggle_share_address
     @merch_setting.toggle_share_address!
-    redirect_to merch_settings_path, notice: "Partage de l'adresse basculé."
+    respond_with_toggle("Partage de l'adresse modifié.")
   end
 
-  # Partage du planning
   def toggle_share_planning
     @merch_setting.toggle_share_planning!
-    redirect_to merch_settings_path, notice: 'Partage du planning basculé.'
+    respond_with_toggle("Partage du planning modifié.")
   end
 
-  # Autorisation de contact par email
   def toggle_allow_email
     @merch_setting.toggle_allow_email!
-    redirect_to merch_settings_path, notice: 'Autorisation de contact par email basculée.'
+    respond_with_toggle("Contact par email modifié.")
   end
 
-  # Autorisation de contact par téléphone
   def toggle_allow_phone
     @merch_setting.toggle_allow_phone!
-    redirect_to merch_settings_path, notice: 'Autorisation de contact par téléphone basculée.'
+    respond_with_toggle("Contact par téléphone modifié.")
   end
 
-  # Autorisation de contact par message
   def toggle_allow_message
     @merch_setting.toggle_allow_message!
-    redirect_to merch_settings_path, notice: 'Autorisation de contact par message basculée.'
+    respond_with_toggle("Contact par message modifié.")
   end
 
-  # Accepte les propositions de missions
   def toggle_accept_mission_proposals
     @merch_setting.toggle_accept_mission_proposals!
-    redirect_to merch_settings_path, notice: 'Acceptation des propositions de missions basculée.'
+    respond_with_toggle("Acceptation des missions modifiée.")
   end
 
-  # Préférence : missions de Merchandising
   def toggle_role_merch
     @merch_setting.toggle_role_merch!
-    redirect_to merch_settings_path, notice: 'Préférence Merchandising basculée.'
+    respond_with_toggle("Rôle Merchandising modifié.")
   end
 
-  # Préférence : missions d'Animation
   def toggle_role_anim
     @merch_setting.toggle_role_anim!
-    redirect_to merch_settings_path, notice: 'Préférence Animation basculée.'
+    respond_with_toggle("Rôle Animation modifié.")
   end
 
   private
 
-  # Charge le MerchSetting existant ou le crée s'il n'existe pas
+  # Trouve ou crée les paramètres de l'utilisateur
   def set_merch_setting
     @merch_setting = current_user.merch_setting || current_user.create_merch_setting!
   end
 
-  # Paramètres autorisés (Strong Parameters)
+  # Strong Parameters
   def merch_setting_params
     params.require(:merch_setting).permit(
-      :allow_identity,
-      :share_address,
-      :share_planning,
-      :allow_contact_email,
-      :allow_contact_phone,
-      :allow_contact_message,
-      :allow_none,
       :preferred_contact_channel,
-      :role_anim,
-      :role_merch,
-      :accept_mission_proposals
+      :accept_mission_proposals,
+      # Les autres champs ne sont techniquement pas nécessaires ici
+      # car gérés par les toggles, mais on peut les laisser par sécurité.
+      :allow_identity, :share_address, :share_planning,
+      :allow_contact_email, :allow_contact_phone, :allow_contact_message,
+      :role_anim, :role_merch
     )
+  end
+
+  # --- MÉTHODE MAGIQUE POUR LE "SANS RECHARGEMENT" ---
+  # Cette méthode gère la réponse pour toutes les actions toggle ci-dessus.
+  def respond_with_toggle(message)
+    respond_to do |format|
+      # Format HTML (Fallback classique si JS désactivé)
+      format.html { redirect_to merch_settings_path, notice: message }
+
+      # Format JSON (Pour Stimulus / AJAX) -> Renvoie juste un code 200 OK
+      format.json { head :ok }
+    end
   end
 end
