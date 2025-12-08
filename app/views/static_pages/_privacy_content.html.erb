@@ -1,0 +1,186 @@
+<div class="container my-5">
+
+  <%# BOUTON RETOUR %>
+  <div class="mb-4">
+    <%= link_to root_path, class: "btn btn-sm btn-orange rounded-pill px-3 fw-bold transition hover-shadow" do %>
+      <i class="fa-solid fa-arrow-left me-2"></i> Retour
+    <% end %>
+  </div>
+
+  <%# EN-TÊTE %>
+  <div class="text-center mb-5">
+    <h1 class="fw-bold text-orange mb-3">
+      <i class="fa-solid fa-shield-halved me-2"></i> Politique de Confidentialité
+    </h1>
+    <p class="text-muted lead">
+      La protection de vos données est au cœur de nos priorités.<br>
+      Voici comment MerchFlow collecte, utilise et protège vos informations.
+    </p>
+    <span class="badge bg-light text-secondary border rounded-pill px-3 py-2">
+      Dernière mise à jour : <%= l(Date.current, format: :long) %>
+    </span>
+  </div>
+
+  <div class="row g-4">
+
+    <%# 1. RESPONSABLE DU TRAITEMENT %>
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+          <h3 class="fw-bold text-dark mb-4">
+            <i class="fa-solid fa-building-user me-2 text-orange"></i> 1. Responsable du Traitement
+          </h3>
+          <p>
+            Le responsable du traitement des données collectées via l'application <strong>MerchFlow</strong> est :
+          </p>
+          <div class="bg-light p-3 rounded-3 border-start border-4 border-orange">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2"><strong>Benjamin Grassiano</strong> (Éditeur de MerchFlow)</li>
+              <li class="mb-2"><i class="fa-solid fa-location-dot me-2 text-muted"></i> 11 Route d'Albi, 81350 Valderiès, France</li>
+              <li class="mb-2"><i class="fa-solid fa-phone me-2 text-muted"></i> 06.45.56.28.14</li>
+              <li><i class="fa-solid fa-envelope me-2 text-muted"></i> <a href="mailto:grassiano.b@gmail.com" class="text-decoration-none text-dark fw-bold">grassiano.b@gmail.com</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# 2. DONNÉES COLLECTÉES %>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+          <h4 class="fw-bold text-dark mb-0">
+            <i class="fa-solid fa-database me-2 text-orange"></i> 2. Données Collectées
+          </h4>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <p class="text-muted small">Nous ne collectons que les données strictement nécessaires au bon fonctionnement du service.</p>
+
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item px-0 py-3">
+              <strong><i class="fa-solid fa-id-card text-secondary me-2"></i> Identité :</strong><br>
+              Nom, prénom, adresse email, numéro de téléphone, adresse postale.
+            </li>
+            <li class="list-group-item px-0 py-3">
+              <strong><i class="fa-solid fa-briefcase text-secondary me-2"></i> Vie Professionnelle :</strong><br>
+              Rôle (Merch/FVE), contrats de travail, taux horaires, déclarations d'heures.
+            </li>
+            <li class="list-group-item px-0 py-3">
+              <strong><i class="fa-solid fa-map-location-dot text-secondary me-2"></i> Activité & Géolocalisation :</strong><br>
+              Lieux des missions (magasins), relevés kilométriques, horaires de début et de fin de mission.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <%# 3. FINALITÉS %>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+          <h4 class="fw-bold text-dark mb-0">
+            <i class="fa-solid fa-bullseye me-2 text-orange"></i> 3. Pourquoi ces données ?
+          </h4>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <table class="table table-sm table-borderless align-middle">
+            <thead class="text-muted small border-bottom">
+              <tr>
+                <th>Finalité</th>
+                <th>Base Légale (RGPD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="py-3">Gestion de votre compte</td>
+                <td class="text-success small fw-bold">Exécution du contrat</td>
+              </tr>
+              <tr>
+                <td class="py-3">Suivi des missions & Paie</td>
+                <td class="text-success small fw-bold">Exécution du contrat</td>
+              </tr>
+              <tr>
+                <td class="py-3">Obligations fiscales/sociales</td>
+                <td class="text-primary small fw-bold">Obligation Légale</td>
+              </tr>
+              <tr>
+                <td class="py-3">Amélioration du service</td>
+                <td class="text-info small fw-bold">Intérêt Légitime</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <%# 4. PARTAGE ET SÉCURITÉ %>
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4 bg-orange-light-subtle">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <h4 class="fw-bold text-dark">
+                <i class="fa-solid fa-user-lock me-2 text-orange"></i> Partage & Sécurité
+              </h4>
+              <p class="text-muted mb-0">
+                Vos données sont hébergées sur des serveurs sécurisés en Europe. Elles ne sont <strong>jamais vendues</strong> à des tiers.
+                Elles sont partagées uniquement entre les utilisateurs concernés par un contrat (Merch et FVE) pour les besoins de la mission.
+              </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                 <i class="fa-solid fa-server fa-3x text-orange opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# 5. VOS DROITS %>
+    <div class="col-12">
+      <h3 class="fw-bold text-dark mb-4 mt-4">
+        <i class="fa-solid fa-scale-balanced me-2 text-orange"></i> 5. Vos Droits (RGPD)
+      </h3>
+      <p class="mb-4 text-muted">Conformément à la réglementation européenne, vous disposez des droits suivants sur vos données :</p>
+
+      <div class="row g-3">
+        <% [
+          { icon: "fa-eye", title: "Droit d'accès", desc: "Obtenir une copie de vos données." },
+          { icon: "fa-pen-to-square", title: "Rectification", desc: "Corriger des informations erronées." },
+          { icon: "fa-trash-can", title: "Effacement", desc: "Demander la suppression de votre compte." },
+          { icon: "fa-file-export", title: "Portabilité", desc: "Récupérer vos données au format standard." }
+        ].each do |right| %>
+          <div class="col-md-6 col-lg-3">
+            <div class="p-3 border rounded-3 bg-white h-100 text-center shadow-sm hover-shadow transition">
+              <i class="fa-solid <%= right[:icon] %> text-orange fs-4 mb-3"></i>
+              <h6 class="fw-bold"><%= right[:title] %></h6>
+              <p class="small text-muted mb-0"><%= right[:desc] %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="alert alert-light border mt-4 d-flex align-items-center" role="alert">
+        <i class="fa-solid fa-circle-info text-orange fs-4 me-3"></i>
+        <div>
+            Pour exercer ces droits, contactez-nous simplement par email à
+            <a href="mailto:grassiano.b@gmail.com" class="fw-bold text-orange text-decoration-none">grassiano.b@gmail.com</a>.
+            <br>
+            <small class="text-muted">Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL.</small>
+        </div>
+      </div>
+    </div>
+
+    <%# 6. COOKIES %>
+    <div class="col-12 mb-5">
+        <hr class="my-4 opacity-10">
+        <h5 class="fw-bold text-dark">
+            <i class="fa-solid fa-cookie-bite me-2 text-orange"></i> Cookies et Traceurs
+        </h5>
+        <p class="text-muted small">
+            MerchFlow utilise uniquement des cookies techniques essentiels au fonctionnement de l'application (authentification, sécurité).
+            Aucun cookie publicitaire ou de traçage tiers n'est utilisé sans votre consentement explicite.
+        </p>
+    </div>
+
+  </div>
+</div>

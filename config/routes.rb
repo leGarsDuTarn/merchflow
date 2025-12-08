@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   devise_for :users
 
   resources :users, only: [:show]
+  get 'confidentialite', to: 'static_pages#privacy', as: :privacy
 
   # ============================================================
   # HOME + DASHBOARD

@@ -6,10 +6,8 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700&display=swap">
 
-    <!-- TON SCSS COMPILÉ AVEC BOOTSTRAP -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
     <%= javascript_importmap_tags %>
@@ -29,10 +27,13 @@
       <% end %>
     <% end %>
 
-
-
     <%# Flash messages %>
     <%= render "shared/flash_messages" %>
     <%= yield %>
+
+    <%# =============================================== %>
+    <%# APPEL DU FOOTER SUR TOUTES LES PAGES %>
+    <%= render 'shared/footer' %>
+    <%# =============================================== %>
   </body>
 </html>
