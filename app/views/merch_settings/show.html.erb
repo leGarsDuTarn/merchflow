@@ -29,7 +29,7 @@
           <%= form_with model: @merch_setting, url: merch_settings_path, method: :patch, class: "mb-4" do |f| %>
 
             <div class="mb-4">
-              <label class="form-label fw-semibold text-muted small text-uppercase">Canal favori</label>
+              <label class="form-label fw-semibold text-muted small text-uppercase">Canal favori de communication</label>
               <%= f.select :preferred_contact_channel,
                   options_for_select([['Téléphone', 'phone'], ['Email', 'email'], ['Application', 'message'], ['Ne pas déranger', 'none']], @merch_setting.preferred_contact_channel),
                   {},
@@ -41,7 +41,7 @@
             </div>
           <% end %>
 
-          <hr class="border-secondary border-opacity-10 my-5">
+          <hr class="border-secondary border-opacity-10 my-2">
 
           <%# --- SECTION 2 : VISIBILITÉ (AJAX) --- %>
           <div class="d-flex align-items-center mb-4">
