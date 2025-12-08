@@ -13,8 +13,12 @@ module Fve
 
       # FILTRE : Nom, prenom ou username
       if params[:query].present?
-        search_term = "%#{params[:query]}%"
-        @merch = @merch.where("firstname ILIKE :search OR lastname ILIKE :search OR username ILIKE :search", search: search_term)
+        search_term = "%#{params[:query].strip.downcase}%" # Nettoyage de l'entrée
+
+        # Concatenation du prénom et du nom pour chercher le nom complet (ex: "Benjamin Dupont")
+        full_name_condition = "LOWER(CONCAT(firstname, ' ', lastname)) LIKE :search"
+
+        @merch = @merch.where("LOWER(firstname) LIKE :search OR LOWER(lastname) LIKE :search OR LOWER(username) LIKE :search OR #{full_name_condition}", search: search_term)
       end
 
       # FILTRE : Ville
@@ -50,15 +54,17 @@ module Fve
       # FILTRE : Coordonnées visibles uniquement (premium FVE requis)
       # Cible la table merch_settings et non plus la table users
       if params[:only_with_contact] == "1" && current_user.premium?
-        @merch = @merch.joins(:merch_setting)
-                       .where(merch_settings: {
-                         allow_contact_email: true
-                       }).or(@merch.where(merch_settings: {
-                         allow_contact_phone: true
-                       })).or(@merch.where(merch_settings: {
-                         allow_identity: true
-                       }))
-                       .distinct
+
+        # 1. Définir une base qui inclut la jointure nécessaire pour les conditions OR
+        contactable_merch_base = User.merch.joins(:merch_setting)
+
+        # 2. Construire la condition OR complexe (A OR B OR C) à partir de cette base
+        condition = contactable_merch_base.where(merch_settings: { allow_contact_email: true })
+                      .or(contactable_merch_base.where(merch_settings: { allow_contact_phone: true }))
+                      .or(contactable_merch_base.where(merch_settings: { allow_identity: true }))
+
+        # 3. Fusionner la condition complète avec la relation @merch existante (qui contient les autres filtres)
+        @merch = @merch.merge(condition).distinct
       end
 
       # NOUVEAU FILTRE : RÔLE MERCHANDISING
