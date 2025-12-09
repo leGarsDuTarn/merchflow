@@ -80,7 +80,11 @@ Rails.application.routes.draw do
   namespace :fve do
     get 'merch/favorites', to: 'merch#favorites', as: 'merch_favorites'
 
-    resources :merch, only: %i[index show]
+    resources :merch, only: %i[index show] do
+      member do
+        post :toggle_favorite
+      end
+    end
 
     get 'planning/:id', to: 'plannings#show', as: 'planning'
     get 'dashboard', to: 'dashboard#index'

@@ -160,6 +160,30 @@ module Fve
       @merch = current_user.favorite_merchs.includes(:merch_setting)
     end
 
+    def toggle_favorite
+      @merch_user = User.merch.find(params[:id])
+
+      # On cherche dans les favoris DONNÉS par le current_user (FVE)
+      # On cherche la ligne où merch_id correspond au merch visé
+      existing_favorite = current_user.favorites_given.find_by(merch_id: @merch_user.id)
+
+      if existing_favorite
+        existing_favorite.destroy
+        # flash[:notice] = "Retiré des favoris"
+      else
+        # On crée en spécifiant le merch (le fve_id est mis auto par favorites_given)
+        current_user.favorites_given.create(merch: @merch_user)
+        # flash[:success] = "Ajouté aux favoris"
+      end
+
+      respond_to do |format|
+        format.html { redirect_back(fallback_location: fve_merch_path(@merch_user)) }
+        format.turbo_stream do
+          redirect_back(fallback_location: fve_merch_path(@merch_user))
+        end
+      end
+    end
+
     private
 
     def require_fve!
