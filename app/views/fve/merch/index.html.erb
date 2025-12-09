@@ -116,6 +116,13 @@
                 <h6 class="fw-bold text-orange mb-3 small text-uppercase">Préférences & Contrats</h6>
 
                 <div class="form-check form-switch mb-2">
+                  <%= f.check_box :only_favorites, { class: "form-check-input", checked: params[:only_favorites] == "1" }, "1", "0" %>
+                  <%= f.label :only_favorites, class: "form-check-label fw-semibold small" do %>
+                    Mes favoris <i class="bi bi-star-fill text-warning ms-1" style="font-size: 0.9em;"></i>
+                  <% end %>
+                </div>
+
+                <div class="form-check form-switch mb-2">
                   <%= f.check_box :has_contract_with_me, { class: "form-check-input", checked: params[:has_contract_with_me] == "1" }, "1", "0" %>
                   <%= f.label :has_contract_with_me, "Déjà sous contrat (Mon réseau)", class: "form-check-label fw-semibold small" %>
                 </div>
@@ -147,7 +154,8 @@
 
   <%
      # Liste des clés pour détecter si une recherche est active
-     search_keys = %w[query city zipcode department target_date start_time end_time start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim]
+     # J'ai ajouté 'only_favorites' à la liste
+     search_keys = %w[query city zipcode department target_date start_time end_time start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim only_favorites]
      has_search = search_keys.any? { |key| params[key].present? }
   %>
 

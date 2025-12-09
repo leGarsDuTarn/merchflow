@@ -100,6 +100,12 @@ module Fve
         @merch = @merch.where("zipcode LIKE ?", "#{params[:department]}%")
       end
 
+      # FILTRE : Favoris uniquement
+      if params[:only_favorites] == "1"
+        # On filtre pour ne garder que ceux qui sont dans les favoris du current_user
+        @merch = @merch.where(id: current_user.favorite_merchs.select(:id))
+      end
+
       if params[:company].present?
         @merch = @merch.joins(contracts: :work_sessions)
                        .where("LOWER(work_sessions.company) LIKE ?", "%#{params[:company].downcase}%")
