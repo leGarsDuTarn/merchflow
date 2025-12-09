@@ -1,4 +1,3 @@
-# app/controllers/fve/merch_controller.rb
 module Fve
   class MerchController < ApplicationController
     before_action :authenticate_user!
@@ -7,120 +6,128 @@ module Fve
     def index
       authorize %i[fve merch]
 
-      # Base : tous les merch avec eager loading pour optimisation
-      # Ajout de :merch_setting pour les filtres de confidentialité (évite N+1)
+      # 1. BASE : On prend tous les merchs actifs
       @merch = User.merch.includes(:contracts, :work_sessions, :unavailabilities, :merch_setting)
 
-      # FILTRE : Nom, prenom ou username
+      # =================================================================
+      # FILTRE 1 : DISPONIBILITÉ PRÉCISE (Date + Heure Début + Heure Fin)
+      # Ce filtre a la PRIORITÉ sur le filtre large
+      # =================================================================
+      if params[:target_date].present? && params[:start_time].present? && params[:end_time].present?
+
+        target_date = Date.parse(params[:target_date]) rescue nil
+        req_start_time = Time.parse(params[:start_time]) rescue nil
+        req_end_time = Time.parse(params[:end_time]) rescue nil
+
+        if target_date && req_start_time && req_end_time
+          # A. IDENTIFIER CEUX QUI ONT POSÉ UNE INDISPONIBILITÉ (Journée entière)
+          unavailable_ids_day = Unavailability.where(date: target_date).pluck(:user_id)
+
+          # B. IDENTIFIER CEUX QUI SONT EN MISSION (Chevauchement temporel)
+          # On compare uniquement les HEURES car start_time/end_time contiennent des dates incorrectes
+          # Formule de chevauchement : session_start_hour < req_end_hour AND session_end_hour > req_start_hour
+          busy_contract_ids = WorkSession
+            .where(date: target_date)
+            .where(
+              "EXTRACT(HOUR FROM start_time) * 60 + EXTRACT(MINUTE FROM start_time) < ? AND EXTRACT(HOUR FROM end_time) * 60 + EXTRACT(MINUTE FROM end_time) > ?",
+              req_end_time.hour * 60 + req_end_time.min,
+              req_start_time.hour * 60 + req_start_time.min
+            )
+            .pluck(:contract_id)
+
+          # Récupérer les IDs des Users via leurs Contrats
+          busy_user_ids = Contract.where(id: busy_contract_ids).pluck(:user_id)
+
+          # C. EXCLUSION : Retirer les IDs de ceux qui sont occupés ou indisponibles
+          ids_to_exclude = (unavailable_ids_day + busy_user_ids).uniq
+
+          Rails.logger.debug "=== DEBUG DISPONIBILITÉ PRÉCISE ==="
+          Rails.logger.debug "Date: #{target_date}"
+          Rails.logger.debug "Créneau demandé: #{req_start_time.strftime('%H:%M')} - #{req_end_time.strftime('%H:%M')}"
+          Rails.logger.debug "IDs indisponibles (unavailability): #{unavailable_ids_day}"
+          Rails.logger.debug "Contract IDs occupés: #{busy_contract_ids}"
+          Rails.logger.debug "User IDs occupés: #{busy_user_ids}"
+          Rails.logger.debug "Total exclusions: #{ids_to_exclude}"
+
+          @merch = @merch.where.not(id: ids_to_exclude)
+        end
+
+      # =================================================================
+      # FILTRE 1-BIS : DISPONIBILITÉ LARGE (Période Date à Date)
+      # Ne s'applique QUE si le filtre précis n'est pas utilisé
+      # =================================================================
+      elsif params[:start_date].present? || params[:end_date].present?
+        start_date = params[:start_date].present? ? (Date.parse(params[:start_date]) rescue nil) : nil
+        end_date   = params[:end_date].present? ? (Date.parse(params[:end_date]) rescue nil) : nil
+
+        if start_date || end_date
+          date_condition_sql = []
+          date_condition_sql << "date >= '#{start_date}'" if start_date
+          date_condition_sql << "date <= '#{end_date}'" if end_date
+          date_condition_str = date_condition_sql.join(' AND ')
+
+          # 1. IDs indisponibles par Indisponibilité personnelle
+          unavailable_ids = Unavailability.where(date_condition_str).pluck(:user_id)
+
+          # 2. IDs indisponibles par Missions planifiées (WorkSession)
+          busy_contract_ids = WorkSession.where(date_condition_str).pluck(:contract_id)
+          busy_user_ids = Contract.where(id: busy_contract_ids).pluck(:user_id)
+
+          # Exclusion des marchands occupés
+          @merch = @merch.where.not(id: (unavailable_ids | busy_user_ids).uniq)
+        end
+      end
+
+      # =================================================================
+      # FILTRES CLASSIQUES
+      # =================================================================
+
       if params[:query].present?
-        search_term = "%#{params[:query].strip.downcase}%" # Nettoyage de l'entrée
-
-        # Concatenation du prénom et du nom pour chercher le nom complet (ex: "Benjamin Dupont")
+        search_term = "%#{params[:query].strip.downcase}%"
         full_name_condition = "LOWER(CONCAT(firstname, ' ', lastname)) LIKE :search"
-
         @merch = @merch.where("LOWER(firstname) LIKE :search OR LOWER(lastname) LIKE :search OR LOWER(username) LIKE :search OR #{full_name_condition}", search: search_term)
       end
 
-      # FILTRE : Ville
       if params[:city].present?
         @merch = @merch.where("LOWER(city) LIKE ?", "%#{params[:city].downcase}%")
       end
 
-      # FILTRE : Code postal exact ou début
       if params[:zipcode].present?
         @merch = @merch.where("zipcode LIKE ?", "#{params[:zipcode]}%")
       end
 
-      # FILTRE : Département (2 premiers chiffres du code postal)
       if params[:department].present?
         @merch = @merch.where("zipcode LIKE ?", "#{params[:department]}%")
       end
 
-      # FILTRE : A travaillé pour une entreprise spécifique
       if params[:company].present?
-        @merch = @merch.joins(:work_sessions)
+        @merch = @merch.joins(contracts: :work_sessions)
                        .where("LOWER(work_sessions.company) LIKE ?", "%#{params[:company].downcase}%")
                        .distinct
       end
 
-      # FILTRE : A déjà un contrat avec ma FVE (CORRIGÉ PAR NOM D'AGENCE)
       if params[:has_contract_with_me] == "1"
-        # On utilise l'association standard :contracts et on filtre par le nom de l'agence du FVE connecté.
         @merch = @merch.joins(:contracts)
                        .where(contracts: { agency: current_user.agency })
                        .distinct
       end
 
-      # FILTRE : Coordonnées visibles uniquement (premium FVE requis)
-      # Cible la table merch_settings et non plus la table users
       if params[:only_with_contact] == "1" && current_user.premium?
-
-        # 1. Définir une base qui inclut la jointure nécessaire pour les conditions OR
-        contactable_merch_base = User.merch.joins(:merch_setting)
-
-        # 2. Construire la condition OR complexe (A OR B OR C) à partir de cette base
-        condition = contactable_merch_base.where(merch_settings: { allow_contact_email: true })
-                      .or(contactable_merch_base.where(merch_settings: { allow_contact_phone: true }))
-                      .or(contactable_merch_base.where(merch_settings: { allow_identity: true }))
-
-        # 3. Fusionner la condition complète avec la relation @merch existante (qui contient les autres filtres)
+        contactable_base = User.merch.joins(:merch_setting)
+        condition = contactable_base.where(merch_settings: { allow_contact_email: true })
+                      .or(contactable_base.where(merch_settings: { allow_contact_phone: true }))
+                      .or(contactable_base.where(merch_settings: { allow_identity: true }))
         @merch = @merch.merge(condition).distinct
       end
 
-      # NOUVEAU FILTRE : RÔLE MERCHANDISING
       if params[:prefers_merch] == "1"
-        @merch = @merch.joins(:merch_setting)
-                       .where(merch_settings: { role_merch: true })
+        @merch = @merch.joins(:merch_setting).where(merch_settings: { role_merch: true })
       end
 
-      # NOUVEAU FILTRE : RÔLE ANIMATION
       if params[:prefers_anim] == "1"
-        @merch = @merch.joins(:merch_setting)
-                       .where(merch_settings: { role_anim: true })
+        @merch = @merch.joins(:merch_setting).where(merch_settings: { role_anim: true })
       end
 
-      # ----------------------------------------------------------------------
-      # FILTRE : Disponibilité sur une période
-      # ----------------------------------------------------------------------
-      if params[:start_date].present? || params[:end_date].present?
-        start_date = params[:start_date].present? ? (Date.parse(params[:start_date]) rescue nil) : nil
-        end_date   = params[:end_date].present? ? (Date.parse(params[:end_date]) rescue nil) : nil
-
-        date_condition_sql = nil
-
-        if start_date && end_date
-          date_condition_sql = "date BETWEEN '#{start_date}' AND '#{end_date}'"
-          work_session_condition = "DATE(work_sessions.start_time) BETWEEN '#{start_date}' AND '#{end_date}'"
-        elsif start_date
-          date_condition_sql = "date >= '#{start_date}'"
-          work_session_condition = "DATE(work_sessions.start_time) >= '#{start_date}'"
-        elsif end_date
-          date_condition_sql = "date <= '#{end_date}'"
-          work_session_condition = "DATE(work_sessions.start_time) <= '#{end_date}'"
-        end
-
-        if date_condition_sql.present?
-          # 1. IDs indisponibles par Indisponibilité personnelle
-          unavailable_by_unavailability_ids = Unavailability
-            .where(date_condition_sql)
-            .pluck(:user_id)
-            .uniq
-
-          # 2. IDs indisponibles par Missions planifiées (WorkSession)
-          unavailable_by_work_session_ids = User.joins(contracts: :work_sessions)
-            .where(work_session_condition)
-            .pluck(:id)
-            .uniq
-
-          # Combinaison des IDs non-disponibles (Union d'ensembles)
-          unavailable_user_ids = unavailable_by_unavailability_ids | unavailable_by_work_session_ids
-
-          # Exclusion des marchands occupés
-          @merch = @merch.where.not(id: unavailable_user_ids)
-        end
-      end
-
-      # TRI par ville puis nom
       @merch = @merch.order(:city, :lastname, :firstname)
     end
 
@@ -128,31 +135,23 @@ module Fve
       @merch_user = User.merch.find(params[:id])
       authorize [:fve, @merch_user]
 
-      # CRITIQUE : Assurer que le MerchSetting existe pour éviter les NoMethodError
       @merch_user.create_merch_setting! unless @merch_user.merch_setting.present?
 
-      # ========== CONFIDENTIALITÉ : DONNÉES AFFICHABLES ==========
       @name  = @merch_user.displayable_name(current_user)
       @email = @merch_user.displayable_email(current_user)
       @phone = @merch_user.displayable_phone(current_user)
 
-      # ========== INFOS DÉTAILLÉES POUR LA VUE SHOW ==========
-      # Récupération des contrats par le nom de l'agence
       @contracts_with_my_agency = @merch_user.contracts.where(agency: current_user.agency)
       @work_sessions = @merch_user.work_sessions.includes(:contract).order(date: :desc).limit(20)
       @companies_worked_with = @merch_user.work_sessions.pluck(:company).compact.uniq.sort
       @unavailabilities = @merch_user.unavailabilities.where("date >= ?", Date.today).order(:date)
 
-      # Stats
       @total_hours = @merch_user.total_hours_worked
       @total_missions = @merch_user.work_sessions.count
     end
 
     def favorites
-      # On récupère les favoris de l'utilisateur connecté
       @merch = current_user.favorite_merchs.includes(:merch_setting)
-
-      # Rails va chercher automatiquement la vue : app/views/fve/merch/favorites.html.erb
     end
 
     private

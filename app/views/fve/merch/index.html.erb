@@ -5,10 +5,6 @@
     <p class="text-muted small">Recherchez, filtrez et construisez votre équipe de Merchandisers.</p>
   </div>
 
-  <!-- =============================
-       BLOC RECHERCHE & FILTRES
-       Mobile First
-  ============================== -->
   <div class="card shadow rounded-4 border-0 mb-5 overflow-hidden">
 
     <div class="card-header bg-white border-bottom-0 p-3 pb-0">
@@ -21,117 +17,124 @@
     <div class="card-body p-4 bg-white">
       <%= form_with url: fve_merch_index_path, method: :get, local: true, class: "row g-3" do |f| %>
 
-        <!-- Recherche rapide -->
         <div class="col-12">
           <label class="form-label fw-bold small text-muted text-uppercase">Recherche rapide</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light border-0">
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3">
               <i class="bi bi-person text-muted"></i>
             </span>
-            <%= text_field_tag :query, params[:query], class: "form-control bg-light border-0 form-control-sm", placeholder: "Nom, Prénom, Pseudo..." %>
+            <%= text_field_tag :query, params[:query], class: "form-control bg-light border-0 py-2", placeholder: "Nom, Prénom, Pseudo..." %>
           </div>
         </div>
 
-        <!-- Titre bloc Localisation -->
-        <div class="col-12 mt-2">
-          <h6 class="fw-bold text-orange small text-uppercase">Localisation & Disponibilité</h6>
+        <hr class="text-muted opacity-25 my-4">
+
+        <div class="col-12">
+          <div class="p-3 bg-orange-light rounded-4 border border-orange-subtle" style="background-color: #fff8f0;">
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-clock-history text-orange me-2"></i>
+              <h6 class="fw-bold text-orange small text-uppercase mb-0">Vérifier un créneau précis</h6>
+            </div>
+
+            <div class="row g-2">
+              <div class="col-12 col-md-4">
+                <%= f.label :target_date, "Date de la mission", class: "form-label fw-bold small text-muted" %>
+                <%= f.date_field :target_date, value: params[:target_date], class: "form-control form-control-sm border-orange-subtle" %>
+              </div>
+
+              <div class="col-6 col-md-4">
+                <%= f.label :start_time, "Heure début", class: "form-label fw-bold small text-muted" %>
+                <%= f.time_field :start_time, value: params[:start_time], class: "form-control form-control-sm border-orange-subtle" %>
+              </div>
+
+              <div class="col-6 col-md-4">
+                <%= f.label :end_time, "Heure fin", class: "form-label fw-bold small text-muted" %>
+                <%= f.time_field :end_time, value: params[:end_time], class: "form-control form-control-sm border-orange-subtle" %>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Ville -->
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-12 mt-3">
+          <h6 class="fw-bold text-dark small text-uppercase mb-2">
+            <i class="bi bi-geo-alt me-1 text-muted"></i> Localisation
+          </h6>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-5">
           <%= f.label :city, "Ville", class: "form-label fw-bold small text-muted text-uppercase" %>
           <%= f.text_field :city, value: params[:city], class: "form-control form-control-sm", placeholder: "Ex: Paris" %>
         </div>
 
-        <!-- Département -->
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-6 col-md-4">
           <%= f.label :department, "Département", class: "form-label fw-bold small text-muted text-uppercase" %>
           <%= f.text_field :department, value: params[:department], class: "form-control form-control-sm", placeholder: "Ex: 75" %>
         </div>
 
-        <!-- Code postal -->
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-3">
           <%= f.label :zipcode, "Code Postal", class: "form-label fw-bold small text-muted text-uppercase" %>
           <%= f.text_field :zipcode, value: params[:zipcode], class: "form-control form-control-sm", placeholder: "Ex: 75001" %>
         </div>
 
-        <!-- Disponible Du -->
-        <div class="col-6 col-md-2">
-          <%= f.label :start_date, "Disponible Du", class: "form-label fw-bold small text-muted text-uppercase" %>
-          <%= f.date_field :start_date, value: params[:start_date], class: "form-control form-control-sm" %>
-        </div>
-
-        <!-- Disponible Au -->
-        <div class="col-6 col-md-2">
-          <%= f.label :end_date, "Au", class: "form-label fw-bold small text-muted text-uppercase" %>
-          <%= f.date_field :end_date, value: params[:end_date], class: "form-control form-control-sm" %>
-        </div>
-
-        <!-- Boutons -->
-        <div class="col-12 mt-3 d-flex justify-content-center gap-2">
-          <button type="submit" class="btn btn-orange fw-bold rounded-3 shadow-sm px-4 btn-sm">
+        <div class="col-12 mt-4 d-flex justify-content-center gap-2 flex-wrap">
+          <button type="submit" class="btn btn-orange fw-bold rounded-pill shadow-sm px-5 py-2">
             <i class="bi bi-search me-2"></i>Rechercher
           </button>
 
-          <%= link_to fve_merch_index_path, class: "btn btn-green rounded-3 px-3 fw-semibold btn-sm" do %>
-            <i class="bi bi-arrow-counterclockwise me-1"></i> Réinitialiser
+          <%= link_to fve_merch_index_path, class: "btn btn-light text-muted border rounded-pill px-3 py-2 fw-semibold" do %>
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Effacer
           <% end %>
         </div>
 
-        <!-- Toggle avancé -->
         <div class="col-12 mt-3 text-center">
           <a class="btn btn-link text-decoration-none text-muted fw-bold small"
-             data-bs-toggle="collapse" href="#advancedFilters" role="button">
+             data-bs-toggle="collapse" href="#advancedFilters" role="button" aria-expanded="false">
             <i class="bi bi-sliders2 me-1"></i>
-            Afficher les filtres avancés
+            Plus de filtres (Période large, Contrats...)
           </a>
         </div>
 
-        <!-- Filtres avancés -->
         <div class="collapse col-12" id="advancedFilters">
-          <div class="p-4 bg-light rounded-4 mt-2">
+          <div class="p-4 bg-light rounded-4 mt-2 border border-light">
 
-            <h6 class="fw-bold text-orange mb-3">Préférences & Contrats</h6>
-
-            <div class="row g-3">
-
-              <!-- Colonne gauche -->
-              <div class="col-12 col-md-6">
-                <div class="form-check form-switch mb-2">
-                  <%= f.check_box :has_contract_with_me,
-                    { class: "form-check-input", checked: params[:has_contract_with_me] == "1" },
-                    "1", "0" %>
-                  <%= f.label :has_contract_with_me, "Déjà sous contrat (Mon réseau)", class: "form-check-label fw-semibold" %>
-                </div>
-
-                <div class="form-check form-switch mb-2">
-                  <%= f.check_box :only_with_contact,
-                    { class: "form-check-input", checked: params[:only_with_contact] == "1" },
-                    "1", "0" %>
-                  <%= f.label :only_with_contact, "Coordonnées visibles uniquement", class: "form-check-label fw-semibold" %>
+            <div class="row g-4">
+              <div class="col-12 col-md-6 border-end-md">
+                <h6 class="fw-bold text-orange mb-3 small text-uppercase">Disponibilité (Période large)</h6>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <%= f.label :start_date, "Du", class: "form-label small text-muted" %>
+                    <%= f.date_field :start_date, value: params[:start_date], class: "form-control form-control-sm" %>
+                  </div>
+                  <div class="col-6">
+                    <%= f.label :end_date, "Au", class: "form-label small text-muted" %>
+                    <%= f.date_field :end_date, value: params[:end_date], class: "form-control form-control-sm" %>
+                  </div>
                 </div>
               </div>
 
-              <!-- Colonne droite -->
-              <div class="col-12 col-md-6">
-                <label class="form-label small text-muted mb-2">Type de profil :</label>
+              <div class="col-12 col-md-6 ps-md-4">
+                <h6 class="fw-bold text-orange mb-3 small text-uppercase">Préférences & Contrats</h6>
 
-                <div class="d-flex gap-4">
-                  <div class="form-check">
-                    <%= f.check_box :prefers_merch,
-                      { class: "form-check-input", checked: params[:prefers_merch] == "1" },
-                      "1", "0" %>
-                    <%= f.label :prefers_merch, "Merch", class: "form-check-label small" %>
-                  </div>
-
-                  <div class="form-check">
-                    <%= f.check_box :prefers_anim,
-                      { class: "form-check-input", checked: params[:prefers_anim] == "1" },
-                      "1", "0" %>
-                    <%= f.label :prefers_anim, "Anim/Démo", class: "form-check-label small" %>
-                  </div>
+                <div class="form-check form-switch mb-2">
+                  <%= f.check_box :has_contract_with_me, { class: "form-check-input", checked: params[:has_contract_with_me] == "1" }, "1", "0" %>
+                  <%= f.label :has_contract_with_me, "Déjà sous contrat (Mon réseau)", class: "form-check-label fw-semibold small" %>
                 </div>
 
+                <div class="form-check form-switch mb-3">
+                  <%= f.check_box :only_with_contact, { class: "form-check-input", checked: params[:only_with_contact] == "1" }, "1", "0" %>
+                  <%= f.label :only_with_contact, "Coordonnées visibles", class: "form-check-label fw-semibold small" %>
+                </div>
+
+                <div class="d-flex gap-3 pt-2 border-top">
+                  <div class="form-check">
+                    <%= f.check_box :prefers_merch, { class: "form-check-input", checked: params[:prefers_merch] == "1" }, "1", "0" %>
+                    <%= f.label :prefers_merch, "Merch", class: "form-check-label small text-muted" %>
+                  </div>
+                  <div class="form-check">
+                    <%= f.check_box :prefers_anim, { class: "form-check-input", checked: params[:prefers_anim] == "1" }, "1", "0" %>
+                    <%= f.label :prefers_anim, "Anim/Démo", class: "form-check-label small text-muted" %>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -142,18 +145,20 @@
     </div>
   </div>
 
-  <!-- Résultats (inchangé) -->
-  <% search_params = %w[query city zipcode department start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim] %>
-  <% has_search = search_params.any? { |key| params[key].present? } %>
+  <%
+     # Liste des clés pour détecter si une recherche est active
+     search_keys = %w[query city zipcode department target_date start_time end_time start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim]
+     has_search = search_keys.any? { |key| params[key].present? }
+  %>
 
-  <div class="d-flex justify-content-between align-items-end mb-4">
+  <div class="d-flex justify-content-between align-items-end mb-4 px-2">
     <div>
       <h4 class="fw-bold text-dark mb-0">Résultats</h4>
       <% if has_search %>
-        <span class="text-muted small">Critères appliqués</span>
+        <span class="badge bg-orange-subtle text-orange mt-1">Filtres appliqués</span>
       <% end %>
     </div>
-    <span class="badge bg-orange rounded-pill px-3 py-2"><%= @merch.count %> Profils</span>
+    <span class="badge bg-orange rounded-pill px-3 py-2 shadow-sm"><%= @merch.count %> Profils</span>
   </div>
 
   <% if @merch.any? %>
@@ -164,12 +169,18 @@
     </div>
   <% else %>
     <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
-      <div class="mb-3 text-muted opacity-50">
+      <div class="mb-3 text-muted opacity-25">
         <i class="bi bi-search fs-1"></i>
       </div>
       <h4 class="fw-bold text-dark">Aucun talent trouvé</h4>
-      <p class="text-muted">Essayez d'élargir vos critères de recherche.</p>
-      <%= link_to "Effacer les filtres", fve_merch_index_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-bold" %>
+      <p class="text-muted small">
+        <% if params[:target_date].present? %>
+          Aucun merchandiser disponible sur ce créneau horaire précis.<br>Essayez d'élargir les horaires.
+        <% else %>
+          Essayez d'élargir vos critères de recherche.
+        <% end %>
+      </p>
+      <%= link_to "Effacer tous les filtres", fve_merch_index_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-bold btn-sm mt-2" %>
     </div>
   <% end %>
 
