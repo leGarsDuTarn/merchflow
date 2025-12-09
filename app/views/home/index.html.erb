@@ -7,8 +7,8 @@
     <div class="row align-items-center gy-5">
 
       <%# Colonne Texte %>
-      <div class="col-lg-6 order-2 order-lg-1 text-center text-lg-start animate__animated animate__fadeInLeft">
-
+      <%# Suppression des classes animate__animated animate__fadeInLeft %>
+      <div class="col-lg-6 order-2 order-lg-1 text-center text-lg-start">
         <h1 class="display-3 fw-bold mb-3 text-gray lh-sm">
           Gérez vos missions,<br>
           <span class="text-gradient-orange">boostez votre activité.</span>
@@ -20,23 +20,19 @@
           Automatisez vos calculs, augmentez votre activité et simplifiez votre administratif.
         </p>
 
-        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-          <%= link_to new_user_registration_path, class: "btn btn-orange btn-lg rounded-pill px-5 fw-bold shadow-sm" do %>
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start mb-4">
+          <%= link_to new_user_registration_path, class: "btn btn-orange btn-lg rounded-pill px-2" do %>
             Commencer maintenant <i class="fa-solid fa-arrow-right ms-2"></i>
           <% end %>
-          <%= link_to new_user_session_path, class: "btn btn-outline-dark btn-lg rounded-pill px-4 fw-bold" do %>
+          <%= link_to new_user_session_path, class: "btn btn-gray-outline btn-lg rounded-pill px-2" do %>
             Se connecter
           <% end %>
-        </div>
-
-        <div class="mt-4 pt-2 d-flex align-items-center justify-content-center justify-content-lg-start gap-4 text-muted small">
-          <span><i class="fa-solid fa-check text-orange me-1"></i> Gratuit pour les Merch</span>
-          <span><i class="fa-solid fa-check text-orange me-1"></i> Sans engagement</span>
         </div>
       </div>
 
       <%# Colonne Image %>
-      <div class="col-lg-6 order-1 order-lg-2 text-center animate__animated animate__fadeInRight">
+      <%# Suppression des classes animate__animated animate__fadeInRight %>
+      <div class="col-lg-6 order-1 order-lg-2 text-center">
         <div class="position-relative">
             <%= image_tag "LogoTransparent.png",
                 alt: "Interface MerchFlow",
@@ -64,18 +60,18 @@
       <div class="card h-100 border-0 shadow rounded-5 overflow-hidden hover-card bg-white">
         <div class="card-body p-5 text-center text-md-start">
           <div class="feature-icon-box mb-4 mx-auto mx-md-0 fs-3">
-            <i class="fa-solid fa-user-astronaut"></i>
+            <i class="fa-solid fa-user"></i>
           </div>
           <h3 class="fw-bold mb-3">Pour les Merchandisers</h3>
           <p class="text-muted mb-4">
-            Fini les calculs d'heures interminables et les notes de frais complexes. Concentrez-vous sur vos rayons, MerchFlow s'occupe du reste.
+            Ne perdez plus de temps avec l'administratif, ou le suivi de vos disponibilités. Concentrez-vous sur votre activité, MerchFlow s'occupe du reste.
           </p>
           <ul class="list-unstyled text-muted mb-4 text-start mx-auto" style="max-width: 400px;">
-            <li class="mb-2"><i class="fa-solid fa-calculator text-orange me-2"></i> Calcul automatique des frais km & heures</li>
-            <li class="mb-2"><i class="fa-solid fa-calendar-days text-orange me-2"></i> Planning centralisé multi-agences</li>
-            <li class="mb-2"><i class="fa-solid fa-file-invoice text-orange me-2"></i> Génération de rapports en 1 clic</li>
+            <li class="mb-2"><i class="fa-solid fa-calculator text-orange me-2"></i> Sachez combien vous allez gagner mission après mission.</li>
+            <li class="mb-2"><i class="fa-solid fa-calendar-days text-orange me-2"></i> Votre planning en un coup d'œil.</li>
+            <li class="mb-2"><i class="fa-solid fa-file-invoice text-orange me-2"></i> Relevé auto. d'actualisation France Travail.</li>
           </ul>
-          <%= link_to "Je suis Merch", new_user_registration_path(role: 'merch'), class: "btn btn-orange-outline rounded-pill fw-bold px-4 stretched-link" %>
+          <%= link_to "Je suis Merch", new_user_registration_path(role: 'merch'), class: "btn btn-orange rounded-pill fw-bold px-4" %>
         </div>
       </div>
     </div>
@@ -88,15 +84,15 @@
             <i class="fa-solid fa-network-wired"></i>
           </div>
           <h3 class="fw-bold mb-3">Pour les Forces de Vente</h3>
-          <p class="text-white-50 mb-4">
-            Construisez votre réseau de prestataires, vérifiez leurs disponibilités en temps réel et pilotez vos campagnes terrain.
+          <p class="text-white-80 mb-4">
+            Construisez votre réseau de talents, vérifiez leurs disponibilités en temps réel et pilotez vos actions sur le terrain.
           </p>
-          <ul class="list-unstyled text-white-50 mb-4 text-start mx-auto" style="max-width: 400px;">
+          <ul class="list-unstyled text-white-80 mb-4 text-start mx-auto" style="max-width: 400px;">
             <li class="mb-2"><i class="fa-solid fa-magnifying-glass text-orange me-2"></i> Recherche de profils par disponibilité</li>
-            <li class="mb-2"><i class="fa-solid fa-file-signature text-orange me-2"></i> Gestion des contrats et missions</li>
+            <li class="mb-2"><i class="fa-solid fa-bolt text-orange me-2"></i> Augmentez votre réactivité auprès de vos clients.</li>
             <li class="mb-2"><i class="fa-solid fa-chart-line text-orange me-2"></i> Suivi des coûts et performances</li>
           </ul>
-          <%= link_to "Je suis FVE / Chef de secteur", new_user_registration_path(role: 'fve'), class: "btn btn-light text-orange rounded-pill fw-bold px-4 stretched-link" %>
+          <%= link_to "Je suis FVE / Chef de secteur", contact_path, class: "btn btn-green rounded-pill fw-bold px-4 stretched-link" %>
         </div>
       </div>
     </div>
