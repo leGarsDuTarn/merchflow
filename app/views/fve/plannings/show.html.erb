@@ -1,5 +1,5 @@
 <%# ========================================================== %>
-<%# VUE PRINCIPALE DU PLANNING (Nettoyée de la logique de proposition) %>
+<%# VUE PRINCIPALE DU PLANNING %>
 <%# ========================================================== %>
 <div class="container my-5">
 
@@ -86,6 +86,7 @@
                   <% is_my_agency = (current_user.agency == ws.contract.agency) %>
 
                   <% if is_my_agency %>
+                    <%# MISSION DE MA FVE (Affichage complet) %>
                     <div class="session-item bg-white rounded-3 p-2 mb-1 border border-orange text-truncate">
                       <div class="fw-bold text-dark text-truncate" style="line-height: 1.1;">
                         <%= ws.contract.agency_label %> - <%= ws.company %>
@@ -95,11 +96,14 @@
                       </div>
                     </div>
                   <% else %>
-                    <div class="session-item bg-light rounded-3 p-2 mb-1 border border-light text-truncate opacity-75">
-                      <div class="fw-bold text-secondary fst-italic" style="line-height: 1.1;">
+                    <%# MISSION EXTERNE (Horaires petits et discrets) %>
+                    <div class="session-item bg-light rounded-3 p-2 mb-1 border border-light text-truncate opacity-90">
+                      <div class="fw-bold text-secondary" style="line-height: 1.1;">
                         <i class="fa-solid fa-briefcase me-1 small"></i> Mission externe
                       </div>
-                      <div class="text-muted small">Non visible</div>
+                      <div class="text-muted small">
+                        <%= ws.start_time.strftime("%H:%M") %> – <%= ws.end_time.strftime("%H:%M") %>
+                      </div>
                     </div>
                   <% end %>
                 <% end %>
