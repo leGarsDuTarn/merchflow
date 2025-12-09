@@ -11,7 +11,6 @@ class WorkSession < ApplicationRecord
   validates :date, :start_time, :end_time, presence: { message: 'Ce champ est requis' }
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
-  # Validation du chevauchement horaire pour éviter les double-réservations
   validate :no_overlap_with_existing_sessions
 
   # ============================================================
@@ -51,9 +50,6 @@ class WorkSession < ApplicationRecord
     )
   }
 
-  # ============================================================
-  # SCOPES - pour le dashboard
-  # ============================================================
   scope :current_month, -> {
     where(date: Date.current.beginning_of_month..Date.current.end_of_month)
   }
@@ -62,7 +58,6 @@ class WorkSession < ApplicationRecord
   # CLASSE METHOD
   # ============================================================
   def self.create_from_proposal(proposal)
-    # Trouver le contrat Merch-Agence le plus récent pour l'agence donnée
     contract = proposal.merch.contracts
                        .where(agency: proposal.agency)
                        .order(created_at: :desc)
@@ -93,6 +88,7 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # CALLBACKS : recalcul complet avant sauvegarde
   # ============================================================
+  before_validation :fix_timestamps_with_correct_date  # ✅ NOUVEAU
   before_validation :ensure_end_time_is_on_correct_day
   before_validation :compute_duration
   before_validation :compute_night_minutes
@@ -106,6 +102,24 @@ class WorkSession < ApplicationRecord
     return if end_time > start_time
 
     errors.add(:end_time, "doit être après l'heure de début")
+  end
+
+  # ============================================================
+  # ✅ CORRECTION DES TIMESTAMPS AVEC LA BONNE DATE
+  # Ce callback s'assure que start_time et end_time ont la date correcte
+  # ============================================================
+  def fix_timestamps_with_correct_date
+    return unless date.present?
+
+    # Fixer start_time si présent
+    if start_time.present? && start_time_changed?
+      self.start_time = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}")
+    end
+
+    # Fixer end_time si présent
+    if end_time.present? && end_time_changed?
+      self.end_time = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}")
+    end
   end
 
   # ============================================================
@@ -147,20 +161,17 @@ class WorkSession < ApplicationRecord
   # KM EFFECTIFS
   # ============================================================
   def compute_effective_km
-    # 1) KM renseigné manuellement par l'utilisateur
     if km_custom.present?
       self.effective_km = km_custom.to_f
       return
     end
 
-    # 2) KM provenant des logs (si l'API a écrit dedans)
     api_km = kilometer_logs.sum(:distance).to_f
     if api_km.positive?
       self.effective_km = api_km
       return
     end
 
-    # 3) Fallback si rien du tout
     self.effective_km = 0.0
   end
 
@@ -191,23 +202,17 @@ class WorkSession < ApplicationRecord
   # NET & NET TOTAL (public)
   # ============================================================
   def net
-    # On retire 22% du salaire brut
     (brut * (1 - 0.22)).round(2)
   end
 
   def net_total
-    # Récupérer les montants bruts des compléments
     amount_ifm = contract.ifm(brut).round(2)
     amount_cp  = contract.cp(brut).round(2)
-
-    # On passe 'effective_km' pour calculer les frais kilométriques
     amount_km  = contract.km_payment(effective_km).round(2)
 
-    # Calculer le net des compléments (Net = montant × 0.78)
     net_ifm = (amount_ifm * 0.78).round(2)
     net_cp  = (amount_cp  * 0.78).round(2)
 
-    # On additionne tout (Net Salaire + Net IFM + Net CP + KM)
     (net.round(2) + net_ifm + net_cp + amount_km).round(2)
   end
 
@@ -218,22 +223,17 @@ class WorkSession < ApplicationRecord
 
   # ============================================================
   # VALIDATION : Pas de chevauchement entre sessions
-  # VERSION CORRIGÉE ET OPTIMISÉE
   # ============================================================
   def no_overlap_with_existing_sessions
     return unless contract.present? && date.present? && start_time.present? && end_time.present?
 
     user_id = contract.user_id
 
-    # 1. Construire les datetime complets pour la nouvelle session
     new_start_dt = DateTime.new(date.year, date.month, date.day, start_time.hour, start_time.min, start_time.sec)
     new_end_dt = DateTime.new(date.year, date.month, date.day, end_time.hour, end_time.min, end_time.sec)
 
-    # Si end_time <= start_time, la mission passe minuit
     new_end_dt += 1.day if end_time <= start_time
 
-    # 2. Récupérer toutes les sessions de l'utilisateur dans une fenêtre de ±1 jour
-    # (pour capturer les missions de nuit qui peuvent déborder)
     date_range = (date - 1.day)..(date + 1.day)
 
     existing_sessions = WorkSession
@@ -242,9 +242,7 @@ class WorkSession < ApplicationRecord
       .where(date: date_range)
       .where.not(id: id)
 
-    # 3. Vérifier le chevauchement
     has_overlap = existing_sessions.any? do |session|
-      # Construire les datetime de la session existante
       existing_start = DateTime.new(
         session.date.year,
         session.date.month,
@@ -263,11 +261,8 @@ class WorkSession < ApplicationRecord
         session.end_time.sec
       )
 
-      # Ajuster si la session existante passe minuit
       existing_end += 1.day if session.end_time <= session.start_time
 
-      # Logique de chevauchement : deux intervalles se chevauchent si
-      # l'un commence avant que l'autre ne finisse ET vice versa
       existing_start < new_end_dt && existing_end > new_start_dt
     end
 
