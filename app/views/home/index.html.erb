@@ -67,7 +67,7 @@
             Ne perdez plus de temps avec l'administratif, ou le suivi de vos disponibilités. Concentrez-vous sur votre activité, MerchFlow s'occupe du reste.
           </p>
           <ul class="list-unstyled text-muted mb-4 text-start mx-auto" style="max-width: 400px;">
-            <li class="mb-2"><i class="fa-solid fa-calculator text-orange me-2"></i> Sachez combien vous allez gagner mission après mission.</li>
+            <li class="mb-2"><i class="fa-solid fa-calculator text-orange me-2"></i> Sachez combien vous allez gagner.</li>
             <li class="mb-2"><i class="fa-solid fa-calendar-days text-orange me-2"></i> Votre planning en un coup d'œil.</li>
             <li class="mb-2"><i class="fa-solid fa-file-invoice text-orange me-2"></i> Relevé auto. d'actualisation France Travail.</li>
           </ul>
@@ -92,7 +92,7 @@
             <li class="mb-2"><i class="fa-solid fa-bolt text-orange me-2"></i> Augmentez votre réactivité auprès de vos clients.</li>
             <li class="mb-2"><i class="fa-solid fa-chart-line text-orange me-2"></i> Suivi des coûts et performances</li>
           </ul>
-          <%= link_to "Je suis FVE / Chef de secteur", contact_path, class: "btn btn-green rounded-pill fw-bold px-4 stretched-link" %>
+          <%= link_to "Je suis FVE / Chef de secteur", contact_path, class: "btn btn-orange rounded-pill fw-bold px-4" %>
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@
       <div class="col-lg-5">
         <h2 class="fw-bold display-6 mb-4">Tout ce dont vous avez besoin pour <span class="text-orange">performer</span></h2>
         <p class="text-muted lead mb-4">
-          Nous avons repensé l'expérience du merchandising pour supprimer les frictions entre le terrain et le bureau.
+          MerchFlow repense l'expérience du merchandising pour une efficacité maximale sur le terrain.
         </p>
         <%= link_to "Créer un compte gratuit", new_user_registration_path, class: "btn btn-orange rounded-pill px-4 fw-bold" %>
       </div>
@@ -118,9 +118,9 @@
       <div class="col-lg-7">
         <div class="row g-4">
           <% [
-            { icon: "fa-solid fa-location-dot", title: "Géolocalisation", text: "Suivi précis des lieux de mission." },
-            { icon: "fa-solid fa-clock", title: "Temps Réel", text: "Saisie et validation des heures instantanée." },
-            { icon: "fa-solid fa-shield-halved", title: "Données Sécurisées", text: "Confidentialité totale des missions externes." },
+            { icon: "fa-solid fa-location-dot", title: "Localisation", text: "Suivi précis des lieux de mission." },
+            { icon: "fa-solid fa-clock", title: "Temps Réel", text: "Le calcul instantané de votre rémunération." },
+            { icon: "fa-solid fa-shield-halved", title: "Données Sécurisées", text: "Confidentialité totale des missions." },
             { icon: "fa-solid fa-mobile-screen", title: "Mobile First", text: "Une interface pensée pour le smartphone." }
           ].each do |feature| %>
             <div class="col-md-6">
