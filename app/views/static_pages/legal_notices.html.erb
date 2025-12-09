@@ -1,0 +1,99 @@
+<div class="container my-5">
+
+  <%# BOUTON RETOUR %>
+  <div class="mb-4">
+    <%= link_to root_path, class: "btn btn-sm btn-orange rounded-pill px-3 fw-bold transition hover-shadow" do %>
+      <i class="fa-solid fa-arrow-left me-2"></i> Retour
+    <% end %>
+  </div>
+
+  <%# EN-TÊTE %>
+  <div class="text-center mb-5">
+    <h1 class="fw-bold text-orange mb-3">
+      <i class="fa-solid fa-scale-balanced me-2"></i> Mentions Légales
+    </h1>
+    <p class="text-muted lead">
+      Informations légales sur l'éditeur et l'hébergement de l'application MerchFlow.
+    </p>
+  </div>
+
+  <div class="row g-4">
+
+    <%# 1. ÉDITEUR DU SITE %>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card-body p-4">
+          <h3 class="fw-bold text-dark mb-4">
+            <i class="fa-solid fa-laptop-code me-2 text-orange"></i> 1. Éditeur
+          </h3>
+          <p class="text-muted small">
+            L'application <strong>MerchFlow</strong> est éditée par :
+          </p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item px-0 py-2 border-0">
+              <strong>Benjamin Grassiano</strong><br>
+              <span class="text-muted small">Entrepreneur Individuel (EI)</span>
+            </li>
+            <li class="list-group-item px-0 py-2 border-0">
+              <i class="fa-solid fa-location-dot me-2 text-orange"></i> 11 Route d'Albi, 81350 Valderiès
+            </li>
+            <li class="list-group-item px-0 py-2 border-0">
+              <i class="fa-solid fa-envelope me-2 text-orange"></i>
+              <a href="mailto:grassiano.b@gmail.com" class="text-dark text-decoration-none fw-bold">grassiano.b@gmail.com</a>
+            </li>
+            <li class="list-group-item px-0 py-2 border-0">
+              <i class="fa-solid fa-phone me-2 text-orange"></i> 06.45.56.28.14
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <%# 2. HÉBERGEUR (HEROKU) %>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card-body p-4">
+          <h3 class="fw-bold text-dark mb-4">
+            <i class="fa-solid fa-server me-2 text-orange"></i> 2. Hébergement
+          </h3>
+          <p class="text-muted small">
+            L'application est hébergée sur l'infrastructure cloud de la société Heroku Inc., utilisant des serveurs Amazon Web Services (AWS) physiquement situés en Europe (Région EU-West).
+          </p>
+
+          <div class="bg-light p-3 rounded-3 border-start border-4 border-orange">
+            <strong class="d-block mb-1">Hébergeur officiel :</strong>
+            <span class="text-dark fw-bold">Heroku Inc.</span><br>
+            <span class="text-muted small">
+              The Landmark @ 1 Market St., Suite 300<br>
+              San Francisco, CA 94105<br>
+              United States
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# 3. PROPRIÉTÉ INTELLECTUELLE %>
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+          <h4 class="fw-bold text-dark mb-3">
+            <i class="fa-solid fa-copyright me-2 text-orange"></i> 3. Propriété Intellectuelle
+          </h4>
+          <p class="text-muted mb-0">
+            L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur et la propriété intellectuelle.
+            Tous les droits de reproduction sont réservés. La reproduction de tout ou partie de ce site sur un support électronique quel qu'il soit est formellement interdite sauf autorisation expresse du directeur de la publication.
+            <br><br>
+            Le code source, l'architecture, et le design (DA) de <strong>MerchFlow</strong> sont la propriété exclusive de Benjamin Grassiano.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="text-center mt-5 text-muted small">
+    Ce site respecte le Règlement Général sur la Protection des Données (RGPD).<br>
+    Pour plus d'informations, consultez notre <%= link_to "Politique de Confidentialité", privacy_path, class: "text-orange text-decoration-none" %>.
+  </div>
+</div>

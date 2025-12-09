@@ -1,0 +1,124 @@
+<div class="container my-5">
+
+  <div class="mb-4">
+    <%= link_to root_path, class: "btn btn-sm btn-orange rounded-pill px-3 fw-bold transition hover-shadow" do %>
+      <i class="fa-solid fa-arrow-left me-2"></i> Retour
+    <% end %>
+  </div>
+
+  <div class="text-center mb-5">
+    <h1 class="fw-bold text-orange mb-3">
+      <i class="fa-solid fa-file-contract me-2"></i> Conditions Générales d'Utilisation
+    </h1>
+    <p class="text-muted lead">
+      Règles d'utilisation de la plateforme MerchFlow pour les Merchandisers et Chefs de Secteur (FVE).
+    </p>
+    <span class="badge bg-light text-secondary border rounded-pill px-3 py-2">
+      Version 1.0 - En vigueur le : <%= l(Date.current, format: :long) %>
+    </span>
+  </div>
+
+  <div class="row g-4">
+
+    <%# ARTICLE 1 : OBJET %>
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+          <h4 class="fw-bold text-dark">1. Objet du Service</h4>
+          <p class="text-muted">
+            L'application <strong>MerchFlow</strong> est un outil de gestion et de planification destiné aux acteurs du merchandising.
+            Elle permet :
+          </p>
+          <ul class="text-muted">
+            <li>Aux <strong>Merchandisers (Merch)</strong> de gérer leur planning, leurs contrats et de déclarer leurs heures.</li>
+            <li>Aux <strong>Forces de Vente (FVE)</strong> de rechercher des prestataires disponibles, d'éditer des contrats et de suivre les missions.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <%# ARTICLE 2 : VISIBILITÉ ET DISPONIBILITÉ (CRUCIAL POUR TON ALGO) %>
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4 border-start border-4 border-orange">
+        <div class="card-body p-4">
+          <h4 class="fw-bold text-orange">2. Visibilité des Plannings et Disponibilité</h4>
+          <p class="text-muted">
+            Le fonctionnement de MerchFlow repose sur la mise en relation efficace entre l'offre et la demande.
+          </p>
+
+          <h6 class="fw-bold text-dark mt-3">2.1 Pour les Merchandisers</h6>
+          <p class="text-muted small">
+            En utilisant l'application, l'utilisateur "Merch" accepte que ses <strong>plages de disponibilité</strong> soient calculées automatiquement par l'algorithme.
+            <br>
+            Lorsqu'un Merch est engagé sur une mission (via MerchFlow) ou déclare une indisponibilité, il apparaît comme "Indisponible" dans le moteur de recherche pour ce créneau spécifique.
+            <br>
+            <strong>Confidentialité :</strong> Si un Merch travaille pour une Agence A, l'Agence B verra le créneau comme "Occupé / Mission Externe". L'identité de l'Agence A et le lieu de la mission restent <strong>strictement confidentiels</strong> et ne sont pas affichés à l'Agence B.
+          </p>
+
+          <h6 class="fw-bold text-dark mt-3">2.2 Pour les FVE</h6>
+          <p class="text-muted small">
+            L'utilisateur "FVE" s'engage à utiliser les informations de disponibilité uniquement dans le but de proposer des missions légitimes. Il est interdit d'utiliser l'outil pour faire de la veille concurrentielle ou du démarchage abusif.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%# ARTICLE 3 : ENGAGEMENTS %>
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card-body p-4">
+          <h4 class="fw-bold text-dark mb-3">3. Engagements des Utilisateurs</h4>
+          <p class="text-muted small">Tout utilisateur s'engage à :</p>
+          <ul class="list-unstyled text-muted small">
+            <li class="mb-2"><i class="fa-solid fa-check text-orange me-2"></i> Fournir des informations exactes (identité, diplômes, SIRET si applicable).</li>
+            <li class="mb-2"><i class="fa-solid fa-check text-orange me-2"></i> Tenir à jour son planning (Work Sessions) pour garantir la fiabilité du moteur de recherche.</li>
+            <li class="mb-2"><i class="fa-solid fa-check text-orange me-2"></i> Ne pas partager ses identifiants de connexion.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <%# ARTICLE 4 : RESPONSABILITÉ %>
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100 bg-light">
+        <div class="card-body p-4">
+          <h4 class="fw-bold text-dark mb-3">4. Responsabilité de l'Éditeur</h4>
+          <p class="text-muted small">
+            MerchFlow est une <strong>plateforme technique de mise en relation et de gestion</strong>.
+            <br><br>
+            L'Éditeur (Benjamin Grassiano) ne saurait être tenu responsable :
+          </p>
+          <ul class="text-muted small mb-0">
+            <li>De l'inexécution ou de la mauvaise exécution des contrats de travail conclus entre un Merch et une FVE/Agence.</li>
+            <li>Des erreurs de saisie d'heures ou de kilomètres effectuées par les utilisateurs.</li>
+            <li>D'une interruption temporaire du service pour maintenance.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <%# ARTICLE 5 : RÉSILIATION %>
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap">
+          <div>
+            <h4 class="fw-bold text-dark">5. Suppression de compte</h4>
+            <p class="text-muted small mb-0">
+              Vous pouvez demander la suppression complète de votre compte et de vos données à tout moment via l'interface de profil ou par email.
+            </p>
+          </div>
+          <div class="mt-3 mt-md-0">
+            <i class="fa-solid fa-user-xmark fa-2x text-secondary opacity-25"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="text-center mt-5">
+    <p class="text-muted small">
+      Pour toute question relative à ces conditions, contactez-nous à <a href="mailto:grassiano.b@gmail.com" class="text-orange fw-bold">grassiano.b@gmail.com</a>
+    </p>
+  </div>
+</div>

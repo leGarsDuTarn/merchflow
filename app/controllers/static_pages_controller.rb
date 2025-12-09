@@ -7,4 +7,12 @@ class StaticPagesController < ApplicationController
   def contact
     # Le contenu est rendu directement par la vue
   end
+
+  def legal_notices
+    # Le contenu est rendu directement par la vue
+  end
+
+  def terms
+    # Le contenu est rendu directement par la vue
+  end
 end

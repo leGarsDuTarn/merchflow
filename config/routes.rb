@@ -4,6 +4,8 @@ Rails.application.routes.draw do
 
   resources :users, only: [:show]
   get 'confidentialite', to: 'static_pages#privacy', as: :privacy
+  get 'mentions-legales', to: 'static_pages#legal_notices', as: :legal_notices
+  get 'cgu', to: 'static_pages#terms', as: :terms
   get 'contact', to: 'static_pages#contact', as: :contact
 
   # ============================================================
