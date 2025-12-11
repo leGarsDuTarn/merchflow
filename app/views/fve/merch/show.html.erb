@@ -1,6 +1,6 @@
-<%# app/views/fve/merch/show.html.erb %>
+<%# app/views/fve/merch/show.html.erb - VERSION FINALE SÉCURISÉE %>
 
-<%# DÉFINITION VARIABLE PREMIUM %>
+<%# DÉFINITION VARIABLE PREMIUM (Inclut l'Admin/FVE Premium) %>
 <% is_premium = @premium || current_user.premium? %>
 
 <div class="container mt-4 mb-5" style="max-width: 750px;">
@@ -84,29 +84,58 @@
 
       <div class="row g-4">
 
-        <%# COLONNE GAUCHE : LOCALISATION (VILLE & CP RESTAURÉS) %>
+        <%# COLONNE GAUCHE : LOCALISATION (FINALE & SÉCURISÉE) %>
         <div class="col-md-6 border-end-md">
           <h6 class="text-uppercase text-muted fw-bold mb-3 small tracking-wide">
             <i class="fa-solid fa-location-arrow me-2 text-orange"></i> Localisation
           </h6>
 
-          <ul class="list-unstyled mb-0">
-            <li class="mb-3 d-flex align-items-center">
-              <div class="icon-box-sm bg-orange-light text-orange rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                <i class="fa-solid fa-city"></i>
-              </div>
-              <div>
-                <%# RESTAURATION : Ville et Code Postal %>
-                <small class="text-muted d-block">Ville & Code Postal</small>
-                <span class="fw-bold text-dark">
-                  <%= @merch_user.city.presence || "—" %> (<%= @merch_user.zipcode.presence || "—" %>)
-                </span>
-              </div>
-            </li>
+          <% if is_premium %>
 
-            <%# L'ADRESSE PRÉCISE (rue/numéro) RESTE SUPPRIMÉE %>
+            <%# LIGNE 1 : VILLE & CODE POSTAL (Visible si Premium) %>
+            <ul class="list-unstyled mb-3">
+              <li class="d-flex align-items-center">
+                <div class="icon-box-sm bg-orange-light text-orange rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                  <i class="fa-solid fa-city"></i>
+                </div>
+                <div>
+                  <small class="text-muted d-block">Ville & Code Postal</small>
+                  <span class="fw-bold text-dark">
+                    <%= @merch_user.city.presence || "—" %> (<%= @merch_user.zipcode.presence || "—" %>)
+                  </span>
+                </div>
+              </li>
+            </ul>
 
-          </ul>
+            <%# LIGNE 2 : ADRESSE PRÉCISE (Visible si Premium ET Partagée) %>
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex align-items-center">
+                <div class="icon-box-sm bg-orange-light text-orange rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                  <i class="fa-solid fa-map-pin"></i>
+                </div>
+                <div>
+                  <small class="text-muted d-block">Adresse précise</small>
+                  <% if @merch_user.merch_setting&.share_address? %>
+                    <span class="fw-bold text-dark"><%= @merch_user.address.presence || "Non renseignée" %></span>
+                  <% else %>
+                    <span class="text-muted fst-italic">
+                      <i class="fa-solid fa-eye-slash me-1"></i> Non partagée
+                    </span>
+                  <% end %>
+                </div>
+              </li>
+            </ul>
+
+          <% else %>
+
+            <%# MODE NON-PREMIUM : LOCALISATION ENTIÈREMENT CACHÉE %>
+            <div class="bg-light p-4 rounded-3 text-center">
+              <i class="fa-solid fa-lock text-muted fa-2x mb-2"></i>
+              <p class="text-muted fw-bold small mb-0">Réservé aux membres Premium</p>
+            </div>
+
+          <% end %>
+
         </div>
 
         <%# COLONNE DROITE : CONTACT %>
@@ -119,12 +148,13 @@
             <%# EMAIL %>
             <li class="mb-3 d-flex align-items-center">
               <i class="fa-solid fa-envelope text-muted me-3" style="width: 20px;"></i>
-              <% if is_premium && @email %>
+              <%# Le contrôleur a déjà fait la vérification premium/partage pour @email %>
+              <% if @email %>
                 <a href="mailto:<%= @email %>" class="text-decoration-none text-dark fw-bold"><%= @email %></a>
               <% else %>
                 <span class="text-muted fst-italic">
                   <i class="fa-solid fa-eye-slash me-1"></i>
-                  <%= is_premium ? "Masqué" : "Premium requis" %>
+                  <%= is_premium ? "Masqué par Merch" : "Premium requis" %>
                 </span>
               <% end %>
             </li>
@@ -132,12 +162,13 @@
             <%# TÉLÉPHONE %>
             <li class="mb-3 d-flex align-items-center">
               <i class="fa-solid fa-phone text-muted me-3" style="width: 20px;"></i>
-              <% if is_premium && @phone %>
+              <%# Le contrôleur a déjà fait la vérification premium/partage pour @phone %>
+              <% if @phone %>
                 <a href="tel:<%= @phone %>" class="text-decoration-none text-dark fw-bold"><%= @phone %></a>
               <% else %>
                 <span class="text-muted fst-italic">
                   <i class="fa-solid fa-eye-slash me-1"></i>
-                  <%= is_premium ? "Masqué" : "Premium requis" %>
+                  <%= is_premium ? "Masqué par Merch" : "Premium requis" %>
                 </span>
               <% end %>
             </li>
@@ -208,6 +239,26 @@
              <% end %>
           </div>
         </div>
+      </div>
+
+      <%# INFOS COMPLÉMENTAIRES (Missions, Heures, Companies) %>
+      <hr class="my-4 text-muted opacity-25">
+      <h6 class="text-uppercase text-muted fw-bold mb-3 small tracking-wide">
+          <i class="fa-solid fa-chart-line me-2 text-orange"></i> Historique d'activité
+      </h6>
+      <div class="row g-3">
+          <div class="col-sm-4">
+              <span class="small text-muted d-block">Missions totales</span>
+              <span class="fw-bold fs-5 text-dark"><%= @total_missions %></span>
+          </div>
+          <div class="col-sm-4">
+              <span class="small text-muted d-block">Heures totales</span>
+              <span class="fw-bold fs-5 text-dark"><%= @total_hours %>h</span>
+          </div>
+          <div class="col-sm-4">
+              <span class="small text-muted d-block">Agences travaillées</span>
+              <span class="fw-bold fs-5 text-dark"><%= @companies_worked_with.count %></span>
+          </div>
       </div>
 
       <%# BOUTON RETOUR %>
