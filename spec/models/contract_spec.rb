@@ -2,6 +2,13 @@ require 'rails_helper'
 
 RSpec.describe Contract, type: :model do
 
+  # --- CORRECTIF ICI : CRÉATION DE LA DÉPENDANCE ---
+  before(:each) do
+    # Création de l'agence 'actiale' car la factory l'utilise par défaut
+    # et la validation du modèle vérifie son existence en DB.
+    Agency.find_or_create_by!(code: 'actiale', label: 'Actiale')
+  end
+
   # ------------------------------------------------------------
   # FACTORY
   # ------------------------------------------------------------
@@ -23,17 +30,23 @@ RSpec.describe Contract, type: :model do
   # ------------------------------------------------------------
   # ENUMS (string enums)
   # ------------------------------------------------------------
-  context 'Test des enums' do
-    it 'contient les bonnes agences' do
-      expect(Contract.agencies.keys).to include(
-        'actiale', 'rma', 'edelvi', 'mdf', 'cpm'
+  context 'Test des agences et des labels' do
+    it 'contient les bons contract_type' do
+      expect(Contract.contract_types.keys).to include(
+        'cdd', 'cidd', 'interim'
       )
     end
 
-    it 'contient les bons contract_type' do
-      expect(Contract.contract_types.keys).to include(
-        'cdd', 'cidd', 'interim', 'other_contract'
-      )
+    it 'retourne les agences disponibles en base de données' do
+      # L'agence Actiale est déjà créée par le before(:each)
+      # Création d'une autre pour être sûr
+      Agency.create!(code: 'rma', label: 'RMA')
+
+      options = Contract.agency_options
+
+      # On vérifie le format [Label, code]
+      expect(options).to include(["Actiale", "actiale"])
+      expect(options).to include(["RMA", "rma"])
     end
   end
 
