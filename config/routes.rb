@@ -111,5 +111,5 @@ Rails.application.routes.draw do
     resources :agencies
 
     get 'dashboard', to: 'dashboard#index'
-end
+  end
 end
