@@ -11,123 +11,119 @@
 
     <% if @premium %>
       <div class="d-flex align-items-center bg-orange-light text-orange px-3 py-2 rounded-pill">
-        <i class="bi bi-star-fill me-2"></i>
+        <i class="fa-solid fa-crown me-2"></i>
         <span class="fw-bold small">Compte Premium</span>
       </div>
     <% else %>
       <%= link_to "#pricing", class: "text-decoration-none" do %>
-        <span class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm">
-          <i class="bi bi-unlock me-1"></i> Passer Premium
+        <span class="badge bg-dark rounded-pill px-3 py-2 shadow-sm border border-light">
+          <i class="fa-solid fa-lock me-1"></i> Mode Découverte
         </span>
       <% end %>
     <% end %>
   </div>
 
-  <%# SECTION 1 : LES ACTIONS RAPIDES (KPIs Réseau) %>
-  <%# On remplace les stats de mission par des stats d'accès au réseau %>
-  <div class="row g-4 mb-5">
+  <%# BANNIÈRE INCITATIVE (Si pas Premium) - VERSION PLUS AGRESSIVE %>
+  <% unless @premium %>
+    <div class="card bg-dark text-white border-0 shadow rounded-4 overflow-hidden mb-5 position-relative">
+      <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(45deg, #1a1a1a 0%, #2d2d2d 100%); opacity: 0.9;"></div>
 
-    <%# CARTE 1 : MES FAVORIS %>
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100 overflow-hidden position-relative">
-        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+      <div class="card-body p-4 p-md-5 position-relative z-1 d-flex flex-column flex-md-row align-items-center justify-content-between">
+        <div class="d-flex align-items-center mb-4 mb-md-0">
+          <div class="bg-orange text-white rounded-circle p-3 me-4 d-flex align-items-center justify-content-center shadow" style="width: 60px; height: 60px; min-width: 60px;">
+            <i class="fa-solid fa-unlock-keyhole fs-3"></i>
+          </div>
           <div>
-            <h6 class="text-muted text-uppercase small fw-bold mb-1">Mon Équipe (Favoris)</h6>
-            <p class="display-4 fw-bold text-orange mb-0">
-              <%= @favorite_merchs.count %>
-            </p>
-            <small class="text-muted">Profils de confiance sauvegardés</small>
-          </div>
-          <div class="bg-orange-light p-3 rounded-circle text-orange">
-            <i class="bi bi-heart-fill fs-2"></i>
+            <h4 class="fw-bold mb-2">Débloquez les identités et créez votre équipe</h4>
+            <ul class="list-unstyled mb-0 text-white-50 small">
+              <li class="mb-1"><i class="fa-solid fa-check text-orange me-2"></i> Voir les <strong>Noms et Prénoms</strong> des candidats</li>
+              <li class="mb-1"><i class="fa-solid fa-check text-orange me-2"></i> Ajouter des profils en <strong>Favoris</strong></li>
+              <li><i class="fa-solid fa-check text-orange me-2"></i> Utiliser les <strong>Filtres avancés sans restriction</strong></li>
+              <li><i class="fa-solid fa-check text-orange me-2"></i> Accéder aux <strong>Coordonnées directes</strong></li>
+            </ul>
           </div>
         </div>
-        <%# Barre de progression visuelle (juste pour le style) %>
-        <div class="progress" style="height: 4px;">
-          <div class="progress-bar bg-orange" role="progressbar" style="width: <%= [(@favorite_merchs.count * 10), 100].min %>%"></div>
-        </div>
+          <%= link_to "Passer Premium maintenant", contact_path, class: "btn btn-orange fw-bold rounded-pill px-5 py-3 shadow hover-scale" %>
       </div>
     </div>
+  <% end %>
 
-    <%# CARTE 2 : RECHERCHE / ANNUAIRE %>
-    <div class="col-md-6">
-      <%= link_to fve_merch_index_path, class: "text-decoration-none" do %>
-        <div class="card shadow-sm border-0 h-100 transition-hover card-hover-effect">
+
+  <%# KPI & FAVORIS : VISIBLE SEULEMENT SI PREMIUM %>
+  <%# Si pas premium, on ne montre pas la section favoris car il ne peut pas en avoir %>
+  <% if @premium %>
+    <div class="row g-4 mb-5">
+      <%# CARTE KPI FAVORIS %>
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100 overflow-hidden">
           <div class="card-body p-4 d-flex justify-content-between align-items-center">
             <div>
-              <h6 class="text-muted text-uppercase small fw-bold mb-1">Annuaire National</h6>
-              <p class="fs-4 fw-bold text-dark mb-0">
-                Trouver un profil
-              </p>
-              <small class="text-orange fw-semibold">Accéder à la recherche <i class="bi bi-arrow-right ms-1"></i></small>
+              <h6 class="text-muted text-uppercase small fw-bold mb-1">Mon Équipe</h6>
+              <p class="display-4 fw-bold text-orange mb-0"><%= @favorite_merchs.count %></p>
+              <small class="text-muted">Profils sauvegardés</small>
             </div>
-            <div class="bg-light p-3 rounded-circle text-dark">
-              <i class="bi bi-search fs-2"></i>
+            <div class="bg-orange-light p-3 rounded-circle text-orange">
+              <i class="fa-solid fa-heart fs-2"></i>
             </div>
           </div>
         </div>
-      <% end %>
-    </div>
-
-  </div>
-
-  <%# BANNIÈRE INCITATIVE (Si pas Premium) %>
-  <% unless @premium %>
-    <div class="alert bg-dark text-white border-0 shadow-sm rounded-4 p-4 mb-5 d-flex align-items-center justify-content-between flex-column flex-md-row">
-      <div class="d-flex align-items-center mb-3 mb-md-0">
-        <div class="bg-white text-dark rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-          <i class="bi bi-telephone-fill fs-4"></i>
-        </div>
-        <div>
-          <h5 class="fw-bold mb-1">Débloquez les coordonnées directes</h5>
-          <p class="mb-0 small text-white-50">Gagnez du temps : appelez les Merchs directement sans intermédiaire.</p>
-        </div>
       </div>
-      <button class="btn btn-orange fw-bold rounded-pill px-4">
-        Voir l'offre Premium
-      </button>
-    </div>
-  <% end %>
 
-
-  <%# SECTION 2 : MES FAVORIS %>
-  <div class="d-flex align-items-center mb-3">
-    <h4 class="fw-bold text-dark mb-0 me-2">Mon Équipe</h4>
-    <span class="badge bg-orange-light text-orange rounded-pill"><%= @favorite_merchs.count %></span>
-  </div>
-
-  <% if @favorite_merchs.any? %>
-    <div class="row g-3 mb-5">
-      <%# On suppose que le partial merch_card gère l'affichage propre %>
-      <%= render partial: "merch_card", collection: @favorite_merchs, as: :merch, locals: { is_favorite: true } %>
-    </div>
-  <% else %>
-    <%# EMPTY STATE FAVORIS : Pour inciter à l'action %>
-    <div class="text-center p-5 bg-light rounded-4 border border-dashed mb-5">
-      <div class="text-muted mb-3">
-        <i class="bi bi-heart fs-1"></i>
+      <%# CARTE RECHERCHE %>
+      <div class="col-md-6">
+        <%= link_to fve_merch_index_path, class: "text-decoration-none" do %>
+          <div class="card shadow-sm border-0 h-100 transition-hover card-hover-effect">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-muted text-uppercase small fw-bold mb-1">Annuaire National</h6>
+                <p class="fs-4 fw-bold text-dark mb-0">Trouver un profil</p>
+                <small class="text-orange fw-semibold">Accéder à la recherche <i class="fa-solid fa-arrow-right ms-1"></i></small>
+              </div>
+              <div class="bg-light p-3 rounded-circle text-dark">
+                <i class="fa-solid fa-search fs-2"></i>
+              </div>
+            </div>
+          </div>
+        <% end %>
       </div>
-      <h5 class="fw-bold text-dark">Vous n'avez pas encore de favoris</h5>
-      <p class="text-muted small mb-4">Ajoutez des profils à votre équipe pour les retrouver en un clic.</p>
-      <%= link_to fve_merch_index_path, class: "btn btn-orange-outline fw-semibold px-4 rounded-pill" do %>
-        <i class="bi bi-search me-2"></i>Explorer l'annuaire
-      <% end %>
     </div>
-  <% end %>
+
+    <%# LISTE DES FAVORIS (Seulement pour Premium) %>
+    <div class="d-flex align-items-center mb-3">
+      <h4 class="fw-bold text-dark mb-0 me-2">Mon Équipe</h4>
+      <span class="badge bg-orange-light text-orange rounded-pill"><%= @favorite_merchs.count %></span>
+    </div>
+
+    <% if @favorite_merchs.any? %>
+      <div class="row g-3 mb-5">
+        <%# On passe la variable local 'is_locked: false' car l'user est premium %>
+        <%= render partial: "merch_card", collection: @favorite_merchs, as: :merch, locals: { is_favorite: true, locked: false } %>
+      </div>
+    <% else %>
+      <div class="text-center p-5 bg-light rounded-4 border border-dashed mb-5">
+        <h5 class="fw-bold text-dark">Vous n'avez pas encore de favoris</h5>
+        <%= link_to fve_merch_index_path, class: "btn btn-orange-outline fw-semibold px-4 rounded-pill mt-2" do %>
+          <i class="fa-solid fa-search me-2"></i>Explorer l'annuaire
+        <% end %>
+      </div>
+    <% end %>
+
+  <% end # Fin du bloc Premium %>
 
 
-  <%# SECTION 3 : SUGGESTIONS / DÉCOUVERTE %>
-  <%# Uniquement si on a des merchs à montrer %>
+  <%# SECTION 3 : SUGGESTIONS / DÉCOUVERTE (Visible par TOUS) %>
+  <%# Si pas premium, les noms seront floutés via le partial %>
   <% if @other_merchs.any? %>
-    <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-3 mt-5">
       <h6 class="text-muted text-uppercase small fw-bold mb-0">
-        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Disponibles dans votre secteur
+        <i class="fa-solid fa-bolt text-warning me-1"></i> Disponibles dans votre secteur
       </h6>
-      <%= link_to "Voir tout", fve_merch_index_path, class: "text-orange small fw-bold text-decoration-none" %>
+      <%= link_to "Voir tout l'annuaire", fve_merch_index_path, class: "text-orange small fw-bold text-decoration-none" %>
     </div>
 
     <div class="row g-3">
-      <%= render partial: "merch_card", collection: @other_merchs.first(4), as: :merch, locals: { is_favorite: false } %>
+      <%# ICI : On passe la variable 'locked' basée sur le statut premium %>
+      <%= render partial: "merch_card", collection: @other_merchs.first(4), as: :merch, locals: { is_favorite: false, locked: !@premium } %>
     </div>
   <% end %>
 

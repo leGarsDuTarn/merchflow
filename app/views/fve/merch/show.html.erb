@@ -1,5 +1,8 @@
 <%# app/views/fve/merch/show.html.erb %>
 
+<%# DÉFINITION VARIABLE PREMIUM %>
+<% is_premium = @premium || current_user.premium? %>
+
 <div class="container mt-4 mb-5" style="max-width: 750px;">
 
   <div class="text-center my-5">
@@ -12,26 +15,34 @@
       <div class="bg-light p-5 text-center position-relative">
 
         <%# ================================================================= %>
-        <%# BOUTON COEUR (FAVORIS) %>
+        <%# BOUTON COEUR (LOGIQUE PREMIUM / CADENAS) %>
         <%# ================================================================= %>
         <div class="position-absolute top-0 end-0 m-4">
-          <%# CORRECTION ICI : On vérifie dans les favoris DONNÉS par le FVE %>
-          <% is_favorited = current_user.favorites_given.exists?(merch_id: @merch_user.id) %>
 
-          <%= link_to toggle_favorite_fve_merch_path(@merch_user),
-                      data: { turbo_method: :post },
-                      class: "btn bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border-0 hover-scale link-heart",
-                      style: "width: 50px; height: 50px;" do %>
+          <% if is_premium %>
+            <%# --- MODE PREMIUM : FONCTION FAVORIS ACTIVE --- %>
+            <% is_favorited = current_user.favorites_given.exists?(merch_id: @merch_user.id) %>
 
-            <% if is_favorited %>
-              <%# C'est un favori : COEUR ROUGE PLEIN %>
-              <i class="fa-solid fa-heart text-danger fs-4"></i>
-            <% else %>
-              <%# Pas encore favori : COEUR GRIS VIDE %>
-              <i class="fa-regular fa-heart text-secondary fs-4"></i>
+            <%= link_to toggle_favorite_fve_merch_path(@merch_user),
+                        data: { turbo_method: :post },
+                        class: "btn bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border-0 hover-scale link-heart",
+                        style: "width: 50px; height: 50px;" do %>
+
+              <% if is_favorited %>
+                <i class="fa-solid fa-heart text-danger fs-4"></i>
+              <% else %>
+                <i class="fa-regular fa-heart text-secondary fs-4"></i>
+              <% end %>
             <% end %>
 
+          <% else %>
+            <%# --- MODE NON-PREMIUM : CADENAS --- %>
+            <button class="btn bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border-0"
+                    style="width: 50px; height: 50px; cursor: not-allowed;" disabled>
+              <i class="fa-solid fa-lock text-muted fs-4"></i>
+            </button>
           <% end %>
+
         </div>
         <%# ================================================================= %>
 
@@ -41,8 +52,17 @@
           <i class="fa-solid fa-user fa-3x text-orange"></i>
         </div>
 
-        <%# NOM DU MERCH %>
-        <h2 class="fw-bold mb-1"><%= @name %></h2>
+        <%# NOM DU MERCH (LOGIQUE FLOUTAGE) %>
+        <% if is_premium %>
+          <h2 class="fw-bold mb-1"><%= @name %></h2>
+        <% else %>
+          <%# Nom flouté visuellement %>
+          <h2 class="fw-bold mb-1" style="filter: blur(6px); user-select: none; opacity: 0.6;">
+            <%= @merch_user.username %>
+          </h2>
+          <p class="text-orange fw-bold small mb-0"><i class="fa-solid fa-lock me-1"></i> Identité masquée</p>
+        <% end %>
+
 
         <%# BADGE CONTRAT AGENCE %>
         <div class="mt-3">
@@ -64,7 +84,7 @@
 
       <div class="row g-4">
 
-        <%# COLONNE GAUCHE : LOCALISATION %>
+        <%# COLONNE GAUCHE : LOCALISATION (VILLE & CP RESTAURÉS) %>
         <div class="col-md-6 border-end-md">
           <h6 class="text-uppercase text-muted fw-bold mb-3 small tracking-wide">
             <i class="fa-solid fa-location-arrow me-2 text-orange"></i> Localisation
@@ -76,6 +96,7 @@
                 <i class="fa-solid fa-city"></i>
               </div>
               <div>
+                <%# RESTAURATION : Ville et Code Postal %>
                 <small class="text-muted d-block">Ville & Code Postal</small>
                 <span class="fw-bold text-dark">
                   <%= @merch_user.city.presence || "—" %> (<%= @merch_user.zipcode.presence || "—" %>)
@@ -83,21 +104,8 @@
               </div>
             </li>
 
-            <li class="d-flex align-items-center">
-              <div class="icon-box-sm bg-orange-light text-orange rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                <i class="fa-solid fa-map-pin"></i>
-              </div>
-              <div>
-                <small class="text-muted d-block">Adresse précise</small>
-                <% if @merch_user.merch_setting&.share_address? %>
-                  <span class="fw-bold text-dark"><%= @merch_user.address.presence || "Non renseignée" %></span>
-                <% else %>
-                  <span class="text-muted fst-italic">
-                    <i class="fa-solid fa-lock me-1"></i> Non partagée
-                  </span>
-                <% end %>
-              </div>
-            </li>
+            <%# L'ADRESSE PRÉCISE (rue/numéro) RESTE SUPPRIMÉE %>
+
           </ul>
         </div>
 
@@ -111,20 +119,26 @@
             <%# EMAIL %>
             <li class="mb-3 d-flex align-items-center">
               <i class="fa-solid fa-envelope text-muted me-3" style="width: 20px;"></i>
-              <% if @email %>
+              <% if is_premium && @email %>
                 <a href="mailto:<%= @email %>" class="text-decoration-none text-dark fw-bold"><%= @email %></a>
               <% else %>
-                <span class="text-muted fst-italic"><i class="fa-solid fa-eye-slash me-1"></i> Masqué</span>
+                <span class="text-muted fst-italic">
+                  <i class="fa-solid fa-eye-slash me-1"></i>
+                  <%= is_premium ? "Masqué" : "Premium requis" %>
+                </span>
               <% end %>
             </li>
 
             <%# TÉLÉPHONE %>
             <li class="mb-3 d-flex align-items-center">
               <i class="fa-solid fa-phone text-muted me-3" style="width: 20px;"></i>
-              <% if @phone %>
+              <% if is_premium && @phone %>
                 <a href="tel:<%= @phone %>" class="text-decoration-none text-dark fw-bold"><%= @phone %></a>
               <% else %>
-                <span class="text-muted fst-italic"><i class="fa-solid fa-eye-slash me-1"></i> Masqué</span>
+                <span class="text-muted fst-italic">
+                  <i class="fa-solid fa-eye-slash me-1"></i>
+                  <%= is_premium ? "Masqué" : "Premium requis" %>
+                </span>
               <% end %>
             </li>
 

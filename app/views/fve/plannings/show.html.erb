@@ -1,11 +1,32 @@
 <%# ========================================================== %>
 <%# VUE PRINCIPALE DU PLANNING %>
 <%# ========================================================== %>
+<%# DÉFINITION VARIABLE PREMIUM %>
+<% is_premium = current_user.premium? %>
+
 <div class="container my-5">
 
-  <h1 class="fw-bold text-orange mb-4 text-center">
-    Planning de <%= @merch_user.displayable_name(current_user) %>
-  </h1>
+  <%# EN-TÊTE DU NOM (LOGIQUE FLOUTAGE) %>
+  <div class="text-center mb-4">
+    <h1 class="fw-bold text-orange mb-2">
+      Planning de
+      <% if is_premium %>
+        <%= @merch_user.displayable_name(current_user) %>
+      <% else %>
+        <%# Nom flouté visuellement %>
+        <span style="filter: blur(6px); user-select: none; opacity: 0.6;">
+          <%= @merch_user.username %>
+        </span>
+      <% end %>
+    </h1>
+
+    <%# Message de masquage si non premium %>
+    <% if !is_premium %>
+      <p class="text-orange fw-bold small mb-0"><i class="fa-solid fa-lock me-1"></i> Identité masquée (Premium)</p>
+    <% end %>
+  </div>
+  <%# FIN EN-TÊTE DU NOM %>
+
 
   <%# NAVIGATION MOIS %>
   <div class="d-flex justify-content-between align-items-center mb-4">
