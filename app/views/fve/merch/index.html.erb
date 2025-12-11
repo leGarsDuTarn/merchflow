@@ -154,7 +154,6 @@
 
   <%
      # Liste des clés pour détecter si une recherche est active
-     # J'ai ajouté 'only_favorites' à la liste
      search_keys = %w[query city zipcode department target_date start_time end_time start_date end_date company has_contract_with_me only_with_contact prefers_merch prefers_anim only_favorites]
      has_search = search_keys.any? { |key| params[key].present? }
   %>
