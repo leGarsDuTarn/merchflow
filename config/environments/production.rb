@@ -60,17 +60,20 @@ Rails.application.configure do
   # CONFIGURATION URL PRODUCTION (MODIFIÉ POUR MERCHFLOW)
   # ==============================================================================
 
-  # Configuration pour les liens dans les EMAILS
+  # Configuration pour les liens dans les EMAILS (Celle-ci peut rester ici car ActionMailer est initialisé tôt)
   config.action_mailer.default_url_options = {
     host: "merchflow-app-4722d7e8b942.herokuapp.com",
     protocol: "https"
   }
 
   # Configuration pour les liens générés dans les CONTROLLERS (flash message)
-  config.routes.default_url_options = {
-    host: "merchflow-app-4722d7e8b942.herokuapp.com",
-    protocol: "https"
-  }
+  # ⚠️ Déplacé dans after_initialize pour ne pas planter la précompilation des assets
+  config.after_initialize do
+    Rails.application.routes.default_url_options = {
+      host: "merchflow-app-4722d7e8b942.herokuapp.com",
+      protocol: "https"
+    }
+  end
 
   # ==============================================================================
 
