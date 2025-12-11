@@ -5,8 +5,6 @@ module Fve
     before_action :verify_fve
 
     def index
-      # Assurez-vous que l'autorisation est faite s'il y a Pundit ou CanCanCan
-      # Supprimez cette ligne si vous n'utilisez pas de gem d'autorisation (Pundit/CanCanCan)
       authorize %i[fve dashboard]
 
       @premium = current_user.premium?

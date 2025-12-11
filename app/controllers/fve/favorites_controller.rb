@@ -1,11 +1,12 @@
-# app/controllers/fve/favorites_controller.rb
 module Fve
   class FavoritesController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
 
     def create
-      # 1. On trouve le Merch (avec sécurité si ID invalide)
+      # SÉCURITÉ : Vérifie si user.premium? via FavoritePolicy#create?
+      authorize [:fve, Favorite]
+
       @merch = User.merch.find_by(id: params[:merch_id])
 
       unless @merch
@@ -13,8 +14,6 @@ module Fve
         return
       end
 
-      # 2. On crée le favori
-      # .create ne plante pas si ça échoue, mais on peut vérifier si ça a marché
       favorite = current_user.favorites_given.new(merch: @merch)
 
       if favorite.save
@@ -27,10 +26,12 @@ module Fve
     end
 
     def destroy
-      # Note : params[:id] est l'ID du Merch (car route /favorites/:id)
       @favorite = current_user.favorites_given.find_by(merch_id: params[:id])
 
       if @favorite
+        # SÉCURITÉ : Vérifie si user.premium?
+        authorize [:fve, @favorite]
+
         @favorite.destroy
         flash[:notice] = "Retiré de votre équipe."
       end

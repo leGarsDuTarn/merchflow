@@ -2,6 +2,8 @@ module Fve
   class MerchController < ApplicationController
     before_action :authenticate_user!
     before_action :require_fve!
+    # On définit @merch_user avant show et toggle_favorite pour éviter les répétitions
+    before_action :set_merch_user, only: [:show, :toggle_favorite]
 
     def index
       authorize %i[fve merch]
@@ -11,7 +13,6 @@ module Fve
 
       # =================================================================
       # FILTRE 1 : DISPONIBILITÉ PRÉCISE (Date + Heure Début + Heure Fin)
-      # Ce filtre a la PRIORITÉ sur le filtre large
       # =================================================================
       if params[:target_date].present? && params[:start_time].present? && params[:end_time].present?
 
@@ -20,12 +21,10 @@ module Fve
         req_end_time = Time.parse(params[:end_time]) rescue nil
 
         if target_date && req_start_time && req_end_time
-          # A. IDENTIFIER CEUX QUI ONT POSÉ UNE INDISPONIBILITÉ (Journée entière)
+          # A. IDENTIFIER CEUX QUI ONT POSÉ UNE INDISPONIBILITÉ
           unavailable_ids_day = Unavailability.where(date: target_date).pluck(:user_id)
 
-          # B. IDENTIFIER CEUX QUI SONT EN MISSION (Chevauchement temporel)
-          # On compare uniquement les HEURES car start_time/end_time contiennent des dates incorrectes
-          # Formule de chevauchement : session_start_hour < req_end_hour AND session_end_hour > req_start_hour
+          # B. IDENTIFIER CEUX QUI SONT EN MISSION
           busy_contract_ids = WorkSession
             .where(date: target_date)
             .where(
@@ -35,26 +34,13 @@ module Fve
             )
             .pluck(:contract_id)
 
-          # Récupérer les IDs des Users via leurs Contrats
           busy_user_ids = Contract.where(id: busy_contract_ids).pluck(:user_id)
-
-          # C. EXCLUSION : Retirer les IDs de ceux qui sont occupés ou indisponibles
           ids_to_exclude = (unavailable_ids_day + busy_user_ids).uniq
-
-          Rails.logger.debug "=== DEBUG DISPONIBILITÉ PRÉCISE ==="
-          Rails.logger.debug "Date: #{target_date}"
-          Rails.logger.debug "Créneau demandé: #{req_start_time.strftime('%H:%M')} - #{req_end_time.strftime('%H:%M')}"
-          Rails.logger.debug "IDs indisponibles (unavailability): #{unavailable_ids_day}"
-          Rails.logger.debug "Contract IDs occupés: #{busy_contract_ids}"
-          Rails.logger.debug "User IDs occupés: #{busy_user_ids}"
-          Rails.logger.debug "Total exclusions: #{ids_to_exclude}"
-
           @merch = @merch.where.not(id: ids_to_exclude)
         end
 
       # =================================================================
-      # FILTRE 1-BIS : DISPONIBILITÉ LARGE (Période Date à Date)
-      # Ne s'applique QUE si le filtre précis n'est pas utilisé
+      # FILTRE 1-BIS : DISPONIBILITÉ LARGE
       # =================================================================
       elsif params[:start_date].present? || params[:end_date].present?
         start_date = params[:start_date].present? ? (Date.parse(params[:start_date]) rescue nil) : nil
@@ -66,14 +52,10 @@ module Fve
           date_condition_sql << "date <= '#{end_date}'" if end_date
           date_condition_str = date_condition_sql.join(' AND ')
 
-          # 1. IDs indisponibles par Indisponibilité personnelle
           unavailable_ids = Unavailability.where(date_condition_str).pluck(:user_id)
-
-          # 2. IDs indisponibles par Missions planifiées (WorkSession)
           busy_contract_ids = WorkSession.where(date_condition_str).pluck(:contract_id)
           busy_user_ids = Contract.where(id: busy_contract_ids).pluck(:user_id)
 
-          # Exclusion des marchands occupés
           @merch = @merch.where.not(id: (unavailable_ids | busy_user_ids).uniq)
         end
       end
@@ -102,7 +84,6 @@ module Fve
 
       # FILTRE : Favoris uniquement
       if params[:only_favorites] == "1"
-        # On filtre pour ne garder que ceux qui sont dans les favoris du current_user
         @merch = @merch.where(id: current_user.favorite_merchs.select(:id))
       end
 
@@ -138,7 +119,7 @@ module Fve
     end
 
     def show
-      @merch_user = User.merch.find(params[:id])
+      # @merch_user est défini par le before_action
       authorize [:fve, @merch_user]
 
       @merch_user.create_merch_setting! unless @merch_user.merch_setting.present?
@@ -161,19 +142,17 @@ module Fve
     end
 
     def toggle_favorite
-      @merch_user = User.merch.find(params[:id])
+      # @merch_user est défini par le before_action
 
-      # On cherche dans les favoris DONNÉS par le current_user (FVE)
-      # On cherche la ligne où merch_id correspond au merch visé
+      # SÉCURITÉ PUNDIT : Vérifie si l'utilisateur est Premium
+      authorize @merch_user, :toggle_favorite?
+
       existing_favorite = current_user.favorites_given.find_by(merch_id: @merch_user.id)
 
       if existing_favorite
         existing_favorite.destroy
-        # flash[:notice] = "Retiré des favoris"
       else
-        # On crée en spécifiant le merch (le fve_id est mis auto par favorites_given)
         current_user.favorites_given.create(merch: @merch_user)
-        # flash[:success] = "Ajouté aux favoris"
       end
 
       respond_to do |format|
@@ -185,6 +164,11 @@ module Fve
     end
 
     private
+
+    # Récupération centralisée du Merch pour éviter la duplication
+    def set_merch_user
+      @merch_user = User.merch.find(params[:id])
+    end
 
     def require_fve!
       unless current_user&.fve?
