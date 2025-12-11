@@ -23,6 +23,7 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
+  config.active_storage.variant_processor = nil
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # config.assume_ssl = true
@@ -61,19 +62,19 @@ Rails.application.configure do
   # ==============================================================================
 
   # Configuration pour les liens dans les EMAILS (Celle-ci peut rester ici car ActionMailer est initialisé tôt)
-  #config.action_mailer.default_url_options = {
-    #host: "merchflow-app-4722d7e8b942.herokuapp.com",
-    #protocol: "https"
-  #}
+  config.action_mailer.default_url_options = {
+    host: "merchflow-app-4722d7e8b942.herokuapp.com",
+    protocol: "https"
+  }
 
   # Configuration pour les liens générés dans les CONTROLLERS (flash message)
   # ⚠️ Déplacé dans after_initialize pour ne pas planter la précompilation des assets
-  #config.after_initialize do
-    #Rails.application.routes.default_url_options = {
-      #host: "merchflow-app-4722d7e8b942.herokuapp.com",
-      #protocol: "https"
-    #}
-  #end
+  config.after_initialize do
+    Rails.application.routes.default_url_options = {
+      host: "merchflow-app-4722d7e8b942.herokuapp.com",
+      protocol: "https"
+    }
+  end
 
   # ==============================================================================
 
