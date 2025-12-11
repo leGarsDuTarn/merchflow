@@ -84,6 +84,7 @@ class Admin::UsersController < ApplicationController
 
   def export_data
     @user = User.find(params[:id])
+    authorize [:admin, @user, :export_data?]
     filename = "donnees_utilisateur_#{@user.lastname.downcase}_#{@user.id}.pdf"
     render pdf: filename,
            template: 'admin/users/export_data_pdf',

@@ -1,6 +1,6 @@
 class Admin::DashboardController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_admin!
+  before_action :require_admin
 
   def index
     authorize %i[admin dashboard]
@@ -88,13 +88,5 @@ class Admin::DashboardController < ApplicationController
                                 else
                                   0.0
                                 end
-  end
-
-  private
-
-  def require_admin!
-    unless current_user&.admin?
-      redirect_to root_path, alert: "Accès réservé à l'administration."
-    end
   end
 end

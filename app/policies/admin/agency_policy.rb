@@ -1,5 +1,4 @@
-class Admin::UserPolicy < ApplicationPolicy
-
+class Admin::AgencyPolicy < ApplicationPolicy
   # ==============
   # AUTORISATIONS
   # ==============
@@ -12,31 +11,23 @@ class Admin::UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def new?
+    admin?
+  end
+
   def create?
     admin?
   end
 
-  def new?
-    create?
+  def edit?
+    admin?
   end
 
   def update?
     admin?
   end
 
-  def edit?
-    update?
-  end
-
   def destroy?
-    admin?
-  end
-
-  def toggle_premium?
-    admin?
-  end
-
-  def export_data?
     admin?
   end
 
@@ -45,7 +36,7 @@ class Admin::UserPolicy < ApplicationPolicy
   # ==============
   class Scope < ApplicationPolicy::Scope
     def resolve
-      # Un admin peut voir tous les utilisateurs
+      # Un admin peut voir toutes les agences
       scope.all
     end
   end
