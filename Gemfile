@@ -46,7 +46,7 @@ gem "bootsnap", require: false
 
 gem "devise"
 gem "sassc-rails"
-gem "bootstrap", "~> 5.3"
+gem "bootstrap", "~> 5.3.2"
 gem 'simple_form'
 # Pagination
 gem 'pagy'

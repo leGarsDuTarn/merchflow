@@ -24,7 +24,8 @@
 // =============================
 // BOOTSTRAP
 // =============================
-@import "bootstrap/scss/bootstrap";
+@import "bootstrap";
+
 
 // =============================
 // COMPONENTS
@@ -45,4 +46,3 @@
 @import "pages/dashboard";
 @import "pages/planning";
 @import "pages/work_session";
-
