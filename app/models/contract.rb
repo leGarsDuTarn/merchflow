@@ -44,35 +44,47 @@ class Contract < ApplicationRecord
   # CALCULS FINANCIERS
   # ============================================================
 
-  # --- Frais kilométriques ---
-  def km_payment(kilometers, recommended: false)
-    rate = km_rate.to_f
+  # --- 1. Logique Pure : Calcul des KM effectifs ---
+  # Cette méthode isole la règle métier de la limite et du "recommandé"
+  def compute_km(kilometers, recommended: false)
+    dist = kilometers.to_f
 
-    effective_km =
-      if recommended
-        kilometers
-      elsif km_limit.positive?
-        [kilometers, km_limit.to_f].min
-      else
-        kilometers
-      end
+    # Règle 1 : Si recommandé ou illimité, on paie tout
+    return dist if recommended || km_unlimited
 
-    (effective_km * rate).round(2)
+    # Règle 2 : Si pas de limite définie (0), on paie tout (ou rien selon votre règle, ici tout)
+    return dist if km_limit.nil? || km_limit.zero?
+
+    # Règle 3 : Sinon, on plafonne
+    [dist, km_limit.to_f].min
   end
 
-  # --- IFM (taux dynamique via ifm_rate) ---
+  # --- 2. Calcul Financier : Paiement KM ---
+  # On réutilise la méthode du dessus pour calculer le montant
+  def km_payment(kilometers, recommended: false)
+    return 0.0 unless km_rate.present?
+
+    dist_effective = compute_km(kilometers, recommended: recommended)
+    (dist_effective * km_rate.to_f).round(2)
+  end
+
+  # --- IFM ---
   def ifm(brut_salary)
     rate = (ifm_rate.presence || 0).to_d
     (brut_salary * rate).round(2)
   end
 
-  # --- CP (calculé sur brut + IFM, taux dynamique via cp_rate) ---
+  # --- CP ---
   def cp(brut_salary)
     base = brut_salary
     rate = (cp_rate.presence || 0).to_d
     (base * rate).round(2)
   end
 
+  # --- TOTAL IFM + CP (Manquant dans votre code précédent) ---
+  def ifm_cp_total(brut_salary)
+    ifm(brut_salary) + cp(brut_salary)
+  end
   # ============================================================
   # HELPERS
   # ============================================================
@@ -101,10 +113,14 @@ class Contract < ApplicationRecord
 
   def normalize_decimal_fields
     %i[km_rate night_rate ifm_rate cp_rate].each do |field|
-      value = self[field]
-      next if value.blank?
+      # Récupère la valeur brute avant que Rails ne la transforme en 0.0
+      raw_value = read_attribute_before_type_cast(field)
 
-      self[field] = value.to_s.tr(',', '.')
+      # Ne touche que si c'est une string contenant une virgule
+      next unless raw_value.is_a?(String) && raw_value.include?(',')
+
+      # Remplace et réassigne pour que Rails le prenne en compte
+      self[field] = raw_value.tr(',', '.')
     end
   end
 end

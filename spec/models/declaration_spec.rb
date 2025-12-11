@@ -2,6 +2,16 @@ require 'rails_helper'
 
 RSpec.describe Declaration, type: :model do
 
+  # --- DÉPENDANCES ---
+  before(:each) do
+    # Création l'agence par défaut de la Factory
+    Agency.find_or_create_by!(code: 'actiale', label: 'Actiale')
+
+    # Création de l'agence spécifique utilisée dans les tests de label
+    Agency.find_or_create_by!(code: 'cpm', label: 'CPM')
+  end
+  # -----------------------------------------
+
   # ------------------------------------------------------------
   # FACTORY
   # ------------------------------------------------------------
@@ -52,9 +62,9 @@ RSpec.describe Declaration, type: :model do
         .with_message('le montant doit être positif')
     }
 
-    # --- CORRECTIF ICI ---
     describe 'unicité user/year/month/contract' do
       let(:user) { create(:user) }
+      # Cela fonctionne maintenant car 'actiale' existe grâce au before(:each)
       let(:contract) { create(:contract, user: user) }
 
       let!(:existing_declaration) do
@@ -132,6 +142,8 @@ RSpec.describe Declaration, type: :model do
       end
 
       it 'retourne agency_label du contract si employer_name absent' do
+        # Ici, Agency.find_by(code: 'cpm') trouvera l'agence créée dans le before(:each)
+        # et retournera bien "CPM" au lieu du fallback "Cpm"
         contract = build(:contract, agency: :cpm)
         decl = build(:declaration, employer_name: nil, contract: contract)
         expect(decl.employer).to eq('CPM')
