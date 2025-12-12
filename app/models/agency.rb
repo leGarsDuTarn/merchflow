@@ -28,7 +28,8 @@ class Agency < ApplicationRecord
   end
 
   def format_code
-    self.code = self.label.parameterize if self.label.present? && self.code.blank?
+    return if self.code.blank?
+
     self.code = self.code.downcase.strip
   end
 end
