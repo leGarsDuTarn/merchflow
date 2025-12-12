@@ -23,6 +23,7 @@ class WorkSession < ApplicationRecord
   # ============================================================
   scope :for_month, ->(year, month) {
     where(date: Date.new(year, month).all_month)
+      .order(:date, :start_time)
   }
 
   scope :for_year, ->(year) {

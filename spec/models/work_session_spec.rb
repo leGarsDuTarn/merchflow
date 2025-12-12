@@ -2,6 +2,13 @@ require 'rails_helper'
 
 RSpec.describe WorkSession, type: :model do
 
+  # --- CORRECTIF INDISPENSABLE : CRÉATION DE LA DÉPENDANCE ---
+  before(:each) do
+    # Nécessaire car create(:work_session) -> crée un Contract -> qui valide l'existence de l'Agence
+    Agency.find_or_create_by!(code: 'actiale', label: 'Actiale')
+  end
+  # -----------------------------------------------------------
+
   # ------------------------------------------------------------
   # FACTORY
   # ------------------------------------------------------------
@@ -26,7 +33,6 @@ RSpec.describe WorkSession, type: :model do
     it { should validate_presence_of(:date).with_message('Ce champ est requis') }
     it { should validate_presence_of(:start_time).with_message('Ce champ est requis') }
     it { should validate_presence_of(:end_time).with_message('Ce champ est requis') }
-
     it { should validate_numericality_of(:hourly_rate).is_greater_than(0) }
   end
 
@@ -43,7 +49,6 @@ RSpec.describe WorkSession, type: :model do
       ws = build(:work_session,
                  start_time: Time.zone.parse('12:00'),
                  end_time: Time.zone.parse('11:00'))
-
       ws.valid?
       expect(ws.errors[:end_time]).to be_empty
     end
@@ -57,7 +62,6 @@ RSpec.describe WorkSession, type: :model do
       ws = build(:work_session,
                  start_time: Time.zone.parse('21:00'),
                  end_time: Time.zone.parse('02:00'))
-
       ws.valid?
       expect(ws.end_time.day).to eq(ws.start_time.day + 1)
     end
@@ -71,7 +75,6 @@ RSpec.describe WorkSession, type: :model do
       ws = build(:work_session,
                  start_time: Time.zone.parse('10:00'),
                  end_time: Time.zone.parse('12:30'))
-
       ws.valid?
       expect(ws.duration_minutes).to eq(150)
     end
@@ -85,7 +88,6 @@ RSpec.describe WorkSession, type: :model do
       ws = build(:work_session,
                  start_time: Time.zone.parse('20:00'),
                  end_time: Time.zone.parse('22:00'))
-
       ws.valid?
       expect(ws.night_minutes).to eq(60)
     end
@@ -94,7 +96,6 @@ RSpec.describe WorkSession, type: :model do
       ws = build(:work_session,
                  start_time: Time.zone.parse('23:00'),
                  end_time: Time.zone.parse('05:00'))
-
       ws.valid?
       expect(ws.night_minutes).to eq(360)
     end
@@ -111,10 +112,12 @@ RSpec.describe WorkSession, type: :model do
     end
 
     it 'somme les kilometer_logs si km_custom absent' do
+      # Ici, create(:work_session) fonctionnera grâce au before(:each)
       ws = create(:work_session, km_custom: nil)
       create(:kilometer_log, distance: 10, work_session: ws)
       create(:kilometer_log, distance: 5,  work_session: ws)
 
+      # On force la validation pour déclencher le callback
       ws.valid?
       expect(ws.effective_km).to eq(15.0)
     end
@@ -137,13 +140,12 @@ RSpec.describe WorkSession, type: :model do
 
     it 'calcule day + night' do
       contract = build(:contract, night_rate: 0.20)
-
       ws = build(:work_session,
                  contract: contract,
                  duration_minutes: 120,
                  night_minutes: 60,
                  hourly_rate: 10)
-
+      # 1h jour (10€) + 1h nuit (12€) = 22€
       expect(ws.brut).to eq(22)
     end
   end
@@ -156,9 +158,9 @@ RSpec.describe WorkSession, type: :model do
       ws = build(:work_session,
                  start_time: Time.zone.parse('10:00'),
                  end_time: Time.zone.parse('12:00'),
-                 hourly_rate: 10)
-
+                 hourly_rate: 10) # Brut = 20€
       ws.valid?
+      # 20 - (20 * 0.22) = 15.6
       expect(ws.net).to eq(15.6)
     end
 
@@ -179,11 +181,11 @@ RSpec.describe WorkSession, type: :model do
 
       ws.valid?
 
-      net_ifm = 5.0 * 0.78
-      net_cp  = 5.0 * 0.78
+      net_ifm = 5.0 * 0.78 # 3.9
+      net_cp  = 5.0 * 0.78 # 3.9
+      # Net base = 15.6
 
       expected_total = (ws.net + net_ifm + net_cp + 7.0).round(2)
-
       expect(ws.net_total).to eq(expected_total)
     end
   end
@@ -194,7 +196,6 @@ RSpec.describe WorkSession, type: :model do
   describe 'Méthode total_payment' do
     it 'calcule brut + ifm + cp + km' do
       contract = build(:contract)
-
       ws = build(:work_session,
                  contract: contract,
                  duration_minutes: 120,
@@ -262,6 +263,7 @@ RSpec.describe WorkSession, type: :model do
     end
 
     it 'trie les missions par date et start_time' do
+      # Note : Pour que ce test passe, le scope for_month doit avoir .order(:date, :start_time)
       expect(WorkSession.for_month(2025, 2)).to eq([ws1, ws2])
     end
 
