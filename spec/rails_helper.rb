@@ -39,6 +39,10 @@ RSpec.configure do |config|
   # Permet de lier la gem Pundit aux tests de Policy
   config.include Pundit::Matchers, type: :policy
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
+
+  # Permet d'utiliser 'sign_in' dans les request specs
+  config.include Devise::Test::IntegrationHelpers, type: :request
+
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
   ]
