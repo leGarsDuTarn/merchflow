@@ -2,8 +2,8 @@ class FveInvitation < ApplicationRecord
   # ============================================================
   # CALLBACKS
   # ============================================================
-  before_create :generate_token
-  before_create :set_expiration
+  before_validation :generate_token, on: :create
+  before_validation :set_expiration, on: :create
 
   # ============================================================
   # VALIDATIONS
@@ -11,7 +11,12 @@ class FveInvitation < ApplicationRecord
 
   validates :email,
             presence: { message: 'Vous devez renseigner un email.' },
-            format: { with: URI::MailTo::EMAIL_REGEXP, message: 'Format email invalide.' }
+            # allow_blank: true pour éviter le conflit d'erreurs
+            format: {
+              with: URI::MailTo::EMAIL_REGEXP,
+              message: 'Format email invalide.',
+              allow_blank: true
+            }
 
   validates :token,
             presence: { message: 'Le token d’invitation est manquant.' },
