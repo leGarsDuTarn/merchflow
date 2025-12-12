@@ -29,7 +29,8 @@ class Admin::UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    admin?
+    # Ne peut pas détruire l'utilisateur cible (record) s'il est lui-même (user).
+    admin? && user != record
   end
 
   def toggle_premium?
