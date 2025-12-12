@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :unavailability do
-    user { nil }
-    date { "2025-11-28" }
-    notes { "MyText" }
+    association :user
+    date { Date.tomorrow }
+    notes { "CP" }
   end
 end
