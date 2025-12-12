@@ -1,6 +1,12 @@
 require "rails_helper"
 
 RSpec.describe User, type: :model do
+
+  before(:each) do
+    # Création de l'agence par défaut pour que les factories de Contract fonctionnent
+    Agency.find_or_create_by!(code: 'actiale', label: 'Actiale')
+  end
+
   # ------------------------------------------------------------
   # FACTORY
   # ------------------------------------------------------------
