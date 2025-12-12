@@ -305,6 +305,30 @@ class User < ApplicationRecord
             end
   end
 
+  # ============================================================
+  # WRAPPERS POUR LE DASHBOARD (Raccourcis "Mois en cours")
+  # ============================================================
+
+  def sessions_this_month
+    work_sessions_for_month(Date.current)
+  end
+
+  def total_hours_this_month
+    total_hours_for_month(Date.current)
+  end
+
+  def total_brut_this_month
+    total_brut_for_month(Date.current)
+  end
+
+  def net_estimated_this_month
+    net_estimated_for_month(Date.current)
+  end
+
+  def net_total_estimated_this_month
+    net_total_estimated_for_month(Date.current)
+  end
+
   private
 
   def set_default_role
