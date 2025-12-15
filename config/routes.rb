@@ -55,6 +55,11 @@ Rails.application.routes.draw do
   resources :unavailabilities, only: %i[new create update destroy]
 
   # ============================================================
+  # FRAIS REEL
+  # ============================================================
+  resources :kilometer_logs, only: [:index]
+
+  # ============================================================
   # PROPOSAL
   # ============================================================
   resources :proposals, only: %i[index update destroy], as: :merch_proposals

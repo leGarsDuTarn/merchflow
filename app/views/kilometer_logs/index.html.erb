@@ -1,0 +1,126 @@
+<div class="container my-5">
+
+  <%# --- HEADER & SÉLECTEUR D'ANNÉE --- %>
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+      <h2 class="fw-bold text-dark m-0">Mes Frais Réels</h2>
+      <p class="text-muted small m-0">Suivi kilométrique pour déclaration fiscale</p>
+    </div>
+
+    <div class="dropdown">
+      <button class="btn btn-white border shadow-sm rounded-pill px-4 dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
+        Année <%= @year %>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-4">
+       <% ((Date.current.year - 2)..Date.current.year + 2).to_a.reverse.each do |y| %>
+          <li>
+            <%= link_to y, kilometer_logs_path(year: y), class: "dropdown-item #{'active bg-orange' if y == @year}" %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <%# --- KPIs (KEY PERFORMANCE INDICATORS) --- %>
+  <div class="row g-4 mb-5">
+    <%# Carte 1 : Montant Déductible (Le plus important) %>
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-orange text-white overflow-hidden position-relative">
+        <div class="card-body p-4 position-relative" style="z-index: 2;">
+          <h6 class="text-white-50 text-uppercase fw-bold mb-2" style="font-size: 0.75rem;">Montant estimé déductible</h6>
+          <h2 class="display-5 fw-bold mb-0">
+            <%= number_to_currency(@total_deductible, unit: "€", format: "%n %u") %>
+          </h2>
+          <p class="small text-white-50 mt-2 mb-0">
+            Basé sur vos taux kilométriques saisis.
+          </p>
+        </div>
+        <%# Cercle décoratif %>
+        <div class="position-absolute bg-white opacity-10 rounded-circle" style="width: 150px; height: 150px; top: -50px; right: -50px;"></div>
+      </div>
+    </div>
+
+    <%# Carte 2 : Total KM %>
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-body p-4 d-flex flex-column justify-content-center">
+          <div class="d-flex align-items-center mb-2">
+            <div class="bg-orange-subtle text-orange rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+              <i class="fa-solid fa-road fs-5"></i>
+            </div>
+            <h6 class="text-muted text-uppercase fw-bold m-0" style="font-size: 0.75rem;">Distance Totale</h6>
+          </div>
+          <h3 class="fw-bold text-dark m-0"><%= @total_distance.round(2) %> km</h3>
+        </div>
+      </div>
+    </div>
+
+    <%# Carte 3 : Nombre de trajets %>
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-body p-4 d-flex flex-column justify-content-center">
+           <div class="d-flex align-items-center mb-2">
+            <div class="bg-light text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+              <i class="fa-solid fa-car fs-5"></i>
+            </div>
+            <h6 class="text-muted text-uppercase fw-bold m-0" style="font-size: 0.75rem;">Trajets saisis</h6>
+          </div>
+          <h3 class="fw-bold text-dark m-0"><%= @logs.count %></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# --- RÉPARTITION MENSUELLE --- %>
+  <h5 class="fw-bold text-dark mb-3">Détail par mois</h5>
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4 py-3 text-muted small text-uppercase fw-bold border-0">Mois</th>
+            <th class="py-3 text-muted small text-uppercase fw-bold border-0 text-end">Distance</th>
+            <th class="pe-4 py-3 text-muted small text-uppercase fw-bold border-0 text-end">Valeur</th>
+            <th class="pe-4 py-3 border-0"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (1..12).each do |m| %>
+            <% data = @monthly_data.find { |d| d.month.to_i == m } %>
+            <% has_data = data.present? %>
+            <tr class="<%= 'opacity-50' unless has_data %>" style="<%= 'cursor: pointer;' if has_data %>" onclick="<%= "window.location='#{kilometer_logs_path(year: @year, month: m)}'" if has_data %>">
+
+              <td class="ps-4 py-3 fw-bold text-capitalize">
+                <%= I18n.l(Date.new(@year, m, 1), format: "%B") %>
+              </td>
+
+              <td class="py-3 text-end">
+                <% if has_data %>
+                  <span class="badge bg-light text-dark border rounded-pill px-3">
+                    <%= data.total_km.round(1) %> km
+                  </span>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+
+              <td class="pe-4 py-3 text-end fw-bold text-orange">
+                <% if has_data %>
+                  <%= number_to_currency(data.total_amount, unit: "€", format: "%n %u") %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+
+              <td class="pe-4 text-end">
+                <% if has_data %>
+                   <i class="fa-solid fa-chevron-right text-muted small"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
