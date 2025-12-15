@@ -15,16 +15,16 @@
         </h1>
 
         <p class="lead text-muted mb-4" style="max-width: 500px; margin: 0 auto 0 0;">
-          MerchFlow est l'outil tout-en-un qui connecte les <strong>Merchandisers</strong> aux <strong>Forces de Vente</strong>.
+          MerchFlow est l'outil tout-en-un qui connecte les <strong>Merchandisers</strong> & <strong>Animateurs</strong> aux <strong>Forces de Vente</strong>.
           <br>
           Automatisez vos calculs, augmentez votre activité et simplifiez votre administratif.
         </p>
 
         <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start mb-4">
-          <%= link_to new_user_registration_path, class: "btn btn-orange btn-lg rounded-pill px-2" do %>
-            Commencer maintenant <i class="fa-solid fa-arrow-right ms-2"></i>
+          <%= link_to new_user_registration_path, class: "btn btn-orange btn-lg me-2 rounded-pill px-4" do %>
+            S'inscrire gratuitement
           <% end %>
-          <%= link_to new_user_session_path, class: "btn btn-gray-outline btn-lg rounded-pill px-2" do %>
+          <%= link_to new_user_session_path, class: "btn btn-orange-outline btn-lg rounded-pill px-4" do %>
             Se connecter
           <% end %>
         </div>
@@ -71,7 +71,7 @@
             <li class="mb-2"><i class="fa-solid fa-calendar-days text-orange me-2"></i> Votre planning en un coup d'œil.</li>
             <li class="mb-2"><i class="fa-solid fa-file-invoice text-orange me-2"></i> Relevé auto. d'actualisation France Travail.</li>
           </ul>
-          <%= link_to "Je suis Merch", new_user_registration_path(role: 'merch'), class: "btn btn-orange rounded-pill fw-bold px-4" %>
+          <%= link_to "Je suis Merchandiseur / Animateur", new_user_registration_path(role: 'merch'), class: "btn btn-orange rounded-pill fw-bold px-4" %>
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@
             <li class="mb-2"><i class="fa-solid fa-bolt text-orange me-2"></i> Augmentez votre réactivité auprès de vos clients.</li>
             <li class="mb-2"><i class="fa-solid fa-chart-line text-orange me-2"></i> Suivi des coûts et performances</li>
           </ul>
-          <%= link_to "Je suis FVE / Chef de secteur", contact_path, class: "btn btn-orange rounded-pill fw-bold px-4" %>
+          <%= link_to "Je suis une Agence / Chef de secteur", contact_path, class: "btn btn-orange rounded-pill fw-bold px-4" %>
         </div>
       </div>
     </div>
