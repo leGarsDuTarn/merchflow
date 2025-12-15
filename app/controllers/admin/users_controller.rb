@@ -84,11 +84,16 @@ class Admin::UsersController < ApplicationController
 
   def export_data
     @user = User.find(params[:id])
-    authorize [:admin, @user, :export_data?]
-    filename = "donnees_utilisateur_#{@user.lastname.downcase}_#{@user.id}.pdf"
-    render pdf: filename,
-           template: 'admin/users/export_data_pdf',
-           layout: 'pdf'
+    authorize [:admin, @user], :export_data? # Ligne Pundit corrigée
+
+    # 1. Création de l'instance du PDF avec Prawn
+    pdf = UserPdf.new(@user)
+
+    # 2. Envoi du fichier généré (binaire)
+    send_data pdf.render,
+              filename: "donnees_rgpd_#{@user.lastname.downcase}_#{@user.id}.pdf",
+              type: "application/pdf",
+              disposition: "attachment" # Force le téléchargement du fichier
   end
 
   private

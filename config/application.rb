@@ -21,6 +21,8 @@ module Merchflow
     config.i18n.available_locales = [:fr, :en]
     config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]
 
+    config.autoload_paths << Rails.root.join('app', 'pdfs')
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
