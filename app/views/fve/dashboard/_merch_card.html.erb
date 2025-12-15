@@ -7,14 +7,20 @@
 
     <div class="d-flex justify-content-between align-items-start mb-3">
       <div>
-        <%# --- LOGIQUE NOM --- %>
-        <% if is_premium_fve %>
-          <%# PREMIUM : Nom complet %>
+        <%# --- LOGIQUE NOM CORRIGÉE --- %>
+        <%# On utilise ici le champ 'allow_identity' de ton schema %>
+        <% if is_premium_fve && merch_settings.allow_identity %>
+          <%# CAS 1 : Premium + Le merch accepte de montrer son identité %>
           <h5 class="fw-bold text-orange mb-1">
             <%= merch.firstname %> <%= merch.lastname %>
           </h5>
+        <% elsif is_premium_fve %>
+          <%# CAS 2 : Premium MAIS identité masquée -> On affiche le Username en clair %>
+          <h5 class="fw-bold text-orange mb-1">
+            <%= merch.username %>
+          </h5>
         <% else %>
-          <%# NON-PREMIUM : Username flouté %>
+          <%# CAS 3 : Non-Premium -> Username flouté %>
           <h5 class="fw-bold text-orange mb-1" style="filter: blur(5px); user-select: none; opacity: 0.8;">
             <%= merch.username %>
           </h5>
