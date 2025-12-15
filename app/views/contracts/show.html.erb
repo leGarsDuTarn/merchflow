@@ -1,133 +1,117 @@
 <div class="container my-5">
 
-  <%# --- HEADER : TITRE + ACTIONS --- %>
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center">
-      <%= link_to contracts_path, class: "btn btn-white border shadow-sm rounded-circle me-3", style: "width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;" do %>
-        <i class="fa-solid fa-arrow-left text-muted"></i>
-      <% end %>
-      <h1 class="fw-bold text-dark m-0 fs-3"><%= @contract.name.presence || "Contrat" %></h1>
-    </div>
+  <%# --- CONTAINER CENTRÉ (Pour limiter la largeur sur PC) --- %>
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-10">
 
-    <div class="d-flex gap-2">
-      <%= link_to edit_contract_path(@contract), class: "btn btn-white border shadow-sm rounded-3 text-orange", title: "Modifier" do %>
-        <i class="fa-solid fa-pen-to-square"></i>
-      <% end %>
-      <%= link_to contract_path(@contract), data: { turbo_method: :delete, turbo_confirm: "Supprimer ?" }, class: "btn btn-white border shadow-sm rounded-3 text-danger", title: "Supprimer" do %>
-        <i class="fa-solid fa-trash-can"></i>
-      <% end %>
-    </div>
-  </div>
+      <%# --- HEADER PREMIUM : RETOUR + TITRE CENTRÉ --- %>
+      <div class="position-relative d-flex justify-content-center align-items-center mb-5">
 
-  <%# --- CARTE INFO CONTRAT (Version Compacte) --- %>
-  <div class="card shadow-sm rounded-4 border-0 mb-5 bg-white">
-    <div class="card-body p-4">
-      <div class="d-flex flex-wrap gap-3 text-muted small mb-3">
-        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
-          <i class="fa-solid fa-building me-1 text-orange"></i> <%= @contract.agency_label %>
-        </span>
-        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
-          <i class="fa-solid fa-file-contract me-1 text-orange"></i> <%= @contract.contract_type_label %>
-        </span>
-        <% if @contract.km_rate.present? %>
-          <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
-            <i class="fa-solid fa-gas-pump me-1 text-orange"></i> <%= @contract.km_rate %> €/km
-          </span>
-        <% end %>
-      </div>
-
-      <% if @contract.notes.present? %>
-        <div class="p-3 bg-light rounded-3">
-          <small class="text-muted d-block fw-bold mb-1">Notes</small>
-          <p class="m-0 text-dark small"><%= @contract.notes %></p>
+        <%# 1. Bouton Retour (Positionné en absolu à gauche) %>
+        <div class="position-absolute start-0">
+          <%= link_to contracts_path,
+                      class: "btn btn-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center",
+                      style: "width: 42px; height: 42px;",
+                      "aria-label": "Retour à la liste des contrats" do %>
+            <i class="fa-solid fa-arrow-left text-muted"></i>
+          <% end %>
         </div>
-      <% end %>
-    </div>
-  </div>
 
-  <%# --- NAVIGATION MENSUELLE --- %>
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <%= link_to contract_path(@contract, year: @prev_date.year, month: @prev_date.month), class: "btn btn-white shadow-sm rounded-3 border" do %>
-      <i class="fa-solid fa-chevron-left text-orange"></i>
-    <% end %>
+        <%# 2. Titre et Badge (Centrés mathématiquement) %>
+        <div class="text-center">
+          <h1 class="fw-bold text-dark m-0 fs-3">
+            Mes missions
+          </h1>
+          <%# Le badge Agence juste en dessous %>
+          <span class="badge bg-orange-subtle text-orange border border-orange-subtle rounded-pill mt-1 fw-normal">
+            <%= @contract.agency_label %>
+          </span>
+        </div>
 
-    <div class="text-center">
-      <h4 class="fw-bold text-dark m-0 text-capitalize">
-        <%= I18n.l @target_date, format: "%B %Y" %>
-      </h4>
-      <% if @monthly_sessions.any? %>
-        <small class="text-muted">
-          <%= @monthly_sessions.count %> mission<%= 's' if @monthly_sessions.count > 1 %> • <%= @monthly_hours.round(1) %>h
-        </small>
-      <% end %>
-    </div>
-
-    <% is_next_month_in_future = @next_date.beginning_of_month > Date.current.beginning_of_month %>
-    <%= link_to contract_path(@contract, year: @next_date.year, month: @next_date.month), class: "btn btn-white shadow-sm rounded-3 border #{'disabled' if is_next_month_in_future}" do %>
-      <i class="fa-solid fa-chevron-right text-orange"></i>
-    <% end %>
-  </div>
-
-  <%# --- LISTE DES MISSIONS --- %>
-  <% if @monthly_sessions.any? %>
-
-    <div class="card border-0 shadow-sm rounded-4 bg-orange-subtle mb-4">
-      <div class="card-body p-3 d-flex justify-content-between align-items-center">
-        <span class="fw-bold text-orange small text-uppercase ls-1">Total du mois</span>
-        <span class="fw-bold text-orange fs-4"><%= number_to_currency(@monthly_total_payment, unit: "€", format: "%n %u") %></span>
       </div>
-    </div>
 
-    <div class="list-group shadow-sm rounded-4 border-0">
-      <% @monthly_sessions.each do |ws| %>
-        <%= link_to work_session_path(ws), class: "list-group-item list-group-item-action p-3 border-0 border-bottom d-flex justify-content-between align-items-center bg-white" do %>
-
-          <div class="d-flex align-items-center">
-            <div class="rounded-3 bg-light text-center py-2 px-3 me-3" style="min-width: 60px;">
-              <span class="d-block fw-bold text-dark fs-5 lh-1"><%= ws.date.day %></span>
-              <span class="d-block text-muted small text-uppercase" style="font-size: 0.7rem;"><%= I18n.l(ws.date, format: "%b") %></span>
-            </div>
-
-            <div>
-              <h6 class="fw-bold text-dark mb-1 text-truncate" style="max-width: 180px;">
-                <%= ws.store.presence || "Mission" %>
-              </h6>
-              <div class="d-flex align-items-center text-muted small">
-                <i class="fa-regular fa-clock me-1"></i>
-                <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
-                <span class="mx-2">•</span>
-                <%= (ws.duration_minutes / 60.0).round(1) %>h
-              </div>
-            </div>
-          </div>
-
-          <div class="text-end">
-            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold">
-              <%= number_to_currency(ws.total_payment, unit: "€", format: "%n %u") %>
-            </span>
-          </div>
-
+      <%# --- NAVIGATION MENSUELLE --- %>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <%= link_to contract_path(@contract, year: @prev_date.year, month: @prev_date.month), class: "btn btn-white shadow-sm rounded-3 border" do %>
+          <i class="fa-solid fa-chevron-left text-orange"></i>
         <% end %>
-      <% end %>
-    </div>
 
-  <% else %>
+        <div class="text-center">
+          <h4 class="fw-bold text-dark m-0 text-capitalize">
+            <%= I18n.l @target_date, format: "%B %Y" %>
+          </h4>
+          <% if @monthly_sessions.any? %>
+            <small class="text-muted">
+              <%= @monthly_sessions.count %> mission<%= 's' if @monthly_sessions.count > 1 %> • <%= @monthly_hours.round(1) %>h
+            </small>
+          <% end %>
+        </div>
 
-    <div class="card border-dashed border-2 bg-light rounded-4 p-5 text-center mb-4">
-      <div class="mb-3 text-muted opacity-50">
-        <i class="fa-regular fa-calendar-plus fa-3x"></i>
+        <% is_next_month_in_future = @next_date.beginning_of_month > Date.current.beginning_of_month %>
+        <%= link_to contract_path(@contract, year: @next_date.year, month: @next_date.month), class: "btn btn-white shadow-sm rounded-3 border #{'disabled' if is_next_month_in_future}" do %>
+          <i class="fa-solid fa-chevron-right text-orange"></i>
+        <% end %>
       </div>
-      <h6 class="fw-bold text-muted">Aucune mission ce mois-ci</h6>
-      <p class="small text-muted mb-0">Ajoutez des missions pour voir apparaître vos gains.</p>
+
+      <%# --- LISTE DES MISSIONS --- %>
+      <% if @monthly_sessions.any? %>
+
+        <div class="list-group shadow-sm rounded-4 border-0 mb-4">
+          <% @monthly_sessions.each do |ws| %>
+            <%= link_to work_session_path(ws), class: "list-group-item list-group-item-action p-3 border-0 border-bottom d-flex justify-content-between align-items-center bg-white" do %>
+
+              <div class="d-flex align-items-center">
+                <%# Date Box %>
+                <div class="rounded-3 bg-light text-center py-2 px-3 me-3" style="min-width: 60px;">
+                  <span class="d-block fw-bold text-dark fs-5 lh-1"><%= ws.date.day %></span>
+                  <span class="d-block text-muted small text-uppercase" style="font-size: 0.7rem;"><%= I18n.l(ws.date, format: "%b") %></span>
+                </div>
+
+                <%# Infos %>
+                <div>
+                  <h6 class="fw-bold text-dark mb-1 text-truncate" style="max-width: 180px;">
+                    <%= ws.store.presence || "Mission" %>
+                  </h6>
+                  <div class="d-flex align-items-center text-muted small">
+                    <i class="fa-regular fa-clock me-1"></i>
+                    <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
+                    <span class="mx-2">•</span>
+                    <%= (ws.duration_minutes / 60.0).round(1) %>h
+                  </div>
+                </div>
+              </div>
+
+              <%# Prix %>
+              <div class="text-end">
+                <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold">
+                  <%= number_to_currency(ws.total_payment, unit: "€", format: "%n %u") %>
+                </span>
+              </div>
+
+            <% end %>
+          <% end %>
+        </div>
+
+      <% else %>
+
+        <%# Empty State du mois %>
+        <div class="card border-dashed border-2 bg-light rounded-4 p-5 text-center mb-4">
+          <div class="mb-3 text-muted opacity-50">
+            <i class="fa-regular fa-calendar-plus fa-3x"></i>
+          </div>
+          <h6 class="fw-bold text-muted">Aucune mission ce mois-ci</h6>
+          <p class="small text-muted mb-0">Utilisez le bouton ci-dessous pour ajouter une mission.</p>
+        </div>
+
+      <% end %>
+
+      <%# --- BOUTON AJOUTER --- %>
+      <div class="container d-flex justify-content-center">
+        <%= link_to new_contract_work_session_path(@contract), class: "btn btn-orange rounded-pill py-3 fw-bold shadow-sm" do %>
+          <i class="fa-solid fa-plus me-2"></i> Ajouter une mission
+        <% end %>
+      </div>
+
     </div>
-
-  <% end %>
-
-  <%# --- BOUTON AJOUTER (Fixe ou bas de page) --- %>
-  <div class="d-grid mt-4">
-    <%= link_to new_contract_work_session_path(@contract), class: "btn btn-orange rounded-pill py-3 fw-bold shadow-sm" do %>
-      <i class="fa-solid fa-plus me-2"></i> Ajouter une mission
-    <% end %>
   </div>
-
 </div>
