@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   # ============================================================
   # PARAMÈTRES PRESTATAIRE (MERCH SETTINGS)
   # ============================================================
-  resource :merch_settings, path: 'settings/merch', only: %i[show update] do
+  resource :merch_settings, path: 'settings/merch', only: %i[edit show update] do
     # On utilise 'patch' au lieu de 'post' pour correspondre au JS
     patch :toggle_identity
     patch :toggle_share_address

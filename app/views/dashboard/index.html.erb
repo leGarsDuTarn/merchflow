@@ -18,8 +18,6 @@
     <% end %>
   </div>
 
-  <%# La notification d'opportunités n'est pas réactivée ici, car elle était désactivée dans l'original. %>
-
   <div class="row g-3 mb-5">
     <div class="col-6 col-lg-4">
       <div class="card border-0 shadow-sm p-3 rounded-4 h-100 text-center bg-white">
@@ -50,6 +48,49 @@
     </div>
   </div>
 
+  <%# --- 3. NOTIFICATION PREMIUM : BOOST D'OPPORTUNITÉS --- %>
+  <% if @show_visibility_alert %>
+    <div class="card border-0 shadow-sm rounded-4 mb-5 p-0 position-relative overflow-hidden bg-white animate__animated animate__fadeIn">
+      <div class="position-absolute start-0 top-0 bottom-0 bg-orange" style="width: 6px;"></div>
+
+      <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+
+          <div class="d-flex align-items-center mb-3 mb-md-0">
+            <div class="rounded-circle bg-orange-subtle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 50px; height: 50px;">
+              <i class="fa-solid fa-rocket text-orange fs-4"></i>
+            </div>
+            <div class="ms-3">
+              <h6 class="fw-bold text-dark mb-1">Boostez vos opportunités de mission</h6>
+              <p class="text-muted small mb-0">
+                Les profils visibles reçoivent <strong>plus de propositions</strong>. Partagez votre planning & votre identité pour être contacté.
+              </p>
+            </div>
+          </div>
+
+          <div class="ms-md-4 w-100 w-md-auto text-center">
+            <%
+              # LOGIQUE DE ROUTE CORRIGÉE pour la ressource singulière :
+              if current_user.merch_setting.present?
+                # Helper edit singulier sans argument
+                target_path = merch_settings_path
+              else
+                # Helper new singulier
+                target_path = merch_settings_path
+              end
+            %>
+
+            <%= link_to target_path, class: "btn btn-gray rounded-pill px-4 py-2 fw-bold shadow-sm w-md-auto", style: "font-size: 0.9rem;" do %>
+              Activer ma visibilité
+            <% end %>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  <% end %>
+  <%# --------------------------------------------------- %>
+
   <div class="row mt-4">
     <div class="col-12 mb-4 d-flex align-items-center">
       <div class="bg-orange rounded-pill me-2" style="width: 4px; height: 24px;"></div>
@@ -57,7 +98,7 @@
     </div>
 
     <% if @by_agency.any? %>
-      <div class="row g-4">
+      <div class="row g-2">
         <% @by_agency.each do |stats| %>
           <div class="col-12 col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-white">
@@ -70,7 +111,7 @@
                   </span>
                 </div>
                 <div class="text-end">
-                  <span class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Net estimé</span>
+                  <span class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Virement estimé</span>
                   <span class="h3 fw-bold text-orange mb-0">
                     <%= number_to_currency(stats[:total_transfer], unit: "€", format: "%n %u") %>
                   </span>
@@ -134,8 +175,7 @@
     <% end %>
   </div>
 
-<div class="row justify-content-center mt-5 mb-5">
-
+  <div class="row justify-content-center mt-5 mb-5">
     <div class="col-12 col-md-8 col-lg-6">
 
       <div class="d-grid gap-3 d-md-flex justify-content-center">
@@ -149,7 +189,7 @@
             <i class="fa-solid fa-briefcase me-2"></i>Ajouter Mission
           <% end %>
         <% else %>
-          <button class="btn btn-light rounded-pill px-4 py-1 fw-bold text-muted" disabled>
+          <button class="btn btn-light rounded-pill px-4 py-3 fw-bold text-muted" disabled>
             Ajouter Mission
           </button>
         <% end %>

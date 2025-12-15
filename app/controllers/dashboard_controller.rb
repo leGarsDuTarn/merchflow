@@ -49,5 +49,20 @@ class DashboardController < ApplicationController
     # L'ancienne variable @pending_proposals n'est plus nécessaire ici.
 
     @by_agency = @user.total_by_agency_for_month(@target_date) || []
+
+    # ==========================================================
+    # LOGIQUE D'ALERTE VISIBILITÉ (POUR MERCH)
+    # ==========================================================
+    @show_visibility_alert = false
+
+    if @user.merch?
+      # Récupération des settings ou réation d'un vide en mémoire pour éviter le crash nil
+      settings = @user.merch_setting || @user.build_merch_setting
+
+      # L'alerte s'affiche SI : le planning n'est pas partagé OU l'identité est masquée
+      if !settings.share_planning || !settings.allow_identity
+        @show_visibility_alert = true
+      end
+    end
   end
 end
