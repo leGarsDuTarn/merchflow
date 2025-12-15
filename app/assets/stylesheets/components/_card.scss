@@ -13,3 +13,11 @@
   .border-dashed {
     border-style: dashed !important;
   }
+
+  .card-hover-effect .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover-effect:hover .card {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.1) !important;
+  }

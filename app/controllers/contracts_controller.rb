@@ -7,6 +7,28 @@ class ContractsController < ApplicationController
   end
 
   def show
+    # 1. Récupération de la date cible (Mois/Année) depuis les params ou par défaut aujourd'hui
+    year = (params[:year] || Date.current.year).to_i
+    month = (params[:month] || Date.current.month).to_i
+
+    begin
+      @target_date = Date.new(year, month, 1)
+    rescue Date::Error
+      @target_date = Date.current.beginning_of_month
+    end
+
+    # 2. Variables pour la navigation (Mois précédent / suivant)
+    @prev_date = @target_date - 1.month
+    @next_date = @target_date + 1.month
+
+    # 3. Récupération des missions UNIQUEMENT pour ce mois-ci
+    @monthly_sessions = @contract.work_sessions
+                                 .where(date: @target_date.all_month)
+                                 .order(date: :desc)
+
+    # 4. Calculs rapides pour le résumé du mois (Optionnel mais très Premium)
+    @monthly_total_payment = @monthly_sessions.sum(&:total_payment)
+    @monthly_hours = @monthly_sessions.sum(&:duration_minutes) / 60.0
   end
 
   def new
