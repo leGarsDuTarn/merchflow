@@ -1,166 +1,161 @@
 <div class="container mt-4 mb-5">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <%= link_to dashboard_path(year: @prev_year, month: @prev_month), class: "btn btn-orange-outline rounded-3" do %>
-      <i class="fa-solid fa-chevron-left"></i>
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <%= link_to dashboard_path(year: @prev_year, month: @prev_month), class: "btn btn-white shadow-sm rounded-3 border" do %>
+      <i class="fa-solid fa-chevron-left text-orange"></i>
     <% end %>
 
-    <h3 class="fw-bold text-orange text-center m-0 text-capitalize">
-      <%= I18n.l @target_date, format: "%B %Y" %>
-    </h3>
+    <div class="text-center">
+      <h3 class="fw-bold text-dark m-0 text-capitalize">
+        <%= I18n.l @target_date, format: "%B %Y" %>
+      </h3>
+      <small class="text-muted">Tableau de bord</small>
+    </div>
 
     <% is_next_month_in_future = (@target_date + 1.month).beginning_of_month > Date.current.beginning_of_month %>
-    <%= link_to dashboard_path(year: @next_year, month: @next_month), class: "btn btn-orange-outline rounded-3 #{'disabled' if is_next_month_in_future}" do %>
-      <i class="fa-solid fa-chevron-right"></i>
+    <%= link_to dashboard_path(year: @next_year, month: @next_month), class: "btn btn-white shadow-sm rounded-3 border #{'disabled' if is_next_month_in_future}" do %>
+      <i class="fa-solid fa-chevron-right text-orange"></i>
     <% end %>
   </div>
 
-  <p class="text-center text-muted mb-5">
-    Votre activité du mois en un coup d'œil.
-  </p>
+  <%# La notification d'opportunités n'est pas réactivée ici, car elle était désactivée dans l'original. %>
 
-
-  <%# ========================================================== %>
-  <%# NOTIFICATION D'OPPORTUNITÉS (MIS EN COMMENTAIRE POUR LE MVP V1) %>
-  <%# ========================================================== %>
-  <%# N'affiche QUE si c'est le mois en cours ET qu'il y a des propositions %>
-  <%# if @is_current_month && @pending_proposals_count.to_i > 0 %>
-    <%# <div class="row mb-4 animate__animated animate__fadeIn">
-      <%# div %> <%# class="col-12"> %>
-        <%# div %> <%# class="card shadow-sm p-4 rounded-4 text-center border border-orange position-relative" style="background-color: #fff;"> %>
-
-          <%# <div %> <%# class="d-flex justify-content-center align-items-center flex-column flex-md-row"> %>
-            <%# div %> <%# class="me-md-4 mb-3 mb-md-0"> %>
-             <%#  <span %> <%# class="display-6 fw-bold text-orange"> %>
-                <%#= @pending_proposals_count %>
-             <%#  </span> %>
-            <%# /div> %>
-            <%# <div class="text-md-start"> %>
-              <%# <h5 class="fw-bold text-dark mb-1"> %>
-                <%# Nouvelle %><%#= 's' if @pending_proposals_count > 1 %> <%# opportunité %><%#= 's' if @pending_proposals_count > 1 %> <%# ! %>
-              <%# </h5> %>
-              <%# <p class="text-muted mb-2 small"> %>
-                <%# Vous avez reçu des propositions de mission qui attendent votre réponse. %>
-             <%#  </p> %>
-              <%#= link_to merch_proposals_path, class: "btn btn-orange btn-sm fw-bold px-4 rounded-pill" do %>
-               <%#  Voir les propositions %> <%# <i class="fa-solid fa-arrow-right ms-2"></i> %>
-              <%# end %>
-            <%# /div> %>
-          <%# </div> %>
-
-          <%# <div data-controller="vibration" data-vibration-count-value=" %><%#= @pending_proposals_count.to_i %><%# "></div> %>
-       <%#  </div> %>
-     <%#  </div> %>
-    <%# </div> %>
-  <%# end %>
-
-
-  <div class="row g-4">
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Heures</h5>
-        <p class="display-6 fw-bold mt-2">
-          <%= @total_hours_month.to_i %> h
-        </p>
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-lg-4">
+      <div class="card border-0 shadow-sm p-3 rounded-4 h-100 text-center bg-white">
+        <span class="text-muted small text-uppercase fw-bold ls-1">Heures</span>
+        <p class="display-6 fw-bold text-dark mb-0 mt-2"><%= @total_hours_month.to_i %><small class="fs-6 text-muted ms-1">h</small></p>
       </div>
     </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Brut</h5>
-        <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(@total_brut_month, unit: "€", format: "%n %u") %>
-        </p>
+    <div class="col-6 col-lg-4">
+      <div class="card border-0 shadow-sm p-3 rounded-4 h-100 text-center bg-white">
+        <span class="text-muted small text-uppercase fw-bold ls-1">Distance</span>
+        <p class="display-6 fw-bold text-dark mb-0 mt-2"><%= @km_month.to_i %><small class="fs-6 text-muted ms-1">km</small></p>
       </div>
     </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Kilomètres</h5>
-        <p class="display-6 fw-bold mt-2">
-          <%= @km_month.to_i %> km
-        </p>
-      </div>
-    </div>
-  </div>
+    <div class="col-12 col-lg-4">
+      <div class="card border-0 shadow-sm p-3 rounded-4 h-100 text-center bg-orange-subtle position-relative overflow-hidden">
+        <div class="position-absolute top-0 end-0 p-3 opacity-25 text-orange">
+          <i class="fa-solid fa-wallet fa-3x"></i>
+        </div>
 
-  <div class="row g-4 mt-4">
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Frais km remboursés</h5>
-        <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(@km_payment_month, unit: "€", format: "%n %u") %>
-        </p>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Net estimé</h5>
-        <p class="display-6 fw-bold mt-2">
-          <%= number_to_currency(@net_estimated_month, unit: "€", format: "%n %u") %>
-        </p>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h5 class="text-muted mb-0">Net total estimé (km inclus)</h5>
-        <p class="display-6 fw-bold mt-2 text-orange">
+        <span class="text-orange small text-uppercase fw-bold ls-1">Net Total Estimé</span>
+        <p class="display-5 fw-bold text-orange mb-0 mt-2">
           <%= number_to_currency(@net_total_estimated_month, unit: "€", format: "%n %u") %>
         </p>
+        <small class="text-muted" style="font-size: 0.8rem;">(Salaire Net + Indemnités KM)</small>
       </div>
     </div>
   </div>
 
-  <div class="row g-4 mt-4">
-    <div class="col-12">
-      <div class="card shadow-sm p-4 rounded-4">
-        <h5 class="fw-bold text-orange mb-3 text-center">
-          Répartition par agence (<%= I18n.l @target_date, format: "%B" %>)
-        </h5>
+  <div class="row mt-4">
+    <div class="col-12 mb-4 d-flex align-items-center">
+      <div class="bg-orange rounded-pill me-2" style="width: 4px; height: 24px;"></div>
+      <h5 class="fw-bold text-dark m-0">Répartition des paiements</h5>
+    </div>
 
-        <% if @by_agency.any? %>
-          <div class="table-responsive">
-            <table class="table table-borderless align-middle mb-0">
-              <thead>
-                <tr class="text-muted">
-                  <th>Agence</th>
-                  <th>Heures</th>
-                  <th>Brut</th>
-                  <th>Km</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% @by_agency.each do |stats| %>
-                  <tr>
-                    <td><strong><%= stats[:agency] %></strong></td>
-                    <td><%= stats[:hours] %> h</td>
-                    <td><%= number_to_currency(stats[:brut], unit: "€", format: "%n %u") %></td>
-                    <td><%= stats[:km].to_i %> km</td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
+    <% if @by_agency.any? %>
+      <div class="row g-4">
+        <% @by_agency.each do |stats| %>
+          <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-white">
+
+              <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                  <h5 class="fw-bold text-dark mb-1 text-capitalize"><%= stats[:agency] %></h5>
+                  <span class="badge bg-light text-dark border rounded-pill fw-normal px-3">
+                    <%= stats[:hours].round(1) %> heures | Brut: <%= number_to_currency(stats[:brut], unit: "€", format: "%n %u") %>
+                  </span>
+                </div>
+                <div class="text-end">
+                  <span class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Net estimé</span>
+                  <span class="h3 fw-bold text-orange mb-0">
+                    <%= number_to_currency(stats[:total_transfer], unit: "€", format: "%n %u") %>
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-body px-4 pb-4 pt-3">
+                <hr class="border-light-subtle opacity-50 mb-4">
+
+                <div class="row g-3">
+                  <div class="col-6">
+                    <div class="p-3 rounded-4 bg-light h-100 d-flex flex-column justify-content-between">
+                      <div class="mb-2">
+                        <i class="fa-solid fa-sack-dollar text-muted mb-2"></i>
+                        <span class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Salaire Net</span>
+                      </div>
+                      <div>
+                        <p class="mb-0 fw-bold fs-5 text-dark">
+                          <%= number_to_currency(stats[:net_salary], unit: "€", format: "%n %u") %>
+                        </p>
+                        <small class="text-muted" style="font-size: 0.7rem;">
+                          (Hors Indemnités KM)
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-6">
+                    <div class="p-3 rounded-4 bg-light h-100 d-flex flex-column justify-content-between">
+                      <div class="mb-2">
+                        <i class="fa-solid fa-car-side text-muted mb-2"></i>
+                        <span class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Indemnités Km</span>
+                      </div>
+                      <div>
+                        <p class="mb-0 fw-bold fs-5 text-dark">
+                          <%= number_to_currency(stats[:km_payment], unit: "€", format: "%n %u") %>
+                        </p>
+                        <small class="text-muted" style="font-size: 0.7rem;">
+                          <%= stats[:km].to_i %> km validés
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
-        <% else %>
-          <p class="text-center text-muted m-0">
-            Aucune donnée disponible pour ce mois.
-          </p>
         <% end %>
       </div>
+    <% else %>
+      <div class="col-12">
+        <div class="card border-dashed border-2 bg-light rounded-4 p-5 text-center">
+          <div class="mb-3 text-muted opacity-50">
+            <i class="fa-regular fa-calendar-xmark fa-3x"></i>
+          </div>
+          <h6 class="fw-bold text-muted">Aucune activité enregistrée</h6>
+          <p class="small text-muted mb-0">Les données par agence s'afficheront ici dès que vous aurez saisi des missions.</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+<div class="row justify-content-center mt-5 mb-5">
+
+    <div class="col-12 col-md-8 col-lg-6">
+
+      <div class="d-grid gap-3 d-md-flex justify-content-center">
+
+        <%= link_to new_contract_path, class: "btn btn-orange rounded-pill px-4 py-3 fw-bold shadow-sm" do %>
+          <i class="fa-solid fa-plus me-2"></i>Nouveau Contrat
+        <% end %>
+
+        <% if current_user.contracts.exists? %>
+          <%= link_to new_contract_work_session_path(current_user.contracts.first), class: "btn btn-white border rounded-pill px-4 py-3 fw-bold shadow-sm text-orange" do %>
+            <i class="fa-solid fa-briefcase me-2"></i>Ajouter Mission
+          <% end %>
+        <% else %>
+          <button class="btn btn-light rounded-pill px-4 py-1 fw-bold text-muted" disabled>
+            Ajouter Mission
+          </button>
+        <% end %>
+
+      </div>
     </div>
   </div>
 
-  <div class="text-center mt-5">
-    <%= link_to "Créer un contrat", new_contract_path, class: "btn btn-orange btn-lg fw-bold px-4 me-3" %>
-
-    <% if current_user.contracts.exists? %>
-      <%= link_to "Créer une mission", new_contract_work_session_path(current_user.contracts.first), class: "btn btn-orange-outline btn-lg fw-bold px-4 mt-2 m-2" %>
-    <% else %>
-      <button class="btn btn-orange-outline btn-lg fw-bold mt-2 px-4" disabled>Créer une mission</button>
-      <p class="text-muted mt-2 small">Vous devez d’abord créer un contrat.</p>
-    <% end %>
-  </div>
 </div>
-

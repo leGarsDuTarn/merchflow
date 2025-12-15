@@ -283,24 +283,49 @@ class User < ApplicationRecord
 
   # Net total estimé avec km
   def net_total_estimated_for_month(target_date)
+    # Reste inchangé, calcul global de l'ancienne logique (net brut estimé + km)
     (net_estimated_for_month(target_date) + total_km_payment_for_month(target_date)).round(2)
   end
 
-  # Répartition par agence (mois)
+  # Répartition par agence (mois) - MISE À JOUR POUR DASHBOARD PREMIUM
   def total_by_agency_for_month(target_date)
     sessions = work_sessions_for_month(target_date)
 
     # Si aucune session n'est trouvée, retourner un Array vide.
     return [] unless sessions.any?
 
+    # On groupe par "agency_label" pour fusionner les missions d'une même agence
     sessions.includes(:contract)
-            .group_by(&:contract)
-            .map do |contract, contract_sessions|
+            .group_by { |ws| ws.contract.agency_label }
+            .map do |agency_label, agency_sessions|
+
+              # Calculs de base
+              total_hours = (agency_sessions.sum(&:duration_minutes) / 60.0).round(2)
+              total_brut  = agency_sessions.sum(&:brut)
+              total_km    = agency_sessions.sum(&:effective_km)
+
+              # --- CALCULS FINANCIERS BASÉS SUR WORKSESSION ---
+
+              # 1. Indemnités KM (Somme des km_payment_final définis dans WorkSession)
+              total_km_payment = agency_sessions.sum(&:km_payment_final).round(2)
+
+              # 2. Virement Total Estimé (Somme des net_total de chaque WorkSession)
+              # Ceci inclut : Net de base + Net IFM + Net CP + Frais KM
+              total_transfer = agency_sessions.sum(&:net_total).round(2)
+
+              # 3. Salaire Net "Hors Frais" (pour l'affichage séparé)
+              # On prend le total virement et on retire la part frais kilométriques.
+              net_salary = (total_transfer - total_km_payment).round(2)
+
               {
-                agency: contract.agency_label,
-                brut: contract_sessions.sum(&:brut), # Utilisation de contract_sessions
-                hours: (contract_sessions.sum(&:duration_minutes) / 60.0).round(2), # Utilisation de contract_sessions
-                km: contract_sessions.sum(&:effective_km)
+                agency:         agency_label,
+                hours:          total_hours,
+                brut:           total_brut,
+                km:             total_km,
+                # Clés requises par la vue Premium :
+                km_payment:     total_km_payment,
+                net_salary:     net_salary,
+                total_transfer: total_transfer
               }
             end
   end
