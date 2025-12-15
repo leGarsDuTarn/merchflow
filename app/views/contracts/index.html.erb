@@ -7,11 +7,7 @@
       <p class="text-muted small m-0">Gérez vos contrats et missions</p>
     </div>
 
-    <%= link_to new_contract_path,
-                class: "btn btn-orange shadow-sm rounded-pill px-4 fw-bold",
-                title: "Nouveau contrat" do %>
-      <i class="fa-solid fa-plus me-2"></i> Nouveau
-    <% end %>
+
   </div>
 
   <% if @contracts.empty? %>
@@ -60,12 +56,20 @@
               </span>
             </div>
 
-            <h5 class="fw-bold text-dark mb-1 ps-2">
-              <%= contract.name.presence || "Contrat sans nom" %>
-            </h5>
+            <div class="mb-1 ps-2">
+              <% count = contract.work_sessions.count %>
+
+                <% if count > 0 %>
+                  <span class="badge bg-orange-subtle text-orange border border-orange-subtle rounded-pill px-3 py-1 fw-bold">
+                    <%= pluralize(count, 'mission') %>
+                  </span>
+                <% else %>
+                  <span class="text-muted small">Aucune mission enregistrée</span>
+                <% end %>
+            </div>
 
             <p class="text-muted small ps-2 mb-4">
-              Créé le <%= l contract.created_at.to_date, format: :long %>
+              Contract réé le <%= l contract.created_at.to_date, format: :long %>
             </p>
 
             <%# Footer de la carte : Actions %>
@@ -108,5 +112,13 @@
     </div>
 
   <% end %>
+<div class="container d-flex align-items-center justify-content-center mt-4">
+  <%= link_to new_contract_path,
+                class: "btn btn-orange",
+                title: "Nouveau contrat" do %>
+      <i class="fa-solid fa-plus"></i> Ajouter un contrat
+    <% end %>
+</div>
+
 
 </div>
