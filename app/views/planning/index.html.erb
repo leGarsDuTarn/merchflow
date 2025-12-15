@@ -102,7 +102,7 @@
                 <% sessions.first(3).each do |ws| %>
                   <div class="session-item position-relative">
                     <div class="d-flex flex-column">
-                      <span class="fw-bold text-dark text-truncate"><%= ws.contract.agency_label %> - <%= ws.company %></span>
+                      <span class="fw-bold text-dark text-truncate"><%= ws.store %> - <%= ws.company %></span>
                       <span class="text-muted small">
                         <%= ws.start_time.strftime("%H:%M") %> - <%= ws.end_time.strftime("%H:%M") %>
                       </span>
