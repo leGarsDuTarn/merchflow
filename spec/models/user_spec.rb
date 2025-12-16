@@ -140,17 +140,17 @@ RSpec.describe User, type: :model do
   end
 
   # ------------------------------------------------------------
-  # MÉTHODES DASHBOARD
+  # MÉTHODES DASHBOARD (Mises à jour)
   # ------------------------------------------------------------
   context 'Test des methodes du dashboard' do
     let(:user) { create(:user) }
     let(:contract) { create(:contract, user: user) }
 
     before do
-      allow_any_instance_of(Contract).to receive(:ifm_cp_total).and_return(10)
-      allow_any_instance_of(Contract).to receive(:ifm).and_return(5)
-      allow_any_instance_of(Contract).to receive(:cp).and_return(5)
-      allow_any_instance_of(Contract).to receive(:km_payment).and_return(10)
+      # On mocke les calculs du contrat pour maîtriser les chiffres
+      allow_any_instance_of(Contract).to receive(:ifm).and_return(5.0)
+      allow_any_instance_of(Contract).to receive(:cp).and_return(5.0)
+      allow_any_instance_of(Contract).to receive(:km_payment).and_return(10.0)
     end
 
     let!(:session_current) do
@@ -158,8 +158,8 @@ RSpec.describe User, type: :model do
         contract: contract,
         date: Date.current,
         start_time: DateTime.current.change(hour: 9, min: 0),
-        end_time: DateTime.current.change(hour: 11, min: 0), # 2h
-        hourly_rate: 50.0, # ← C'est un attribut de WorkSession, pas de Contract
+        end_time: DateTime.current.change(hour: 11, min: 0), # 2h de travail
+        hourly_rate: 50.0, # Total Base = 100€
         km_custom: 20
       )
     end
@@ -169,7 +169,7 @@ RSpec.describe User, type: :model do
         contract: contract,
         date: 2.months.ago,
         start_time: 2.months.ago.change(hour: 9, min: 0),
-        end_time: 2.months.ago.change(hour: 10, min: 0), # 1h
+        end_time: 2.months.ago.change(hour: 10, min: 0), # 1h de travail
         hourly_rate: 50.0,
         km_custom: 10
     )
@@ -178,39 +178,50 @@ RSpec.describe User, type: :model do
     # --- TOTAUX GLOBAUX (Current + Old) ---
 
     it 'total_hours_worked : somme de toutes les heures' do
+      # 2h (current) + 1h (old) = 3h
       expect(user.total_hours_worked).to eq(3.0)
     end
 
-    it 'total_brut : somme de tout le brut' do
+    it 'total_brut : somme de tout le brut de base' do
+      # 100€ (current) + 50€ (old) = 150€
      expect(user.total_brut).to eq(150.0)
     end
 
     it 'total_km : somme des km' do
+      # 20km (current) + 10km (old) = 30km
       expect(user.total_km).to eq(30.0)
     end
 
     # --- TOTAUX MOIS EN COURS (Current uniquement) ---
+    # On utilise les nouvelles méthodes _for_month(Date.current)
 
     it 'sessions_this_month : ne récupère que la session du mois' do
       expect(user.sessions_this_month).to include(session_current)
       expect(user.sessions_this_month).not_to include(session_old)
     end
 
-    it 'total_hours_this_month : heures du mois courant' do
-      expect(user.total_hours_this_month).to eq(2.0)
+    it 'total_hours_for_month : heures du mois courant' do
+      expect(user.total_hours_for_month(Date.current)).to eq(2.0)
     end
 
-    it 'total_brut_this_month : brut du mois courant' do
-      expect(user.total_brut_this_month).to eq(100.0)
+    it 'total_complete_brut_for_month : brut complet (Base + IFM + CP)' do
+      # Calcul :
+      # Base Brut : 100.0
+      # IFM (mock) : 5.0
+      # CP (mock) : 5.0
+      # Total attendu : 110.0
+      expect(user.total_complete_brut_for_month(Date.current)).to eq(110.0)
     end
 
-    it 'net_estimated_this_month : calculé sur le mois courant (78% du brut)' do
-      # 100 * 0.78 = 78
-      expect(user.net_estimated_this_month).to eq(78.0)
-    end
-
-    it 'net_total_estimated_this_month : net estimé + frais km du mois' do
-      expect(user.net_total_estimated_this_month).to eq(88.0)
+    it 'net_total_estimated_for_month : Somme exacte des nets' do
+      # Calcul PRÉCIS (Nouvelle logique) :
+      # Net Base = 100 * 0.78 = 78.0
+      # Net IFM  = 5 * 0.78   = 3.90
+      # Net CP   = 5 * 0.78   = 3.90
+      # KM       = 10.0
+      #
+      # Total    = 78.0 + 3.9 + 3.9 + 10.0 = 95.80
+      expect(user.net_total_estimated_for_month(Date.current)).to eq(95.8)
     end
   end
 end
