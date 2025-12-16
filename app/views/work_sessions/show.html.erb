@@ -19,7 +19,15 @@
 
     <div class="col-lg-5">
 
-      <div class="card shadow border-0 rounded-4 mb-4 h-100">
+      <div class="card shadow border-0 rounded-4 mb-4 h-100 position-relative overflow-hidden">
+
+        <% if @work_session.recommended %>
+          <div class="position-absolute top-0 end-0 m-3">
+            <span class="badge bg-orange text-white rounded-pill px-3 py-2 shadow-sm">
+              <i class="fa-solid fa-star"></i> Recommandée
+            </span>
+          </div>
+        <% end %>
         <div class="card-body p-4">
           <div class="d-flex align-items-center mb-4">
             <div class="bg-orange-light text-orange rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
