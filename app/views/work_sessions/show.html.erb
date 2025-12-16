@@ -22,9 +22,9 @@
       <div class="card shadow border-0 rounded-4 mb-4 h-100 position-relative overflow-hidden">
 
         <% if @work_session.recommended %>
-          <div class="position-absolute top-0 end-0 m-3">
-            <span class="badge bg-orange text-white rounded-pill px-3 py-2 shadow-sm">
-              <i class="fa-solid fa-star"></i> Recommandée
+          <div class="position-absolute top-0 end-0 m-2">
+            <span class="badge bg-orange text-white rounded-pill px-2 py-1 shadow-sm small">
+              <i class="fa-solid fa-star"></i> Recommandé
             </span>
           </div>
         <% end %>
@@ -137,12 +137,12 @@
                   <td class="text-end fw-semibold"><%= number_to_currency(net_estime) %></td>
                 </tr>
                 <tr>
-                  <td class="py-2">Indemnités (IFM)</td>
+                  <td class="py-2">Indemnités </td>
                   <td class="text-end text-muted"><%= number_to_currency(ifm_brut) %></td>
                   <td class="text-end fw-semibold"><%= number_to_currency(ifm_net) %></td>
                 </tr>
                 <tr>
-                  <td class="py-2">Congés Payés (CP)</td>
+                  <td class="py-2">Congés Payés </td>
                   <td class="text-end text-muted"><%= number_to_currency(cp_brut) %></td>
                   <td class="text-end fw-semibold"><%= number_to_currency(cp_net) %></td>
                 </tr>
