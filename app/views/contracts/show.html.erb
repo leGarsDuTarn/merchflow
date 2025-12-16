@@ -77,7 +77,11 @@
               <%# Prix %>
               <div class="text-end">
                 <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold">
-                  <%= number_to_currency(ws.total_payment, unit: "€", format: "%n %u") %>
+              <%
+                # On calcule la somme des trois éléments BRUT SANS les KM
+                brut_sans_km = ws.brut + ws.amount_ifm + ws.amount_cp
+                %>
+                <%= number_to_currency(brut_sans_km, unit: "€", format: "%n %u") %>
                 </span>
               </div>
 

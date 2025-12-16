@@ -228,45 +228,48 @@ class User < ApplicationRecord
   end
 
   # ============================================================
-  # DASHBOARD — TOTAUX MENSUELS (CORRIGÉS)
+  # DASHBOARD — TOTAUX MENSUELS (PRÉCIS & CORRIGÉS)
   # ============================================================
 
+  # 1. Heures du mois (Précision décimale : 7.75 et pas 8.0)
   def total_hours_for_month(target_date)
-    (work_sessions_for_month(target_date).sum(&:duration_minutes) / 60.0).round(2)
+    # On divise par 60.0 pour forcer le décimal
+    # On ne fait pas de .round(0) ou .to_i pour garder 7.75
+    minutes = work_sessions_for_month(target_date).sum(&:duration_minutes)
+    (minutes / 60.0).round(2)
   end
 
-  def total_brut_for_month(target_date)
+  # 2. Brut de BASE (Juste les heures × taux)
+  def total_base_brut_for_month(target_date)
     work_sessions_for_month(target_date).sum(&:brut)
   end
 
-  # IFM + CP du mois
-  def total_ifm_cp_for_month(target_date)
-    # Calcul explicite en cascade
+  # 3. Brut COMPLET (Heures + IFM + CP)
+  # C'est ce montant qu'il faut afficher dans ton Badge "Brut"
+  def total_complete_brut_for_month(target_date)
     work_sessions_for_month(target_date).sum do |ws|
-      b = ws.brut
-      i = ws.contract.ifm(b)
-      c = ws.contract.cp(b + i) # CP sur Brut + IFM
-      i + c
+      # On utilise les accesseurs précis de WorkSession
+      ws.brut + ws.amount_ifm + ws.amount_cp
     end
   end
 
+  # 4. KM du mois
   def total_km_for_month(target_date)
     work_sessions_for_month(target_date).sum(&:effective_km)
   end
 
+  # 5. Paiement KM (Montant €)
   def total_km_payment_for_month(target_date)
     work_sessions_for_month(target_date).sum(&:km_payment_final)
   end
 
-  def net_estimated_for_month(target_date)
-    (total_brut_for_month(target_date) * 0.78).round(2)
-  end
-
+  # 6. NET TOTAL ESTIMÉ (Le VRAI calcul)
+  # Au lieu d'estimer 78%, on additionne les nets précis de chaque session
   def net_total_estimated_for_month(target_date)
-    (net_estimated_for_month(target_date) + total_km_payment_for_month(target_date)).round(2)
+    work_sessions_for_month(target_date).sum(&:net_total)
   end
 
-  # Répartition par agence (mois)
+  # Répartition par agence (Nettoyé pour utiliser les nouvelles méthodes)
   def total_by_agency_for_month(target_date)
     sessions = work_sessions_for_month(target_date)
     return [] unless sessions.any?
@@ -275,25 +278,24 @@ class User < ApplicationRecord
             .group_by { |ws| ws.contract.agency_label }
             .map do |agency_label, agency_sessions|
 
+              # Calculs précis basés sur la somme des sessions
               total_hours = (agency_sessions.sum(&:duration_minutes) / 60.0).round(2)
-              total_brut  = agency_sessions.sum(&:brut)
-              total_km    = agency_sessions.sum(&:effective_km)
 
-              total_km_payment = agency_sessions.sum(&:km_payment_final).round(2)
-
-              # Utilise la nouvelle méthode net_total de WorkSession qui inclut la correction CP
+              # Calcul des totaux financiers en additionnant les valeurs des sessions
               total_transfer = agency_sessions.sum(&:net_total).round(2)
+              total_km_pay   = agency_sessions.sum(&:km_payment_final).round(2)
 
-              net_salary = (total_transfer - total_km_payment).round(2)
+              # Pour le brut complet (Base + IFM + CP) de l'agence
+              total_brut_complete = agency_sessions.sum { |ws| ws.brut + ws.amount_ifm + ws.amount_cp }
 
               {
                 agency:         agency_label,
                 hours:          total_hours,
-                brut:           total_brut,
-                km:             total_km,
-                km_payment:     total_km_payment,
-                net_salary:     net_salary,
-                total_transfer: total_transfer
+                brut:           total_brut_complete, # Brut complet
+                km:             agency_sessions.sum(&:effective_km),
+                km_payment:     total_km_pay,
+                net_salary:     (total_transfer - total_km_pay).round(2), # Net hors KM
+                total_transfer: total_transfer # Net à virer
               }
             end
   end
