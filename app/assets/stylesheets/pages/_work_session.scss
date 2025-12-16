@@ -25,3 +25,16 @@
 .search-input:not(:placeholder-shown) + .search-clear {
   display: block;
 }
+
+ .bg-orange {
+    background-color: #FD7E14 !important; /* Ton Orange MerchFlow */
+  }
+  .text-orange {
+    color: #FD7E14 !important;
+  }
+  .bg-orange-light {
+    background-color: rgba(253, 126, 20, 0.1) !important;
+  }
+  .border-orange-subtle {
+    border-color: rgba(253, 126, 20, 0.2) !important;
+  }
