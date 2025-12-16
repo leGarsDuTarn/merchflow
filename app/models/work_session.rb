@@ -44,7 +44,6 @@ class WorkSession < ApplicationRecord
 
   scope :search, ->(query) {
     return all if query.blank?
-
     where(
       'company ILIKE :q OR store ILIKE :q OR date::text ILIKE :q',
       q: "%#{query}%"
@@ -133,7 +132,6 @@ class WorkSession < ApplicationRecord
   # ============================================================
   def compute_duration
     return if start_time.blank? || end_time.blank?
-
     total = ((end_time - start_time) / 60).to_i
     self.duration_minutes = total
   end
@@ -143,15 +141,12 @@ class WorkSession < ApplicationRecord
   # ============================================================
   def compute_night_minutes
     return if start_time.blank? || end_time.blank?
-
     minutes = 0
     current = start_time
-
     while current < end_time
       minutes += 1 if current.hour >= NIGHT_START || current.hour < NIGHT_END
       current += 1.minute
     end
-
     self.night_minutes = minutes
   end
 
@@ -178,58 +173,63 @@ class WorkSession < ApplicationRecord
   # ============================================================
   def brut
     return 0 if duration_minutes.zero?
-
     day_pay + night_pay
   end
 
   # ============================================================
-  # TOTAL REMUNERATION (Interne / Admin)
+  # ACCESSEURS DE MONTANTS (Utilisés par Vue + Calculs)
   # ============================================================
-  def total_payment
-    base_brut = brut
-    amount_ifm = contract.ifm(base_brut)
-    # CP calculés sur (Brut + IFM)
-    amount_cp  = contract.cp(base_brut + amount_ifm)
 
-    base_brut + amount_ifm + amount_cp + km_payment_final
+  # IFM Brut
+  def amount_ifm
+    contract.ifm(brut).round(2)
   end
 
+  # CP Brut (Sur Base + IFM)
+  def amount_cp
+    base = brut + amount_ifm
+    contract.cp(base).round(2)
+  end
+
+  # Montant KM Final (Gère le recommandé/plafond)
   def km_payment_final
     contract.km_payment(effective_km.to_f, recommended: recommended)
   end
 
   # ============================================================
-  # NET & NET TOTAL (Public / Merch)
+  # NET & NET TOTAL (LE COEUR DU CALCUL)
   # ============================================================
+
+  # Net du salaire de base uniquement
   def net
-    (brut * (1 - 0.22)).round(2)
+    (brut * 0.78).round(2)
   end
 
-  def amount_ifm
-    contract.ifm(brut).round(2)
-  end
-
-  def amount_cp
-    # C'est ici que se fait le calcul corrigé : CP sur (Brut + IFM)
-    base = brut + amount_ifm
-    contract.cp(base).round(2)
-  end
-
+  # Net Total ESTIMÉ (Salaire Net + IFM Net + CP Net + Indemnités KM)
+  # C'est cette méthode qui corrige ton dashboard.
   def net_total
-    current_brut = brut
+    # 1. On récupère les valeurs brutes via nos méthodes
+    val_brut = brut
+    val_ifm  = amount_ifm
+    val_cp   = amount_cp
 
-    # 1. Calcul de l'IFM sur le Brut
-    amount_ifm = contract.ifm(current_brut).round(2)
+    # 2. On récupère le montant KM (Non soumis à cotisations)
+    val_km   = km_payment_final
 
-    # 2. CORRECTION : Calcul des CP sur (Brut + IFM)
-    amount_cp  = contract.cp(current_brut + amount_ifm).round(2)
+    # 3. Calcul des Nets (Déduction de 22% de charges)
+    net_salary = (val_brut * 0.78).round(2)
+    net_ifm    = (val_ifm  * 0.78).round(2)
+    net_cp     = (val_cp   * 0.78).round(2)
 
-    amount_km  = contract.km_payment(effective_km).round(2)
+    # 4. Somme finale (Tout le net + les KM entiers)
+    (net_salary + net_ifm + net_cp + val_km).round(2)
+  end
 
-    net_ifm = (amount_ifm * 0.78).round(2)
-    net_cp  = (amount_cp  * 0.78).round(2)
-
-    (net.round(2) + net_ifm + net_cp + amount_km).round(2)
+  # ============================================================
+  # TOTAL REMUNERATION (Brut Global + KM) - Souvent pour Admin
+  # ============================================================
+  def total_payment
+    brut + amount_ifm + amount_cp + km_payment_final
   end
 
   # ============================================================
@@ -238,52 +238,35 @@ class WorkSession < ApplicationRecord
   private
 
   # ============================================================
-  # VALIDATION : Pas de chevauchement entre sessions
+  # VALIDATION : Pas de chevauchement (VERSION ROBUSTE TIMEZONE)
   # ============================================================
   def no_overlap_with_existing_sessions
     return unless contract.present? && date.present? && start_time.present? && end_time.present?
 
-    user_id = contract.user_id
+    # Utilisation de Time.zone.parse pour éviter les erreurs UTC/Local
+    new_start_dt = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}")
+    new_end_dt   = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}")
 
-    new_start_dt = DateTime.new(date.year, date.month, date.day, start_time.hour, start_time.min, start_time.sec)
-    new_end_dt = DateTime.new(date.year, date.month, date.day, end_time.hour, end_time.min, end_time.sec)
-
-    new_end_dt += 1.day if end_time <= start_time
+    new_end_dt += 1.day if new_end_dt <= new_start_dt
 
     date_range = (date - 1.day)..(date + 1.day)
 
     existing_sessions = WorkSession
       .joins(:contract)
-      .where(contracts: { user_id: user_id })
+      .where(contracts: { user_id: contract.user_id })
       .where(date: date_range)
       .where.not(id: id)
 
     has_overlap = existing_sessions.any? do |session|
-      existing_start = DateTime.new(
-        session.date.year,
-        session.date.month,
-        session.date.day,
-        session.start_time.hour,
-        session.start_time.min,
-        session.start_time.sec
-      )
+      existing_start = session.start_time
+      existing_end   = session.end_time
 
-      existing_end = DateTime.new(
-        session.date.year,
-        session.date.month,
-        session.date.day,
-        session.end_time.hour,
-        session.end_time.min,
-        session.end_time.sec
-      )
-
-      existing_end += 1.day if session.end_time <= session.start_time
-
-      existing_start < new_end_dt && existing_end > new_start_dt
+      # Logique de chevauchement : (Debut A < Fin B) ET (Fin A > Debut B)
+      new_start_dt < existing_end && new_end_dt > existing_start
     end
 
     if has_overlap
-      errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée pour vous. Vérifiez votre planning.')
+      errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée.')
     end
   end
 
