@@ -16,18 +16,17 @@ class User < ApplicationRecord
   has_many :declarations, dependent: :destroy
   has_many :unavailabilities, dependent: :destroy
   has_one :merch_setting, dependent: :destroy, foreign_key: :user_id
-  # Contrats où cet utilisateur agit comme le MERCH (prestataire)
+
   has_many :merch_contracts, class_name: 'Contract', foreign_key: 'merch_id', dependent: :nullify
-  # Contrats où cet utilisateur agit comme le FVE (agence/facturier)
   has_many :fve_contracts, class_name: 'Contract', foreign_key: 'fve_id', dependent: :nullify
-  # Propositions de Missions envoyées (FVE)
+
   has_many :sent_mission_proposals, class_name: 'MissionProposal', foreign_key: 'fve_id', dependent: :destroy
-  # Propositions de Missions reçues (Merch)
   has_many :received_mission_proposals, class_name: 'MissionProposal', foreign_key: 'merch_id', dependent: :destroy
   has_many :favorites_given, class_name: "Favorite", foreign_key: :fve_id, dependent: :destroy
   has_many :favorite_merchs, through: :favorites_given, source: :merch
   has_many :favorites_received, class_name: "Favorite", foreign_key: :merch_id, dependent: :destroy
   has_many :fans, through: :favorites_received, source: :fve
+
   # ============================================================
   # RÔLE + ENUM
   # ============================================================
@@ -36,50 +35,33 @@ class User < ApplicationRecord
   enum :role, { merch: 0, fve: 1, admin: 2 }, default: :merch
 
   # ============================================================
-  # SCOPE
-  # ============================================================
-
-  # ============================================================
   # PRÉFÉRENCES DE CONFIDENTIALITÉ + PREMIUM
   # ============================================================
 
-  # Conditions d'accès aux informations sensibles
   def can_view_contact?(viewer)
     return false unless viewer.present?
-    # Seul un FVE peut potentiellement voir les informations
     return false unless viewer.fve?
-    # Le FVE doit être premium
     return false unless viewer.premium?
-    # L'utilisateur Merch doit avoir un MerchSetting (sécurité)
     return false unless merch_setting.present?
 
     true
   end
 
-  # Affichage du nom
   def displayable_name(viewer)
-    # Visible seulement si : identité autorisée + viewer premium FVE
-    # Utilisation correcte de l'association merch_setting
     return username unless can_view_contact?(viewer) && merch_setting.allow_identity
-
     full_name
   end
 
-  # Affichage de l'email
   def displayable_email(viewer)
-    # Utilisation correcte du nom de la colonne
     return nil unless can_view_contact?(viewer) && merch_setting.allow_contact_email
-
     email
   end
 
-  # Affichage du numéro
   def displayable_phone(viewer)
-    # Utilisation correcte du nom de la colonne
     return nil unless can_view_contact?(viewer) && merch_setting.allow_contact_phone
-
     phone_number
   end
+
   # ============================================================
   # VALIDATIONS
   # ============================================================
@@ -111,23 +93,22 @@ class User < ApplicationRecord
   validates :address, presence: { message: 'Vous devez renseigner une adresse' }, unless: :fve?
   validates :zipcode, presence: { message: 'Vous devez renseigner un code postal' }, unless: :fve?
   validates :city,    presence: { message: 'Vous devez renseigner une ville' }, unless: :fve?
-  # Validation : Un FVE doit obligatoirement avoir une agence
+
   validates :agency, presence: true, if: :fve?
-  # Vérifie que le code de l'agence existe bien dans la table Agency
   validates :agency, inclusion: {
     in: ->(_user) { Agency.pluck(:code) },
     message: "%{value} n'est pas une agence valide."
-  }, if: -> { agency.present? && fve? } # On valide seulement si c'est un FVE
+  }, if: -> { agency.present? && fve? }
 
   # ============================================================
   # MOT DE PASSE FORT
   # ============================================================
   VALID_PASSWORD_REGEX = /\A
-    (?=.*[a-z])        # Au moins une minuscule
-    (?=.*[A-Z])        # Au moins une majuscule
-    (?=.*\d)           # Au moins un chiffre
-    (?=.*[[:^alnum:]]) # Au moins un caractère spécial
-    .{8,}              # PUIS on consomme 8+ caractères
+    (?=.*[a-z])
+    (?=.*[A-Z])
+    (?=.*\d)
+    (?=.*[[:^alnum:]])
+    .{8,}
   \z/x
 
   validates :password,
@@ -185,12 +166,8 @@ class User < ApplicationRecord
 
   def normalize_phone_number
     return if phone_number.blank?
-
-    cleaned = phone_number.gsub(/\D/, '') # supprime tout sauf les chiffres
-
-    # Transforme +33 en 0
+    cleaned = phone_number.gsub(/\D/, '')
     cleaned = cleaned.sub(/\A33/, '0') if cleaned.start_with?("33")
-
     self.phone_number = cleaned
   end
 
@@ -209,12 +186,9 @@ class User < ApplicationRecord
     address.present? && zipcode.present? && city.present?
   end
 
-  # Méthode utilitaire pour filtrer les WorkSessions par mois
   def work_sessions_for_month(target_date)
     start_date = target_date.beginning_of_month
     end_date = target_date.end_of_month
-
-    # Utilise l'association work_sessions (qui utilise through: :contracts) et filtre par date
     work_sessions.where(date: start_date..end_date)
   end
 
@@ -234,7 +208,13 @@ class User < ApplicationRecord
   end
 
   def total_ifm_cp
-    work_sessions.sum { |ws| ws.contract.ifm_cp_total(ws.brut) }
+    # CORRECTION : Calcul explicite pour s'assurer que CP est sur (Brut + IFM)
+    work_sessions.sum do |ws|
+      b = ws.brut
+      i = ws.contract.ifm(b)
+      c = ws.contract.cp(b + i)
+      i + c
+    end
   end
 
   def total_km
@@ -251,70 +231,59 @@ class User < ApplicationRecord
   # DASHBOARD — TOTAUX MENSUELS (CORRIGÉS)
   # ============================================================
 
-  # Heures du mois
   def total_hours_for_month(target_date)
     (work_sessions_for_month(target_date).sum(&:duration_minutes) / 60.0).round(2)
   end
 
-  # Brut du mois
   def total_brut_for_month(target_date)
     work_sessions_for_month(target_date).sum(&:brut)
   end
 
   # IFM + CP du mois
   def total_ifm_cp_for_month(target_date)
-    work_sessions_for_month(target_date).sum { |ws| ws.contract.ifm(ws.brut) + ws.contract.cp(ws.brut) }
+    # Calcul explicite en cascade
+    work_sessions_for_month(target_date).sum do |ws|
+      b = ws.brut
+      i = ws.contract.ifm(b)
+      c = ws.contract.cp(b + i) # CP sur Brut + IFM
+      i + c
+    end
   end
 
-  # KM du mois
   def total_km_for_month(target_date)
     work_sessions_for_month(target_date).sum(&:effective_km)
   end
 
-  # Frais km remboursés du mois
   def total_km_payment_for_month(target_date)
     work_sessions_for_month(target_date).sum(&:km_payment_final)
   end
 
-  # Net estimé hors km
   def net_estimated_for_month(target_date)
     (total_brut_for_month(target_date) * 0.78).round(2)
   end
 
-  # Net total estimé avec km
   def net_total_estimated_for_month(target_date)
-    # Reste inchangé, calcul global de l'ancienne logique (net brut estimé + km)
     (net_estimated_for_month(target_date) + total_km_payment_for_month(target_date)).round(2)
   end
 
-  # Répartition par agence (mois) - MISE À JOUR POUR DASHBOARD PREMIUM
+  # Répartition par agence (mois)
   def total_by_agency_for_month(target_date)
     sessions = work_sessions_for_month(target_date)
-
-    # Si aucune session n'est trouvée, retourner un Array vide.
     return [] unless sessions.any?
 
-    # On groupe par "agency_label" pour fusionner les missions d'une même agence
     sessions.includes(:contract)
             .group_by { |ws| ws.contract.agency_label }
             .map do |agency_label, agency_sessions|
 
-              # Calculs de base
               total_hours = (agency_sessions.sum(&:duration_minutes) / 60.0).round(2)
               total_brut  = agency_sessions.sum(&:brut)
               total_km    = agency_sessions.sum(&:effective_km)
 
-              # --- CALCULS FINANCIERS BASÉS SUR WORKSESSION ---
-
-              # 1. Indemnités KM (Somme des km_payment_final définis dans WorkSession)
               total_km_payment = agency_sessions.sum(&:km_payment_final).round(2)
 
-              # 2. Virement Total Estimé (Somme des net_total de chaque WorkSession)
-              # Ceci inclut : Net de base + Net IFM + Net CP + Frais KM
+              # Utilise la nouvelle méthode net_total de WorkSession qui inclut la correction CP
               total_transfer = agency_sessions.sum(&:net_total).round(2)
 
-              # 3. Salaire Net "Hors Frais" (pour l'affichage séparé)
-              # On prend le total virement et on retire la part frais kilométriques.
               net_salary = (total_transfer - total_km_payment).round(2)
 
               {
@@ -322,7 +291,6 @@ class User < ApplicationRecord
                 hours:          total_hours,
                 brut:           total_brut,
                 km:             total_km,
-                # Clés requises par la vue Premium :
                 km_payment:     total_km_payment,
                 net_salary:     net_salary,
                 total_transfer: total_transfer
@@ -331,7 +299,7 @@ class User < ApplicationRecord
   end
 
   # ============================================================
-  # WRAPPERS POUR LE DASHBOARD (Raccourcis "Mois en cours")
+  # WRAPPERS POUR LE DASHBOARD
   # ============================================================
 
   def sessions_this_month

@@ -1,6 +1,5 @@
 <div class="container my-5">
 
-  <!-- Titre + bouton retour -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="fw-bold text-orange m-0">
       Mission du <%= l @work_session.date, format: :long %>
@@ -14,7 +13,6 @@
 
   <div class="card shadow-sm rounded-4 p-4">
 
-    <!-- Infos principales -->
     <h4 class="fw-bold text-orange mb-3">
       <i class="fa-solid fa-store me-2"></i>
       <%= @work_session.store.presence || "Magasin non renseigné" %>
@@ -27,7 +25,6 @@
       </p>
     <% end %>
 
-    <!-- Entreprise -->
     <p class="text-muted mt-2 mb-4">
       <i class="fa-solid fa-building me-2"></i>
       <%= @work_session.company.presence || "Entreprise non renseignée" %>
@@ -35,7 +32,6 @@
 
     <hr>
 
-    <!-- Horaires -->
     <h5 class="fw-semibold mb-2"><i class="fa-solid fa-clock me-2"></i>Horaires</h5>
     <div class="bg-light rounded-3 p-3 mb-3">
       <p class="mb-1"><strong>Début :</strong> <%= l @work_session.start_time, format: :short %></p>
@@ -52,7 +48,6 @@
       </p>
     </div>
 
-    <!-- DÉTAIL CALCUL NUIT -->
     <h5 class="fw-semibold mb-2">
       <i class="fa-solid fa-moon me-2"></i>Détail du calcul de nuit
     </h5>
@@ -82,7 +77,6 @@
       </div>
     <% end %>
 
-    <!-- KM -->
     <h5 class="fw-semibold mb-2"><i class="fa-solid fa-road me-2"></i>Déplacements</h5>
     <div class="bg-light rounded-3 p-3 mb-3">
       <p class="mb-1"><strong>Kilomètres comptés :</strong> <%= @work_session.effective_km %> km</p>
@@ -91,16 +85,18 @@
       </p>
     </div>
 
-    <!-- Paiements BRUT -->
     <h5 class="fw-semibold mb-2"><i class="fa-solid fa-euro-sign me-2"></i>Rémunération (Brut)</h5>
     <div class="bg-light rounded-3 p-3 mb-3">
       <p class="mb-1"><strong>Brut mission :</strong>
         <%= number_to_currency(@work_session.brut, unit: "€") %>
       </p>
 
-      <% brut = @work_session.brut %>
-      <% ifm_brut = @work_session.contract.ifm(brut).round(2) %>
-      <% cp_brut  = @work_session.contract.cp(brut).round(2) %>
+      <%
+         # ICI ON APPELLE LES MÉTHODES DU MODÈLE POUR AVOIR LE BON CALCUL
+         brut = @work_session.brut
+         ifm_brut = @work_session.amount_ifm # Vient du modèle
+         cp_brut  = @work_session.amount_cp  # Vient du modèle (Brut + IFM inclus)
+      %>
 
       <p class="mb-1"><strong>IFM (brut) :</strong> <%= number_to_currency(ifm_brut) %></p>
       <p class="mb-1"><strong>CP (brut) :</strong> <%= number_to_currency(cp_brut) %></p>
@@ -110,13 +106,16 @@
       </p>
     </div>
 
-    <!-- Paiement NET estimé -->
-    <% net_estime = @work_session.net %>
-    <% ifm_net = (ifm_brut * 0.78).round(2) %>
-    <% cp_net  = (cp_brut  * 0.78).round(2) %>
-    <% km_net  = @work_session.km_payment_final %>
-    <% sous_total_net = (net_estime + ifm_net + cp_net).round(2) %>
-    <% total_net = (sous_total_net + km_net).round(2) %>
+    <%
+       net_estime = @work_session.net
+       # On applique les 78% sur les montants corrects récupérés au-dessus
+       ifm_net = (ifm_brut * 0.78).round(2)
+       cp_net  = (cp_brut  * 0.78).round(2)
+
+       km_net  = @work_session.km_payment_final
+       sous_total_net = (net_estime + ifm_net + cp_net).round(2)
+       total_net = (sous_total_net + km_net).round(2)
+    %>
 
     <h5 class="fw-semibold mb-2"><i class="fa-solid fa-wallet me-2"></i>Rémunération (Net estimé)</h5>
     <div class="bg-light rounded-3 p-3 mb-3">
@@ -148,7 +147,6 @@
       </p>
     </div>
 
-    <!-- Notes -->
     <% if @work_session.notes.present? %>
       <h5 class="fw-semibold mb-2"><i class="fa-solid fa-note-sticky me-2"></i>Notes</h5>
       <div class="bg-light rounded-3 p-3 mb-3">
@@ -156,26 +154,20 @@
       </div>
     <% end %>
 
-    <!-- Actions -->
-  <div class="d-flex justify-content-evenly mt-4">
+    <div class="d-flex justify-content-evenly mt-4">
+      <%= link_to edit_work_session_path(@work_session),
+                class: "btn btn-orange fw-semibold",
+                aria: { label: "Modifier la mission" } do %>
+      <i class="fa-solid fa-pen-to-square"></i>
+      <% end %>
 
-    <!-- Modifier -->
-    <%= link_to edit_work_session_path(@work_session),
-              class: "btn btn-orange fw-semibold",
-              aria: { label: "Modifier la mission" } do %>
-    <i class="fa-solid fa-pen-to-square"></i>
-    <% end %>
-
-    <!-- Supprimer -->
-    <%= link_to work_session_path(@work_session),
-              data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
-              class: "btn btn-orange fw-semibold",
-              aria: { label: "Supprimer la mission" } do %>
-    <i class="fa-solid fa-trash"></i>
-    <% end %>
-
-  </div>
-
+      <%= link_to work_session_path(@work_session),
+                data: { turbo_method: :delete, turbo_confirm: "Supprimer cette mission ?" },
+                class: "btn btn-orange fw-semibold",
+                aria: { label: "Supprimer la mission" } do %>
+      <i class="fa-solid fa-trash"></i>
+      <% end %>
+    </div>
 
   </div>
 </div>

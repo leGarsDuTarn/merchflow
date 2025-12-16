@@ -89,7 +89,7 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # CALLBACKS : recalcul complet avant sauvegarde
   # ============================================================
-  before_validation :fix_timestamps_with_correct_date  # ✅ NOUVEAU
+  before_validation :fix_timestamps_with_correct_date
   before_validation :ensure_end_time_is_on_correct_day
   before_validation :compute_duration
   before_validation :compute_night_minutes
@@ -106,18 +106,15 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # ✅ CORRECTION DES TIMESTAMPS AVEC LA BONNE DATE
   # Ce callback s'assure que start_time et end_time ont la date correcte
   # ============================================================
   def fix_timestamps_with_correct_date
     return unless date.present?
 
-    # Fixer start_time si présent
     if start_time.present? && start_time_changed?
       self.start_time = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}")
     end
 
-    # Fixer end_time si présent
     if end_time.present? && end_time_changed?
       self.end_time = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}")
     end
@@ -186,13 +183,15 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # TOTAL REMUNERATION
+  # TOTAL REMUNERATION (Interne / Admin)
   # ============================================================
   def total_payment
-    brut +
-      contract.ifm(brut) +
-      contract.cp(brut) +
-      km_payment_final
+    base_brut = brut
+    amount_ifm = contract.ifm(base_brut)
+    # CP calculés sur (Brut + IFM)
+    amount_cp  = contract.cp(base_brut + amount_ifm)
+
+    base_brut + amount_ifm + amount_cp + km_payment_final
   end
 
   def km_payment_final
@@ -200,15 +199,31 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # NET & NET TOTAL (public)
+  # NET & NET TOTAL (Public / Merch)
   # ============================================================
   def net
     (brut * (1 - 0.22)).round(2)
   end
 
+  def amount_ifm
+    contract.ifm(brut).round(2)
+  end
+
+  def amount_cp
+    # C'est ici que se fait le calcul corrigé : CP sur (Brut + IFM)
+    base = brut + amount_ifm
+    contract.cp(base).round(2)
+  end
+
   def net_total
-    amount_ifm = contract.ifm(brut).round(2)
-    amount_cp  = contract.cp(brut).round(2)
+    current_brut = brut
+
+    # 1. Calcul de l'IFM sur le Brut
+    amount_ifm = contract.ifm(current_brut).round(2)
+
+    # 2. CORRECTION : Calcul des CP sur (Brut + IFM)
+    amount_cp  = contract.cp(current_brut + amount_ifm).round(2)
+
     amount_km  = contract.km_payment(effective_km).round(2)
 
     net_ifm = (amount_ifm * 0.78).round(2)
