@@ -22,6 +22,8 @@ Rails.application.configure do
   # config.asset_host = "http://assets.example.com"
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
+  # ⚠️ NOTE : Sur Heroku, les fichiers stockés en ":local" disparaissent au redémarrage (toutes les 24h).
+  # Idéalement, il faudra passer sur Amazon S3 ou Cloudinary plus tard pour la prod.
   config.active_storage.service = :local
   config.active_storage.variant_processor = nil
 
@@ -29,7 +31,8 @@ Rails.application.configure do
   # config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  # Activation du SSL obligatoire maintenant que le certificat est là.
+  config.force_ssl = true
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
@@ -58,26 +61,24 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # ==============================================================================
-  # CONFIGURATION URL PRODUCTION (MODIFIÉ POUR MERCHFLOW)
+  # CONFIGURATION URL PRODUCTION (OFFICIEL MERCHFLOW)
   # ==============================================================================
 
-  # Configuration pour les liens dans les EMAILS (Celle-ci peut rester ici car ActionMailer est initialisé tôt)
+  # Configuration pour les liens dans les EMAILS
   config.action_mailer.default_url_options = {
-    host: "merchflow-app-4722d7e8b942.herokuapp.com",
+    host: "www.merchflow.fr",
     protocol: "https"
   }
 
-  # Configuration pour les liens générés dans les CONTROLLERS (flash message)
-  # ⚠️ Déplacé dans after_initialize pour ne pas planter la précompilation des assets
+  # Configuration pour les liens générés dans les CONTROLLERS (flash message, redirections)
   config.after_initialize do
     Rails.application.routes.default_url_options = {
-      host: "merchflow-app-4722d7e8b942.herokuapp.com",
+      host: "www.merchflow.fr",
       protocol: "https"
     }
   end
 
   # ==============================================================================
-
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
@@ -97,13 +98,4 @@ Rails.application.configure do
 
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
-
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
