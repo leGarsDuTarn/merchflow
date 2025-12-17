@@ -27,6 +27,7 @@ fr:
       invalid: "Email ou mot de passe incorrect."
       locked: "Votre compte est verrouillé."
       last_attempt: "Dernière tentative avant verrouillage."
+      not_found_in_database: "Email ou mot de passe incorrect."
       timeout: "Votre session a expiré, veuillez vous reconnecter."
       unauthenticated: "Vous devez vous connecter pour continuer."
       unconfirmed: "Vous devez confirmer votre compte avant de continuer."
@@ -56,4 +57,3 @@ fr:
         subject: "Instructions de réinitialisation du mot de passe"
       unlock_instructions:
         subject: "Instructions de déverrouillage"
-
