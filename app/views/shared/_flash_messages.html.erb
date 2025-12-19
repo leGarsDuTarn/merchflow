@@ -1,25 +1,29 @@
 <%# app/views/shared/_flash_messages.html.erb %>
 
-<% flash.each do |key, value| %>
-  <%# Classes Bootstrap dynamiques %>
-  <% alert_class =
-      case key.to_sym
-      when :success, :notice then "alert-success"
-      when :alert  then "alert-danger"
-      else "alert-info"
-      end
-  %>
+<%# On n'affiche pas les flashs ici si on est sur la page de login, %>
+<%# pour pouvoir les afficher manuellement à l'intérieur du formulaire. %>
+<% unless controller_name == 'sessions' && action_name == 'new' %>
+  <% flash.each do |key, value| %>
+    <%# Classes Bootstrap dynamiques %>
+    <% alert_class =
+        case key.to_sym
+        when :success, :notice then "alert-success"
+        when :alert  then "alert-danger"
+        else "alert-info"
+        end
+    %>
 
-  <div class="container mt-3">
-    <%# alert-dismissible et fade show %>
-    <div class="alert <%= alert_class %> alert-dismissible fade show shadow-sm rounded-3 fw-semibold py-3 px-4" role="alert">
+    <div class="container mt-3">
+      <%# alert-dismissible et fade show %>
+      <div class="alert <%= alert_class %> alert-dismissible fade show shadow-sm rounded-3 fw-semibold py-3 px-4" role="alert">
 
-      <%# Utilisation de .html_safe pour afficher l'input ou le HTML %>
-      <%= value.html_safe %>
+        <%# Utilisation de .strip.html_safe pour éviter les espaces inutiles %>
+        <%= value.strip.html_safe %>
 
-      <%# Bouton de fermeture %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <%# Bouton de fermeture %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 
+      </div>
     </div>
-  </div>
+  <% end %>
 <% end %>

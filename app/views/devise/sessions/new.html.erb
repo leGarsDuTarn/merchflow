@@ -2,58 +2,57 @@
   <div class="row w-100 justify-content-center">
 
     <div class="col-md-5 col-lg-4">
-
       <div class="card shadow-sm p-4 rounded-4">
         <h1 class="fw-bold mb-4 text-center text-orange">Connexion</h1>
 
+        <%# On affiche les messages de succès (ex: après déconnexion) %>
         <% if flash[:notice].present? %>
-          <div class="alert alert-success"><%= flash[:notice] %></div>
-        <% end %>
-
-        <% if flash[:alert].present? %>
-          <div class="text-orange small mb-3 text-center">
-            <%= flash[:alert] %>
+          <div class="alert alert-success rounded-3 small py-2 text-center mb-3">
+            <%= flash[:notice] %>
           </div>
         <% end %>
 
-        <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <%# On désactive Turbo pour que Devise puisse rendre les erreurs correctement %>
+        <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { data: { turbo: false } }) do |f| %>
 
           <div class="mb-3">
             <%= f.label :email, "Adresse email", class: "form-label fw-semibold" %>
+
+            <%# On ajoute is-invalid et border-danger si le login échoue %>
             <%= f.email_field :email,
                               autofocus: true,
                               autocomplete: "email",
-                              class: "form-control",
+                              class: "form-control #{'is-invalid border-danger' if flash[:alert]}",
                               required: true %>
-            <%= inline_error_for(resource, :email) %>
+
+            <%# Comme inline_error_for ne marche pas au login, on gère l'affichage ici %>
+            <% if flash[:alert] %>
+              <div class="text-flash-orange small mt-1">
+                Email ou mot de passe incorrect.
+              </div>
+            <% end %>
           </div>
 
           <div class="mb-3">
             <%= f.label :password, "Mot de passe", class: "form-label fw-semibold" %>
 
-            <%# --- CHAMP PASSWORD PREMIUM --- %>
             <div class="input-group" data-controller="password">
-
-              <%# CHAMP : Bordure droite supprimée (border-end-0) pour fusionner avec le bouton %>
+              <%# Le champ password devient rouge en cas d'erreur %>
               <%= f.password_field :password,
                                    autocomplete: "current-password",
-                                   class: "form-control border-end-0",
+                                   class: "form-control border-end-0 #{'is-invalid border-danger' if flash[:alert]}",
                                    required: true,
                                    data: { password_target: "field" } %>
 
-              <%# BOUTON : Fond blanc, bordure gauche supprimée, icône Orange %>
+              <%# Le bouton de l'œil doit aussi devenir rouge pour rester aligné avec le champ %>
               <button type="button"
-                      class="btn border border-start-0 bg-white text-orange"
+                      class="btn border border-start-0 bg-white text-orange <%= 'border-danger' if flash[:alert] %>"
                       data-action="click->password#toggle"
                       data-password-target="icon"
-                      style="z-index: 0;"> <%# z-index fix pour éviter les soucis de bordure %>
-                <%# Par défaut on met l'œil "ouvert" (fa-eye) pour dire "Voir" %>
+                      style="z-index: 0;">
                 <i class="fa-solid fa-eye"></i>
               </button>
             </div>
-            <%# --- FIN CHAMP PASSWORD PREMIUM --- %>
-
-            <%= inline_error_for(resource, :password) %>
           </div>
 
           <% if devise_mapping.rememberable? %>
@@ -72,10 +71,10 @@
         <%# BLOC DE SECOURS %>
         <div class="mt-3 mb-2 p-3 border rounded-4 bg-light">
           <p class="small text-muted mb-2 text-center">
-            Mot de passe oublié ? Contactez l'administration pour obtenir un lien de secours :
+            Mot de passe oublié ? Contactez l'administration :
           </p>
           <%= link_to 'Demander un lien de secours',
-                      "mailto:grassiano.b@gmail.com?subject=Demande de réinitialisation de mot de passe MerchFlow",
+                      "mailto:grassiano.b@gmail.com?subject=Demande de réinitialisation MerchFlow",
                       class: 'btn btn-sm btn-orange-outline w-100 fw-bold' %>
         </div>
 
@@ -84,7 +83,6 @@
         </div>
 
       </div>
-
     </div>
   </div>
 </div>
