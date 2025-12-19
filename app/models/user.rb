@@ -148,20 +148,25 @@ class User < ApplicationRecord
   end
 
   def generate_username
-    return if username.present?
+  return if username.present?
 
-    base = "#{firstname}#{lastname}".downcase.gsub(/[^a-z0-9]/, '')
-    base = 'user' if base.blank?
+    # Listes de mots en français pour un aspect sympathique et anonyme
+    adjectifs = %w[rapide brave calme malin solaire agile joyeux discret zen epique]
+    noms = %w[faucon renard nebuleuse riviere vague montagne foret lynx comete delta]
 
-    candidate = base
-    counter = 1
+    loop do
+      # On génère une combinaison aléatoire (ex: "zen-lynx-4289")
+      adjectif = adjectifs.sample
+      nom = noms.sample
+      nombre = rand(1000..9999)
+      candidate = "#{adjectif}-#{nom}-#{nombre}"
 
-    while User.exists?(username: candidate)
-      candidate = "#{base}#{counter}"
-      counter += 1
+      # On vérifie si ce pseudonyme est déjà pris
+      unless User.exists?(username: candidate)
+        self.username = candidate
+        break # On sort de la boucle dès qu'un pseudo libre est trouvé
+      end
     end
-
-    self.username = candidate
   end
 
   def normalize_phone_number

@@ -49,8 +49,9 @@ RSpec.describe User, type: :model do
 
     # --- format username ---
     it { should allow_value('benjamin_12').for(:username) }
+    it { should allow_value('zen-renard-4231').for(:username) }
 
-    it 'Le test refuse les caractères spéciaux' do
+    it 'Le test refuse les caractères spéciaux non autorisés' do
       User.skip_callback(:validation, :before, :normalize_username)
       user = build(:user, username: 'benjamin !')
       expect(user).to be_invalid
@@ -95,18 +96,27 @@ RSpec.describe User, type: :model do
   end
 
   # ------------------------------------------------------------
-  # generate_username
+  # generate_username (Mise à jour pour Confidentialité)
   # ------------------------------------------------------------
   context 'Test de la methode generate_username' do
-    it 'génère un username automatique si vide' do
-      user = create(:user, username: nil, firstname: 'Jean', lastname: 'Dupont')
-      expect(user.username).to start_with('jeandupont')
+    it 'génère un username anonyme respectant le pattern (mot-mot-chiffres)' do
+      user = create(:user, username: nil)
+      # Format attendu : adjectif-nom-4chiffres (ex: rapide-faucon-1234)
+      expect(user.username).to match(/[a-z]+-[a-z]+-\d{4}/)
     end
 
-    it 'ajoute un compteur si username déjà pris' do
-      create(:user, username: 'jeandupont')
+    it 'génère des usernames différents pour deux utilisateurs sans lien avec leur identité' do
+      user1 = create(:user, username: nil, firstname: 'Jean', lastname: 'Dupont')
       user2 = create(:user, username: nil, firstname: 'Jean', lastname: 'Dupont')
-      expect(user2.username).to match(/jeandupont\d+/)
+
+      expect(user1.username).not_to eq(user2.username)
+      expect(user1.username).not_to include('jean')
+      expect(user1.username).not_to include('dupont')
+    end
+
+    it 'ne modifie pas un username déjà renseigné par l utilisateur' do
+      user = create(:user, username: 'mon-pseudo-perso')
+      expect(user.username).to eq('mon-pseudo-perso')
     end
   end
 
@@ -140,7 +150,7 @@ RSpec.describe User, type: :model do
   end
 
   # ------------------------------------------------------------
-  # MÉTHODES DASHBOARD (Mises à jour)
+  # MÉTHODES DASHBOARD
   # ------------------------------------------------------------
   context 'Test des methodes du dashboard' do
     let(:user) { create(:user) }
@@ -175,26 +185,20 @@ RSpec.describe User, type: :model do
     )
     end
 
-    # --- TOTAUX GLOBAUX (Current + Old) ---
-
+    # --- TOTAUX GLOBAUX ---
     it 'total_hours_worked : somme de toutes les heures' do
-      # 2h (current) + 1h (old) = 3h
       expect(user.total_hours_worked).to eq(3.0)
     end
 
     it 'total_brut : somme de tout le brut de base' do
-      # 100€ (current) + 50€ (old) = 150€
-     expect(user.total_brut).to eq(150.0)
+      expect(user.total_brut).to eq(150.0)
     end
 
     it 'total_km : somme des km' do
-      # 20km (current) + 10km (old) = 30km
       expect(user.total_km).to eq(30.0)
     end
 
-    # --- TOTAUX MOIS EN COURS (Current uniquement) ---
-    # On utilise les nouvelles méthodes _for_month(Date.current)
-
+    # --- TOTAUX MOIS EN COURS ---
     it 'sessions_this_month : ne récupère que la session du mois' do
       expect(user.sessions_this_month).to include(session_current)
       expect(user.sessions_this_month).not_to include(session_old)
@@ -205,22 +209,11 @@ RSpec.describe User, type: :model do
     end
 
     it 'total_complete_brut_for_month : brut complet (Base + IFM + CP)' do
-      # Calcul :
-      # Base Brut : 100.0
-      # IFM (mock) : 5.0
-      # CP (mock) : 5.0
-      # Total attendu : 110.0
       expect(user.total_complete_brut_for_month(Date.current)).to eq(110.0)
     end
 
     it 'net_total_estimated_for_month : Somme exacte des nets' do
-      # Calcul PRÉCIS (Nouvelle logique) :
-      # Net Base = 100 * 0.78 = 78.0
-      # Net IFM  = 5 * 0.78   = 3.90
-      # Net CP   = 5 * 0.78   = 3.90
-      # KM       = 10.0
-      #
-      # Total    = 78.0 + 3.9 + 3.9 + 10.0 = 95.80
+      # 100 * 0.78 (78.0) + 5 * 0.78 (3.9) + 5 * 0.78 (3.9) + 10.0 (KM) = 95.8
       expect(user.net_total_estimated_for_month(Date.current)).to eq(95.8)
     end
   end
