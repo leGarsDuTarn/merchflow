@@ -12,19 +12,14 @@ class WorkSession < ApplicationRecord
   validate  :end_after_start
   validates :hourly_rate, numericality: { greater_than: 0 }
   validate  :no_overlap_with_existing_sessions
-  validate  :validate_break_consistency # Nouvelle validation pour la coupure
+  validate  :validate_break_consistency
 
   # ============================================================
-  # ENUM
+  # ENUM & SCOPES
   # ============================================================
   enum :status, { pending: 0, accepted: 1, declined: 2 }
 
-  # ============================================================
-  # SCOPES
-  # ============================================================
-  scope :for_month, ->(year, month) {
-    where(date: Date.new(year, month).all_month).order(:date, :start_time)
-  }
+  scope :for_month, ->(year, month) { where(date: Date.new(year, month).all_month).order(:date, :start_time) }
   scope :for_year, ->(year) { where(date: Date.new(year).all_year) }
   scope :upcoming, -> { where('date >= ?', Date.today).order(:date) }
   scope :past, -> { where('date < ?', Date.today).order(date: :desc) }
@@ -38,11 +33,11 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # CONSTANTES
   # ============================================================
-  NIGHT_START = 21 # 21h
-  NIGHT_END   = 6  # 6h
+  NIGHT_START = 21
+  NIGHT_END   = 6
 
   # ============================================================
-  # CALLBACKS : recalcul complet avant sauvegarde
+  # CALLBACKS
   # ============================================================
   before_validation :fix_timestamps_with_correct_date
   before_validation :ensure_end_time_is_on_correct_day
@@ -51,41 +46,43 @@ class WorkSession < ApplicationRecord
   before_validation :compute_effective_km
 
   # ============================================================
-  # MÉTHODES DE CALCUL DE TEMPS (MODIFIÉES POUR LA COUPURE)
+  # MÉTHODES PUBLIQUES (Accessibles par les tests et KilometerLog)
   # ============================================================
 
   def has_break?
     break_start_time.present? && break_end_time.present?
   end
 
-  # Vérifie si un instant donné est pendant la pause
   def in_break?(time)
     return false unless has_break?
     time >= break_start_time && time < break_end_time
   end
 
+  # Calcul des KM (Appelé par KilometerLog après save/destroy)
+  def compute_effective_km
+    if km_custom.present?
+      self.effective_km = km_custom.to_f
+    else
+      api_km = kilometer_logs.sum(:distance).to_f
+      self.effective_km = api_km.positive? ? api_km : 0.0
+    end
+  end
+
   def compute_duration
     return if start_time.blank? || end_time.blank?
-
-    # On calcule l'enveloppe totale en minutes
-    total_minutes = ((end_time - start_time) / 60).to_i
-
-    # On soustrait la pause si elle existe
+    total = ((end_time - start_time) / 60).to_i
     if has_break?
       break_duration = ((break_end_time - break_start_time) / 60).to_i
-      total_minutes -= break_duration
+      total -= break_duration
     end
-
-    self.duration_minutes = [total_minutes, 0].max
+    self.duration_minutes = [total, 0].max
   end
 
   def compute_night_minutes
     return if start_time.blank? || end_time.blank?
     minutes = 0
     current = start_time
-
     while current < end_time
-      # On ne compte la minute de nuit QUE si on n'est pas en pause
       unless in_break?(current)
         minutes += 1 if current.hour >= NIGHT_START || current.hour < NIGHT_END
       end
@@ -94,9 +91,7 @@ class WorkSession < ApplicationRecord
     self.night_minutes = minutes
   end
 
-  # ============================================================
-  # FINANCES & REMUNERATION (RESTENT IDENTIQUES)
-  # ============================================================
+  # --- FINANCES ---
 
   def brut
     return 0 if duration_minutes.zero?
@@ -137,18 +132,12 @@ class WorkSession < ApplicationRecord
     brut + amount_ifm + amount_cp + km_payment_final
   end
 
-  # ============================================================
-  # LOGIQUE DE SYNCHRONISATION DES DATES
-  # ============================================================
+  # --- NORMALISATION ---
 
   def fix_timestamps_with_correct_date
     return unless date.present?
-
-    # Synchronisation start/end
     self.start_time = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}") if start_time.present?
     self.end_time = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}") if end_time.present?
-
-    # Synchronisation des heures de pause
     if break_start_time.present?
       self.break_start_time = Time.zone.parse("#{date} #{break_start_time.strftime('%H:%M:%S')}")
     end
@@ -160,25 +149,17 @@ class WorkSession < ApplicationRecord
   def ensure_end_time_is_on_correct_day
     return if start_time.blank? || end_time.blank?
     self.end_time += 1.day if end_time <= start_time
-
-    # Si la pause finit après le début (ex: pause à minuit), on gère aussi
-    if has_break? && break_end_time <= break_start_time
-      self.break_end_time += 1.day
-    end
+    self.break_end_time += 1.day if has_break? && break_end_time <= break_start_time
   end
 
   # ============================================================
-  # VALIDATIONS PRIVÉES
+  # MÉTHODES PRIVÉES (Internes au modèle)
   # ============================================================
   private
 
   def validate_break_consistency
     return unless has_break?
-
-    if break_end_time <= break_start_time
-      errors.add(:break_end_time, "doit être après l'heure de début de pause")
-    end
-
+    errors.add(:break_end_time, "doit être après l'heure de début de pause") if break_end_time <= break_start_time
     if break_start_time < start_time || break_end_time > end_time
       errors.add(:base, "La coupure doit être comprise dans l'amplitude de la mission")
     end
@@ -186,29 +167,29 @@ class WorkSession < ApplicationRecord
 
   def end_after_start
     return if start_time.blank? || end_time.blank?
-    return if end_time > start_time
-    errors.add(:end_time, "doit être après l'heure de début")
+    errors.add(:end_time, "doit être après l'heure de début") if end_time <= start_time
   end
 
   def no_overlap_with_existing_sessions
     return unless contract.present? && date.present? && start_time.present? && end_time.present?
 
-    new_start_dt = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}")
-    new_end_dt   = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}")
-    new_end_dt += 1.day if new_end_dt <= new_start_dt
+    # On compare des Time objects complets
+    new_start = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}")
+    new_end   = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}")
+    new_end  += 1.day if new_end <= new_start
 
     date_range = (date - 1.day)..(date + 1.day)
     existing_sessions = WorkSession.joins(:contract).where(contracts: { user_id: contract.user_id })
                                    .where(date: date_range).where.not(id: id)
 
     has_overlap = existing_sessions.any? do |session|
-      new_start_dt < session.end_time && new_end_dt > session.start_time
+      new_start < session.end_time && new_end > session.start_time
     end
 
     errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée.') if has_overlap
   end
 
-  # ... Méthodes de calcul brut privées (inchangées) ...
+  # Sous-calculs de paie
   def hours_day
     ((duration_minutes - night_minutes) / 60.0).round(2)
   end
@@ -227,14 +208,5 @@ class WorkSession < ApplicationRecord
 
   def night_pay
     hours_night * night_hourly_rate
-  end
-
-  def compute_effective_km
-    if km_custom.present?
-      self.effective_km = km_custom.to_f
-    else
-      api_km = kilometer_logs.sum(:distance).to_f
-      self.effective_km = api_km.positive? ? api_km : 0.0
-    end
   end
 end
