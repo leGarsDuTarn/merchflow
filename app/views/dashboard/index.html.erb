@@ -1,5 +1,6 @@
 <div class="container mt-4 mb-5">
 
+  <%# --- NAVIGATION MOIS --- %>
   <div class="d-flex justify-content-between align-items-center mb-5">
     <%= link_to dashboard_path(year: @prev_year, month: @prev_month), class: "btn btn-white shadow-sm rounded-3 border" do %>
       <i class="fa-solid fa-chevron-left text-orange"></i>
@@ -18,6 +19,7 @@
     <% end %>
   </div>
 
+  <%# --- 1. BLOC STATISTIQUES --- %>
   <div class="row g-3 mb-5">
     <div class="col-6 col-lg-4">
       <div class="card border-0 shadow-sm p-3 rounded-4 h-100 text-center bg-white">
@@ -48,15 +50,49 @@
     </div>
   </div>
 
-  <%# --- 3. NOTIFICATION PREMIUM : BOOST D'OPPORTUNITÉS --- %>
+  <%# --- 2. ASTUCE MOBILE (Fermeture Permanente) --- %>
+  <%# NOTE : Clé changée en _v3 pour forcer l'affichage %>
+  <div data-controller="dismissible"
+       data-dismissible-target="container"
+       data-dismissible-key-value="hint_mobile_v3"
+       data-dismissible-recurrence-value="0"
+       class="card border-0 shadow-sm rounded-4 mb-3 bg-white d-none animate__animated animate__fadeIn">
+    <div class="card-body p-3">
+      <div class="d-flex align-items-center">
+        <div class="rounded-circle bg-orange-subtle text-orange d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </div>
+        <div class="ms-3 flex-grow-1">
+          <p class="text-muted small mb-0">
+            <strong>Astuce mobile :</strong> pour installer l'appli, utilisez l'option <strong>'Ajouter à l'écran d'accueil'</strong> de votre navigateur. ✨
+          </p>
+        </div>
+        <button type="button" class="btn-close small" style="font-size: 0.7rem;" aria-label="Fermer" data-action="click->dismissible#dismiss"></button>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 3. NOTIFICATION PREMIUM : BOOST (Récurrence 5 jours) --- %>
   <% if @show_visibility_alert %>
-    <div class="card border-0 shadow-sm rounded-4 mb-5 p-0 position-relative overflow-hidden bg-white animate__animated animate__fadeIn">
+    <div data-controller="dismissible"
+         data-dismissible-target="container"
+         data-dismissible-key-value="boost_visib_v3"
+         data-dismissible-recurrence-value="5"
+         class="card border-0 shadow-sm rounded-4 mb-5 p-0 position-relative overflow-hidden bg-white d-none animate__animated animate__fadeIn">
+
       <div class="position-absolute start-0 top-0 bottom-0 bg-orange" style="width: 6px;"></div>
+
+      <%# Bouton de fermeture (Snooze de 5 jours) %>
+      <button type="button"
+              class="btn-close position-absolute top-0 end-0 m-3"
+              aria-label="Fermer"
+              data-action="click->dismissible#dismiss"
+              style="z-index: 10;"></button>
 
       <div class="card-body p-4">
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
 
-          <div class="d-flex align-items-center mb-3 mb-md-0">
+          <div class="d-flex align-items-center mb-3 mb-md-0 pe-4">
             <div class="rounded-circle bg-orange-subtle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 50px; height: 50px;">
               <i class="fa-solid fa-rocket text-orange fs-4"></i>
             </div>
@@ -69,17 +105,7 @@
           </div>
 
           <div class="ms-md-4 w-100 w-md-auto text-center">
-            <%
-              # LOGIQUE DE ROUTE CORRIGÉE pour la ressource singulière :
-              if current_user.merch_setting.present?
-                # Helper edit singulier sans argument
-                target_path = merch_settings_path
-              else
-                # Helper new singulier
-                target_path = merch_settings_path
-              end
-            %>
-
+            <% target_path = merch_settings_path %>
             <%= link_to target_path, class: "btn btn-gray rounded-pill px-4 py-2 fw-bold shadow-sm w-md-auto", style: "font-size: 0.9rem;" do %>
               Activer ma visibilité
             <% end %>
@@ -88,9 +114,15 @@
         </div>
       </div>
     </div>
-  <% end %>
-  <%# --------------------------------------------------- %>
 
+  <%# === ICI LE FIX === %>
+  <% else %>
+    <%# Si l'utilisateur est en règle, on nettoie la mémoire pour que l'alerte revienne s'il redésactive %>
+    <div data-controller="storage-cleaner" data-storage-cleaner-key-value="boost_visib_v3"></div>
+  <% end %>
+  <%# ================== %>
+
+  <%# --- 4. RÉPARTITION DES PAIEMENTS --- %>
   <div class="row mt-4">
     <div class="col-12 mb-4 d-flex align-items-center">
       <div class="bg-orange rounded-pill me-2" style="width: 4px; height: 24px;"></div>
@@ -132,9 +164,7 @@
                         <p class="mb-0 fw-bold fs-5 text-dark">
                           <%= number_to_currency(stats[:net_salary], unit: "€", format: "%n %u") %>
                         </p>
-                        <small class="text-muted" style="font-size: 0.7rem;">
-                          (Hors Indemnités KM)
-                        </small>
+                        <small class="text-muted" style="font-size: 0.7rem;">(Hors Indemnités KM)</small>
                       </div>
                     </div>
                   </div>
@@ -149,9 +179,7 @@
                         <p class="mb-0 fw-bold fs-5 text-dark">
                           <%= number_to_currency(stats[:km_payment], unit: "€", format: "%n %u") %>
                         </p>
-                        <small class="text-muted" style="font-size: 0.7rem;">
-                          <%= stats[:km].to_i %> km validés
-                        </small>
+                        <small class="text-muted" style="font-size: 0.7rem;"><%= stats[:km].to_i %> km validés</small>
                       </div>
                     </div>
                   </div>
@@ -175,11 +203,10 @@
     <% end %>
   </div>
 
+  <%# --- 5. BOUTONS D'ACTION BAS DE PAGE --- %>
   <div class="row justify-content-center mt-5 mb-5">
-    <div class="col-12 col-md-8 col-lg-6">
-
+    <div class="col-12 col-md-8 col-lg-6 text-center">
       <div class="d-grid gap-3 d-md-flex justify-content-center">
-
         <%= link_to new_contract_path, class: "btn btn-orange rounded-pill px-4 py-3 fw-bold shadow-sm" do %>
           <i class="fa-solid fa-plus me-2"></i>Nouveau Contrat
         <% end %>
@@ -189,11 +216,8 @@
             <i class="fa-solid fa-briefcase me-2"></i>Ajouter Mission
           <% end %>
         <% else %>
-          <button class="btn btn-light rounded-pill px-4 py-3 fw-bold text-muted" disabled>
-            Ajouter Mission
-          </button>
+          <button class="btn btn-light rounded-pill px-4 py-3 fw-bold text-muted" disabled>Ajouter Mission</button>
         <% end %>
-
       </div>
     </div>
   </div>
