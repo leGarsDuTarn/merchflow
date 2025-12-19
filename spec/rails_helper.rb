@@ -38,10 +38,10 @@ end
 RSpec.configure do |config|
   # Permet de lier la gem Pundit aux tests de Policy
   config.include Pundit::Matchers, type: :policy
-  # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
 
-  # Permet d'utiliser 'sign_in' dans les request specs
+  # Permet d'utiliser 'sign_in' dans les request specs ET les system specs
   config.include Devise::Test::IntegrationHelpers, type: :request
+  config.include Devise::Test::IntegrationHelpers, type: :system # INDISPENSABLE POUR LE DASHBOARD
 
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
@@ -49,35 +49,25 @@ RSpec.configure do |config|
 
   # Setup FactoryBot
   config.include FactoryBot::Syntax::Methods
-  # If you're not using ActiveRecord, or you'd prefer not to run each of your
-  # examples within a transaction, remove the following line or assign false
-  # instead of true.
+
   config.use_transactional_fixtures = true
 
-  # You can uncomment this line to turn off ActiveRecord support entirely.
-  # config.use_active_record = false
+  # === LE FIX POUR TES TESTS ORANGE ===
+  # Cette ligne permet à RSpec de savoir que le dossier spec/system = tests système
+  config.infer_spec_type_from_file_location!
 
-  # RSpec Rails uses metadata to mix in different behaviours to your tests,
-  # for example enabling you to call `get` and `post` in request specs. e.g.:
-  #
-  #     RSpec.describe UsersController, type: :request do
-  #       # ...
-  #     end
-  #
-  # The different available types are documented in the features, such as in
-  # https://rspec.info/features/8-0/rspec-rails
-  #
-  # You can also this infer these behaviours automatically by location, e.g.
-  # /spec/models would pull in the same behaviour as `type: :model` but this
-  # behaviour is considered legacy and will be removed in a future version.
-  #
-  # To enable this behaviour uncomment the line below.
-  # config.infer_spec_type_from_file_location!
+  # Configuration du driver pour les tests système
+  config.before(:each, type: :system) do
+    driven_by :rack_test
+  end
 
-  # Filter lines from Rails gems in backtraces.
+  # Configuration spécifique quand on utilise 'js: true' (Selenium Chrome)
+  config.before(:each, type: :system, js: true) do
+    driven_by :selenium_chrome_headless
+  end
+  # =====================================
+
   config.filter_rails_from_backtrace!
-  # arbitrary gems may also be filtered via:
-  # config.filter_gems_from_backtrace("gem name")
 end
 
 # Setup ShouldaMatcher
