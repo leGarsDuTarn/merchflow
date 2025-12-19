@@ -103,7 +103,7 @@ class WorkSessionsController < ApplicationController
   end
 
   # ============================================================
-  # UPDATE 
+  # UPDATE
   # ============================================================
   def update
     if @work_session.update(work_session_params)
@@ -142,7 +142,9 @@ class WorkSessionsController < ApplicationController
   def work_session_params
     params.require(:work_session).permit(
       :contract_id, :company,
-      :date, :start_time, :end_time, :shift, :store,
+      :date, :start_time, :end_time,
+      :break_start_time, :break_end_time,
+      :shift, :store,
       :store_full_address, :notes,
       :recommended, :km_custom, :hourly_rate
     )

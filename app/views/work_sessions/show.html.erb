@@ -28,6 +28,7 @@
             </span>
           </div>
         <% end %>
+
         <div class="card-body p-4">
           <div class="d-flex align-items-center mb-4">
             <div class="bg-orange-light text-orange rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
@@ -63,18 +64,33 @@
             </div>
           </div>
 
+          <% if @work_session.has_break? %>
+            <div class="mt-2 mb-2">
+              <div class="d-flex align-items-center justify-content-center bg-white border border-orange-subtle rounded-3 py-2 px-3 shadow-sm" style="border-style: dashed !important;">
+                <div class="text-orange me-3">
+                  <i class="fa-solid fa-mug-hot"></i>
+                </div>
+                <div class="text-center lh-1">
+                  <small class="text-muted d-block mb-1" style="font-size: 0.75rem;">Coupure non rémunérée</small>
+                  <span class="fw-bold text-dark small">
+                    <%= @work_session.break_start_time.strftime("%H:%M") %> à <%= @work_session.break_end_time.strftime("%H:%M") %>
+                  </span>
+                </div>
+              </div>
+            </div>
+          <% end %>
           <div class="row g-2 mt-1 text-center">
             <div class="col-6">
-              <div class="border border-orange-subtle bg-orange-light rounded-3 p-3">
+              <div class="border border-orange-subtle bg-orange-light rounded-3 p-3 h-100 d-flex flex-column justify-content-center">
                 <i class="fa-regular fa-clock text-orange mb-1"></i>
                 <div class="fw-bold text-dark">
                   <%= (@work_session.duration_minutes.to_f / 60).round(2) %> h
                 </div>
-                <small class="text-muted" style="font-size: 0.75rem;">Durée totale</small>
+                <small class="text-muted" style="font-size: 0.75rem;">Durée payée</small>
               </div>
             </div>
             <div class="col-6">
-              <div class="border border-orange-subtle bg-orange-light rounded-3 p-3">
+              <div class="border border-orange-subtle bg-orange-light rounded-3 p-3 h-100 d-flex flex-column justify-content-center">
                 <i class="fa-solid fa-road text-orange mb-1"></i>
                 <div class="fw-bold text-dark">
                   <%= @work_session.effective_km %> km
