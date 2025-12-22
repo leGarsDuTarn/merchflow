@@ -15,4 +15,8 @@ class StaticPagesController < ApplicationController
   def terms
     # Le contenu est rendu directement par la vue
   end
+
+  def community
+  # Le contenu est rendu directement par la vue
+  end
 end

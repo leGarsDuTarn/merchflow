@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   get 'cgu', to: 'static_pages#terms', as: :terms
   get 'contact', to: 'static_pages#contact', as: :contact
 
+
   # ============================================================
   # HOME + DASHBOARD
   # ============================================================
@@ -68,7 +69,9 @@ Rails.application.routes.draw do
   # ============================================================
   get 'france_travail', to: 'declarations#france_travail'
   get 'km/calc', to: 'km_api#calculate'
-  get 'planning', to: 'planning#index' # Planning côté Merch
+  # Planning côté Merch
+  get 'planning', to: 'planning#index'
+  get 'communaute', to: 'static_pages#community', as: :community
 
   # ============================================================
   # MERCH ROUTES (Actions du Prestataire)
