@@ -1,13 +1,153 @@
-<div class="community-container" style="text-align: center; padding: 40px 20px;">
-  <div class="icon" style="font-size: 50px;">🤝</div>
-  <h1>Le QG de MerchFlow</h1>
-  <p style="margin: 20px 0; color: #666;">
-    Rejoignez la communauté des Merchs et Animateurs !<br>
-    Échangez des astuces, partagez vos plus beaux stands et trouvez de l'aide en direct.
-  </p>
+<div class="container mt-4 mb-5">
 
-  <%= link_to "Rejoindre le Discord", "https://discord.gg/TON_CODE_INVITATION",
-      class: "btn-discord",
-      style: "background-color: #5865F2; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;",
-      target: "_blank" %>
+  <%# --- EN-TÊTE (Même style que le Dashboard) --- %>
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <%= link_to dashboard_path, class: "btn btn-white shadow-sm rounded-3 border" do %>
+      <i class="fa-solid fa-chevron-left text-orange"></i>
+    <% end %>
+
+    <div class="text-center">
+      <h3 class="fw-bold text-dark m-0">La Communauté</h3>
+      <small class="text-muted">Le QG des Merchs & Animateurs</small>
+    </div>
+
+    <%# Div vide pour équilibrer le flexbox centré %>
+    <div style="width: 42px;"></div>
+  </div>
+
+  <%# --- 1. HERO SECTION : L'INVITATION --- %>
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white text-center position-relative overflow-hidden">
+    <%# Décoration de fond %>
+    <div class="position-absolute top-0 start-50 translate-middle opacity-10" style="margin-top: 20px;">
+      <i class="fa-brands fa-discord" style="font-size: 150px; color: #5865F2;"></i>
+    </div>
+
+    <div class="position-relative z-1 py-5 mt-4">
+
+      <h2 class="fw-bold text-dark mb-2">Rejoignez le Club MerchFlow</h2>
+      <p class="text-muted mb-4 mx-auto" style="max-width: 600px;">
+        Fini les groupes Facebook brouillons. J'ai créé un espace <strong>privé, sécurisé et gratuit</strong> pour s'entraider entre professionnels du terrain.
+      </p>
+
+      <%= link_to "https://discord.gg/rgbAFk8S", target: "_blank", class: "btn btn-orange rounded-pill px-5 py-3 fw-bold shadow-sm animate__animated animate__pulse animate__infinite" do %>
+        <i class="fa-brands fa-discord me-2"></i>Rejoindre maintenant
+      <% end %>
+      <div class="mt-2">
+        <small class="text-muted" style="font-size: 0.75rem;">100% Gratuit • Réservé aux membres</small>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 2. POURQUOI DISCORD ? (Style Stats Dashboard) --- %>
+  <div class="row g-3 mb-5">
+    <div class="col-12 mb-2 d-flex align-items-center">
+      <div class="bg-orange rounded-pill me-2" style="width: 4px; height: 24px;"></div>
+      <h5 class="fw-bold text-dark m-0">Pourquoi c'est mieux que Facebook ?</h5>
+    </div>
+
+    <%# Carte 1 %>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm p-4 rounded-4 h-100 text-center bg-white">
+        <div class="mb-3 text-orange">
+          <i class="fa-solid fa-shield-halved fa-2x"></i>
+        </div>
+        <span class="text-muted small text-uppercase fw-bold ls-1">Privé & Sécurisé</span>
+        <p class="text-dark mb-0 mt-2 small">
+          Considérez ce groupe comme la salle de pause que nous n'avons pas sur le terrain. Un lieu sûr et privé pour parler librement de vos missions, échanger vos meilleures astuces, ou juste papoter de la vie en dehors du boulot.
+        </p>
+      </div>
+    </div>
+
+    <%# Carte 2 %>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm p-4 rounded-4 h-100 text-center bg-white">
+        <div class="mb-3 text-orange">
+          <i class="fa-solid fa-list-check fa-2x"></i>
+        </div>
+        <span class="text-muted small text-uppercase fw-bold ls-1">Tout est rangé</span>
+        <p class="text-dark mb-0 mt-2 small">
+          Fini le fil d'actualité où tout se mélange. Sur Discord, il y a des "salons" par thème : #entraide, #la communauté, #bugs & suggestions, etc.
+        </p>
+      </div>
+    </div>
+
+    <%# Carte 3 (Mise en avant comme le "Net Total" du dashboard) %>
+    <div class="col-12 col-md-4">
+      <div class="card border-0 shadow-sm p-4 rounded-4 h-100 text-center bg-orange-subtle">
+        <div class="mb-3 text-orange">
+          <i class="fa-solid fa-bolt fa-2x"></i>
+        </div>
+        <span class="text-orange small text-uppercase fw-bold ls-1">Réactivité Immédiate</span>
+        <p class="text-orange mb-0 mt-2 small fw-bold">
+          Une galère en rayon ? Une question urgente ?
+        </p>
+        <p class="text-dark mb-0 small mt-1">
+          La communauté répond souvent dans la minute. C'est comme un talkie-walkie géant.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 3. TUTO INSTALLATION (Pour les 50+) --- %>
+  <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+      <h5 class="fw-bold text-dark mb-1">Je ne connais pas Discord, comment faire ?</h5>
+      <p class="text-muted small">Suivez ces 3 étapes simples, ça prend 2 minutes.</p>
+    </div>
+
+    <div class="card-body p-4">
+      <div class="row g-4 align-items-center">
+
+        <%# Étape 1 %>
+        <div class="col-12 col-md-4 text-center text-md-start">
+          <div class="d-flex flex-column flex-md-row align-items-center">
+            <div class="rounded-circle bg-light text-dark fw-bold d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-3" style="width: 40px; height: 40px; border: 2px solid #ddd;">1</div>
+            <div>
+              <h6 class="fw-bold text-dark mb-1">Installez l'application</h6>
+              <p class="text-muted small mb-2">Téléchargez "Discord" sur votre téléphone :</p>
+              <div class="d-flex justify-content-center justify-content-md-start gap-2">
+                <a href="https://apps.apple.com/fr/app/discord-discute-et-partage/id985746746" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+                  <i class="fa-brands fa-apple me-1"></i> iPhone
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.discord&hl=fr" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+                  <i class="fa-brands fa-google-play me-1"></i> Android
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%# Étape 2 %>
+        <div class="col-12 col-md-4 text-center text-md-start border-start-md">
+          <div class="d-flex flex-column flex-md-row align-items-center">
+            <div class="rounded-circle bg-light text-dark fw-bold d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-3" style="width: 40px; height: 40px; border: 2px solid #ddd;">2</div>
+            <div>
+              <h6 class="fw-bold text-dark mb-1">Créez votre compte</h6>
+              <p class="text-muted small mb-0">
+                Ouvrez l'application et inscrivez-vous avec votre email. C'est gratuit et ça le restera toujours.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <%# Étape 3 %>
+        <div class="col-12 col-md-4 text-center text-md-start border-start-md">
+          <div class="d-flex flex-column flex-md-row align-items-center">
+            <div class="rounded-circle bg-orange text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-3" style="width: 40px; height: 40px;">3</div>
+            <div>
+              <h6 class="fw-bold text-dark mb-1">Cliquez sur le lien magique</h6>
+              <p class="text-muted small mb-2">
+                Revenez ici et cliquez sur le bouton ci-dessous pour entrer dans le groupe MerchFlow.
+              </p>
+              <%= link_to "https://discord.gg/rgbAFk8S", target: "_blank", class: "btn btn-sm btn-orange rounded-pill px-3 fw-bold" do %>
+                Entrer dans le serveur <i class="fa-solid fa-arrow-right ms-1"></i>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
