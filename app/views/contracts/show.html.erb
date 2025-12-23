@@ -35,7 +35,7 @@
           <% end %>
         </div>
 
-        <%# BOUTON SUIVANT (J'ai retiré la condition "disabled" ici) %>
+        <%# BOUTON SUIVANT %>
         <%= link_to contract_path(@contract, year: @next_date.year, month: @next_date.month), class: "btn btn-white shadow-sm rounded-3 border" do %>
           <i class="fa-solid fa-chevron-right text-orange"></i>
         <% end %>
@@ -69,14 +69,24 @@
                 </div>
               </div>
 
-              <%# Prix %>
-              <div class="text-end">
+              <%# Prix & Badge Frais %>
+              <div class="d-flex flex-column align-items-center">
+
+                <%# --- NOUVEAU BADGE FRAIS (Conditionnel) --- %>
+                <% if ws.total_fees > 0 %>
+                  <span class="badge bg-orange-subtle text-orange border border-orange-subtle rounded-pill mb-1 px-2" style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-receipt me-1"></i>
+                    +<%= number_to_currency(ws.total_fees, unit: "€", format: "%n") %>
+                  </span>
+                <% end %>
+                <%# ------------------------------------------ %>
+
                 <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold">
-              <%
-                # On calcule la somme des trois éléments BRUT SANS les KM
-                brut_sans_km = ws.brut + ws.amount_ifm + ws.amount_cp
-                %>
-                <%= number_to_currency(brut_sans_km, unit: "€", format: "%n %u") %>
+                  <%
+                    # On calcule la somme des trois éléments BRUT SANS les KM
+                    brut_sans_km = ws.brut + ws.amount_ifm + ws.amount_cp
+                  %>
+                  <%= number_to_currency(brut_sans_km, unit: "€", format: "%n %u") %>
                 </span>
               </div>
 

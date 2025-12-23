@@ -45,13 +45,12 @@
         <p class="display-5 fw-bold text-orange mb-0 mt-2">
           <%= number_to_currency(@net_total_estimated_month, unit: "€", format: "%n %u") %>
         </p>
-        <small class="text-muted" style="font-size: 0.8rem;">(Salaire Net + Indemnités KM)</small>
+        <small class="text-muted" style="font-size: 0.8rem;">(Salaire + KM + Frais)</small>
       </div>
     </div>
   </div>
 
-  <%# --- 2. ASTUCE MOBILE (Fermeture Permanente) --- %>
-  <%# NOTE : Clé changée en _v3 pour forcer l'affichage %>
+  <%# --- 2. ASTUCE MOBILE --- %>
   <div data-controller="dismissible"
        data-dismissible-target="container"
        data-dismissible-key-value="hint_mobile_v3"
@@ -72,7 +71,7 @@
     </div>
   </div>
 
-  <%# --- 3. NOTIFICATION PREMIUM : BOOST (Récurrence 5 jours) --- %>
+  <%# --- 3. NOTIFICATION PREMIUM --- %>
   <% if @show_visibility_alert %>
     <div data-controller="dismissible"
          data-dismissible-target="container"
@@ -81,17 +80,10 @@
          class="card border-0 shadow-sm rounded-4 mb-5 p-0 position-relative overflow-hidden bg-white d-none animate__animated animate__fadeIn">
 
       <div class="position-absolute start-0 top-0 bottom-0 bg-orange" style="width: 6px;"></div>
-
-      <%# Bouton de fermeture (Snooze de 5 jours) %>
-      <button type="button"
-              class="btn-close position-absolute top-0 end-0 m-3"
-              aria-label="Fermer"
-              data-action="click->dismissible#dismiss"
-              style="z-index: 10;"></button>
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" aria-label="Fermer" data-action="click->dismissible#dismiss" style="z-index: 10;"></button>
 
       <div class="card-body p-4">
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
-
           <div class="d-flex align-items-center mb-3 mb-md-0 pe-4">
             <div class="rounded-circle bg-orange-subtle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 50px; height: 50px;">
               <i class="fa-solid fa-rocket text-orange fs-4"></i>
@@ -103,24 +95,17 @@
               </p>
             </div>
           </div>
-
           <div class="ms-md-4 w-100 w-md-auto text-center">
-            <% target_path = merch_settings_path %>
-            <%= link_to target_path, class: "btn btn-gray rounded-pill px-4 py-2 fw-bold shadow-sm w-md-auto", style: "font-size: 0.9rem;" do %>
+            <%= link_to merch_settings_path, class: "btn btn-gray rounded-pill px-4 py-2 fw-bold shadow-sm w-md-auto", style: "font-size: 0.9rem;" do %>
               Activer ma visibilité
             <% end %>
           </div>
-
         </div>
       </div>
     </div>
-
-  <%# === ICI LE FIX === %>
   <% else %>
-    <%# Si l'utilisateur est en règle, on nettoie la mémoire pour que l'alerte revienne s'il redésactive %>
     <div data-controller="storage-cleaner" data-storage-cleaner-key-value="boost_visib_v3"></div>
   <% end %>
-  <%# ================== %>
 
   <%# --- 4. RÉPARTITION DES PAIEMENTS --- %>
   <div class="row mt-4">
@@ -130,9 +115,9 @@
     </div>
 
     <% if @by_agency.any? %>
-      <div class="row g-2">
+      <div class="row g-3">
         <% @by_agency.each do |stats| %>
-          <div class="col-12 col-lg-6">
+          <div class="col-12">
             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-white">
 
               <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-start">
@@ -153,8 +138,13 @@
               <div class="card-body px-4 pb-4 pt-3">
                 <hr class="border-light-subtle opacity-50 mb-4">
 
+                <%# --- GRID ADAPTATIVE : 3 colonnes si frais, 2 sinon --- %>
+                <% has_fees = stats[:fees].to_f > 0 %>
+
                 <div class="row g-3">
-                  <div class="col-6">
+
+                  <%# COL 1 : Salaire Net %>
+                  <div class="<%= has_fees ? 'col-6 col-md-4' : 'col-6' %>">
                     <div class="p-3 rounded-4 bg-light h-100 d-flex flex-column justify-content-between">
                       <div class="mb-2">
                         <i class="fa-solid fa-sack-dollar text-muted mb-2"></i>
@@ -164,12 +154,13 @@
                         <p class="mb-0 fw-bold fs-5 text-dark">
                           <%= number_to_currency(stats[:net_salary], unit: "€", format: "%n %u") %>
                         </p>
-                        <small class="text-muted" style="font-size: 0.7rem;">(Hors Indemnités KM)</small>
+                        <small class="text-muted" style="font-size: 0.7rem;">(Hors frais annexe)</small>
                       </div>
                     </div>
                   </div>
 
-                  <div class="col-6">
+                  <%# COL 2 : Indemnités KM %>
+                  <div class="<%= has_fees ? 'col-6 col-md-4' : 'col-6' %>">
                     <div class="p-3 rounded-4 bg-light h-100 d-flex flex-column justify-content-between">
                       <div class="mb-2">
                         <i class="fa-solid fa-car-side text-muted mb-2"></i>
@@ -183,6 +174,25 @@
                       </div>
                     </div>
                   </div>
+
+                  <%# COL 3 : Frais (Conditionnelle) %>
+                  <% if has_fees %>
+                    <div class="col-12 col-md-4">
+                      <div class="p-3 rounded-4 bg-orange-light border border-orange-subtle h-100 d-flex flex-column justify-content-between">
+                        <div class="mb-2">
+                          <i class="fa-solid fa-receipt text-orange mb-2"></i>
+                          <span class="d-block text-orange small fw-bold text-uppercase" style="font-size: 0.7rem;">Frais (Annexe)</span>
+                        </div>
+                        <div>
+                          <p class="mb-0 fw-bold fs-5 text-dark">
+                            <%= number_to_currency(stats[:fees], unit: "€", format: "%n %u") %>
+                          </p>
+                          <small class="text-muted" style="font-size: 0.7rem;">Repas / Péage / Pkg</small>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+
                 </div>
               </div>
 

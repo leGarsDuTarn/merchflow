@@ -11,7 +11,7 @@ class DashboardController < ApplicationController
     end
 
     # ==========================================================
-    # 1. GESTION DE LA DATE (Mois en cours ou navigation)
+    # 1. GESTION DE LA DATE (Sécurisée)
     # ==========================================================
     @year = (params[:year] || Date.current.year).to_i
     @month = (params[:month] || Date.current.month).to_i
@@ -27,53 +27,79 @@ class DashboardController < ApplicationController
     @is_current_month = (@target_date.beginning_of_month == Date.current.beginning_of_month)
     @user = current_user
 
-    # Variables de navigation (Mois précédent / suivant)
+    # Navigation
     @prev_month = (@target_date - 1.month).month
     @prev_year  = (@target_date - 1.month).year
     @next_month = (@target_date + 1.month).month
     @next_year  = (@target_date + 1.month).year
 
     # ==========================================================
-    # 2. CALCULS FINANCIERS (PRÉCIS)
+    # 2. CHARGEMENT DES DONNÉES (Optimisation N+1)
     # ==========================================================
 
-    # HEURES : On récupère le décimal exact (ex: 7.75)
-    @total_hours_month = @user.total_hours_for_month(@target_date)
-
-    # BRUT : On appelle la méthode qui inclut (Salaire + IFM + CP)
-    # C'est ce qui permet d'avoir le vrai montant brut dans le badge
-    @total_brut_month = @user.total_complete_brut_for_month(@target_date)
-
-    # NET TOTAL : La somme exacte des virements estimés de chaque mission
-    # (Inclut Salaire Net + IFM Net + CP Net + Frais KM)
-    @net_total_estimated_month = @user.net_total_estimated_for_month(@target_date)
-
-    # KM & FRAIS KM
-    @km_month         = @user.total_km_for_month(@target_date)
-    @km_payment_month = @user.total_km_payment_for_month(@target_date)
-
-    # NET HORS KM (Pour information uniquement)
-    # Calcul : Net Total - Frais KM
-    @net_estimated_month = (@net_total_estimated_month - @km_payment_month).round(2)
+    # .includes(:contract) est CRUCIAL ici.
+    # Il permet de charger les contrats en même temps que les missions.
+    # Sinon, la boucle "par agence" ferait une requête SQL par mission.
+    @monthly_sessions = @user.work_sessions
+                             .includes(:contract)
+                             .for_month(@year, @month)
 
     # ==========================================================
-    # 3. DONNÉES ANNEXES (Agence, Notifications)
+    # 3. CALCULS FINANCIERS (En mémoire = Plus rapide)
     # ==========================================================
 
-    # Propositions en attente pour le compteur
-    @pending_proposals_count = @user.received_mission_proposals
-                                    .where(status: :pending)
-                                    .count
+    # Au lieu de rappeler la BDD, on somme ce qu'on a déjà chargé dans @monthly_sessions
 
-    # Tableau détaillé par agence
-    @by_agency = @user.total_by_agency_for_month(@target_date) || []
+    # HEURES
+    @total_hours_month = @monthly_sessions.sum { |ws| ws.duration_minutes.to_f / 60 }
+
+    # BRUT (Salaire + IFM + CP)
+    # Note : On somme les composants un par un pour être précis au centime
+    @total_brut_month = @monthly_sessions.sum { |ws| ws.brut + ws.amount_ifm + ws.amount_cp }
+
+    # FRAIS ANNEXES
+    @total_fees_month = @monthly_sessions.sum(&:total_fees)
+
+    # NET TOTAL ESTIMÉ
+    # On utilise la méthode du modèle WorkSession qui contient toute la logique (frais inclus)
+    @net_total_estimated_month = @monthly_sessions.sum(&:net_total)
+
+    # KM
+    @km_month         = @monthly_sessions.sum(&:effective_km)
+    @km_payment_month = @monthly_sessions.sum(&:km_payment_final)
 
     # ==========================================================
-    # 4. ALERTE VISIBILITÉ (Pour Merch)
+    # 4. DONNÉES PAR AGENCE (Tableau détaillé)
     # ==========================================================
+
+    @by_agency = @monthly_sessions.group_by { |ws| ws.contract.agency_label }.map do |agency, sessions|
+      # Calculs intermédiaires pour cette agence
+      # On utilise 0.78 comme approximation du net fiscal sur le brut total
+      net_salary = sessions.sum { |s| (s.brut + s.amount_ifm + s.amount_cp) * 0.78 }
+      km_pay     = sessions.sum(&:km_payment_final)
+      fees       = sessions.sum(&:total_fees)
+
+      {
+        agency: agency,
+        hours: sessions.sum { |s| s.duration_minutes.to_f / 60 },
+        brut: sessions.sum { |s| s.brut + s.amount_ifm + s.amount_cp },
+        km: sessions.sum(&:effective_km),
+        km_payment: km_pay,
+        fees: fees,
+        net_salary: net_salary,
+        # Total virement Agence = Salaire Net + KM + Frais
+        total_transfer: (net_salary + km_pay + fees).round(2)
+      }
+    end || []
+
+    # ==========================================================
+    # 5. NOTIFICATIONS
+    # ==========================================================
+    @pending_proposals_count = @user.received_mission_proposals.where(status: :pending).count
+
     @show_visibility_alert = false
-
     if @user.merch?
+      # On utilise build pour ne pas créer d'enregistrement vide en base si l'utilisateur visite juste le dashboard
       settings = @user.merch_setting || @user.build_merch_setting
       if !settings.share_planning || !settings.allow_identity
         @show_visibility_alert = true
