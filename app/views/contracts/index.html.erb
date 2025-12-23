@@ -6,13 +6,11 @@
       <h2 class="fw-bold text-dark m-0">Mes Contrats</h2>
       <p class="text-muted small m-0">Gérez vos contrats et missions</p>
     </div>
-
-
   </div>
 
   <% if @contracts.empty? %>
 
-    <%# --- EMPTY STATE --- %>
+    <%# --- EMPTY STATE (Cas vide) --- %>
     <div class="card border-dashed border-2 bg-light rounded-4 p-5 text-center mt-5">
       <div class="mb-4 text-muted opacity-50">
         <i class="fa-solid fa-file-signature fa-4x"></i>
@@ -20,19 +18,23 @@
       <h4 class="fw-bold text-dark">Aucun contrat actif</h4>
       <p class="text-muted mb-4">Créez votre premier contrat pour commencer à saisir vos heures et suivre vos gains.</p>
 
-      <%= link_to new_contract_path, class: "btn btn-orange btn-lg rounded-pill px-5 fw-bold shadow-sm" do %>
-        Créer un contrat
-      <% end %>
+      <%# Container pour limiter la largeur du bouton et le centrer %>
+      <div class="d-flex justify-content-center">
+        <div style="max-width: 300px; width: 100%;">
+          <%= link_to new_contract_path, class: "btn btn-orange rounded-pill px-5 fw-bold shadow-sm w-100" do %>
+            Créer un contrat
+          <% end %>
+        </div>
+      </div>
     </div>
 
   <% else %>
 
-    <%# --- LISTE DES CONTRATS --- %>
+    <%# --- LISTE DES CONTRATS (Cas rempli) --- %>
     <div class="row g-4">
       <% @contracts.each do |contract| %>
         <div class="col-12 col-md-6 col-lg-4">
 
-          <%# NOTE : On a retiré le link_to global ici pour éviter le conflit de liens %>
           <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 position-relative overflow-hidden card-hover-effect">
 
             <%# Petite barre latérale couleur %>
@@ -75,15 +77,13 @@
             <%# Footer de la carte : Actions %>
             <div class="mt-auto d-flex justify-content-between align-items-center border-top pt-3 ps-2">
 
-              <%# 1. Le lien principal (VOIR) avec stretched-link pour rendre toute la carte cliquable %>
+              <%# 1. Le lien principal (VOIR) %>
               <%= link_to contract_path(contract), class: "text-decoration-none btn-orange rounded-pill fw-bold small stretched-link" do %>
                 Voir les missions
               <% end %>
 
-              <%# 2. Les boutons d'action (Modifier et Supprimer) au-dessus du stretched-link %>
+              <%# 2. Les boutons d'action %>
               <div class="d-flex gap-2 position-relative" style="z-index: 2;">
-
-                <%# Bouton MODIFIER %>
                 <%= link_to edit_contract_path(contract),
                   class: "btn btn-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center",
                   style: "width: 32px; height: 32px; padding: 0;",
@@ -91,7 +91,6 @@
                     <i class="fa-solid fa-pen text-muted" style="font-size: 0.8rem;"></i>
                   <% end %>
 
-                <%# Bouton SUPPRIMER (Attention : Turbo method) %>
                 <%= link_to contract_path(contract),
                   data: {
                     turbo_method: :delete,
@@ -102,23 +101,23 @@
                   title: "Supprimer" do %>
                     <i class="fa-solid fa-trash-can text-danger" style="font-size: 0.8rem;"></i>
                   <% end %>
-
               </div>
             </div>
           </div>
-
         </div>
       <% end %>
     </div>
 
-  <% end %>
-<div class="container d-flex align-items-center justify-content-center mt-4">
-  <%= link_to new_contract_path,
-                class: "btn btn-orange",
-                title: "Nouveau contrat" do %>
-      <i class="fa-solid fa-plus"></i> Ajouter un contrat
-    <% end %>
-</div>
+    <%# --- BOUTON AJOUTER SECONDAIRE --- %>
+    <%# Il est maintenant DANS le bloc ELSE, donc invisible si liste vide %>
+    <div class="container d-flex align-items-center justify-content-center mt-5">
+      <%= link_to new_contract_path,
+                    class: "btn btn-orange rounded-pill px-4 fw-bold shadow-sm",
+                    title: "Nouveau contrat" do %>
+          <i class="fa-solid fa-plus me-2"></i> Ajouter un contrat
+        <% end %>
+    </div>
 
+  <% end %> <%# Fin du if/else %>
 
 </div>
