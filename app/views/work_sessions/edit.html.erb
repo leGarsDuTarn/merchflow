@@ -13,7 +13,6 @@
 
   <div class="card shadow-sm rounded-4 p-4">
 
-    <%# AJOUT DE data: { controller: "break" } ICI POUR LE JS %>
     <%= form_with model: @work_session, local: true, html: { data: { turbo: false, controller: "break" } } do |f| %>
 
       <%# Entreprise %>
@@ -46,9 +45,7 @@
         </div>
       </div>
 
-      <%# ======================================================= %>
-      <%# === DEBUT AJOUT : SECTION COUPURE (BREAK) === %>
-      <%# ======================================================= %>
+      <%# SECTION COUPURE (BREAK) %>
       <div class="mb-4 bg-light p-3 rounded-4 border">
         <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="toggleBreak"
@@ -77,9 +74,6 @@
           </div>
         </div>
       </div>
-      <%# ======================================================= %>
-      <%# === FIN AJOUT === %>
-      <%# ======================================================= %>
 
       <%# TAUX HORAIRE %>
       <div class="mb-3">
@@ -101,17 +95,41 @@
         <%= f.text_field :store_full_address,
                          class: "form-control",
                          placeholder: "Ex. Bd Flandres, 81400 Carmaux" %>
-        <small class="text-muted">Utilisée pour le calcul automatique des KM</small>
         <%= inline_error_for(@work_session, :store_full_address) %>
       </div>
 
       <%# KM CUSTOM %>
       <div class="mb-3">
-        <%= f.label :km_custom, "Kilomètres (optionnel)", class: "form-label fw-semibold" %>
+        <%= f.label :km_custom, "Kilomètres", class: "form-label fw-semibold" %>
         <%= f.number_field :km_custom, step: 0.1, class: "form-control" %>
-        <small class="text-muted">Laisser vide pour utiliser l’adresse</small>
         <%= inline_error_for(@work_session, :km_custom) %>
       </div>
+
+      <%# === NOUVEAU BLOC : FRAIS ANNEXES === %>
+      <div class="mb-4 bg-light p-3 rounded-4 border">
+        <label class="form-label fw-bold text-dark mb-3">
+          <i class="fa-solid fa-receipt me-2 text-orange"></i>Frais annexes (Déclaratif)
+        </label>
+
+        <div class="row g-2">
+          <div class="col-4">
+             <%= f.label :fee_meal, "Repas (€)", class: "small fw-semibold text-muted" %>
+             <%= f.number_field :fee_meal, step: 0.01, class: "form-control", placeholder: "0.00" %>
+          </div>
+          <div class="col-4">
+             <%= f.label :fee_parking, "Parking (€)", class: "small fw-semibold text-muted" %>
+             <%= f.number_field :fee_parking, step: 0.01, class: "form-control", placeholder: "0.00" %>
+          </div>
+          <div class="col-4">
+             <%= f.label :fee_toll, "Péage (€)", class: "small fw-semibold text-muted" %>
+             <%= f.number_field :fee_toll, step: 0.01, class: "form-control", placeholder: "0.00" %>
+          </div>
+        </div>
+        <div class="mt-2 text-muted fst-italic" style="font-size: 0.75rem;">
+          Ces frais seront ajoutés au total net estimé.
+        </div>
+      </div>
+      <%# ==================================== %>
 
       <%# RECOMMENDED %>
       <div class="form-check form-switch mb-3">

@@ -39,6 +39,9 @@ class WorkSession < ApplicationRecord
   # ============================================================
   # CALLBACKS
   # ============================================================
+  # 1. On nettoie les entrées (virgules) AVANT tout calcul
+  before_validation :normalize_decimal_fields
+
   before_validation :fix_timestamps_with_correct_date
   before_validation :ensure_end_time_is_on_correct_day
   before_validation :compute_duration
@@ -46,7 +49,7 @@ class WorkSession < ApplicationRecord
   before_validation :compute_effective_km
 
   # ============================================================
-  # MÉTHODES PUBLIQUES (Accessibles par les tests et KilometerLog)
+  # MÉTHODES PUBLIQUES
   # ============================================================
 
   def has_break?
@@ -58,7 +61,6 @@ class WorkSession < ApplicationRecord
     time >= break_start_time && time < break_end_time
   end
 
-  # Calcul des KM (Appelé par KilometerLog après save/destroy)
   def compute_effective_km
     if km_custom.present?
       self.effective_km = km_custom.to_f
@@ -93,6 +95,11 @@ class WorkSession < ApplicationRecord
 
   # --- FINANCES ---
 
+  # Helper pour sommer les frais annexes
+  def total_fees
+    (fee_meal || 0) + (fee_parking || 0) + (fee_toll || 0)
+  end
+
   def brut
     return 0 if duration_minutes.zero?
     day_pay + night_pay
@@ -115,21 +122,24 @@ class WorkSession < ApplicationRecord
     (brut * 0.78).round(2)
   end
 
+  # Mise à jour : inclut maintenant les frais annexes
   def net_total
     val_brut = brut
     val_ifm  = amount_ifm
     val_cp   = amount_cp
     val_km   = km_payment_final
+    val_fees = total_fees # Ajout
 
     net_salary = (val_brut * 0.78).round(2)
     net_ifm    = (val_ifm  * 0.78).round(2)
     net_cp     = (val_cp   * 0.78).round(2)
 
-    (net_salary + net_ifm + net_cp + val_km).round(2)
+    (net_salary + net_ifm + net_cp + val_km + val_fees).round(2)
   end
 
+  # Mise à jour : inclut maintenant les frais annexes
   def total_payment
-    brut + amount_ifm + amount_cp + km_payment_final
+    brut + amount_ifm + amount_cp + km_payment_final + total_fees
   end
 
   # --- NORMALISATION ---
@@ -153,7 +163,7 @@ class WorkSession < ApplicationRecord
   end
 
   # ============================================================
-  # MÉTHODES PRIVÉES (Internes au modèle)
+  # MÉTHODES PRIVÉES
   # ============================================================
   private
 
@@ -173,7 +183,6 @@ class WorkSession < ApplicationRecord
   def no_overlap_with_existing_sessions
     return unless contract.present? && date.present? && start_time.present? && end_time.present?
 
-    # On compare des Time objects complets
     new_start = Time.zone.parse("#{date} #{start_time.strftime('%H:%M:%S')}")
     new_end   = Time.zone.parse("#{date} #{end_time.strftime('%H:%M:%S')}")
     new_end  += 1.day if new_end <= new_start
@@ -189,7 +198,6 @@ class WorkSession < ApplicationRecord
     errors.add(:base, 'Cette mission chevauche une autre mission déjà enregistrée.') if has_overlap
   end
 
-  # Sous-calculs de paie
   def hours_day
     ((duration_minutes - night_minutes) / 60.0).round(2)
   end
@@ -208,5 +216,17 @@ class WorkSession < ApplicationRecord
 
   def night_pay
     hours_night * night_hourly_rate
+  end
+
+  def normalize_decimal_fields
+    # Ajout de km_custom et hourly_rate pour sécuriser aussi ces champs
+    fields_to_check = %i[fee_meal fee_parking fee_toll]
+
+    fields_to_check.each do |field|
+      raw_value = read_attribute_before_type_cast(field)
+      if raw_value.is_a?(String) && raw_value.include?(',')
+        self[field] = raw_value.tr(',', '.')
+      end
+    end
   end
 end

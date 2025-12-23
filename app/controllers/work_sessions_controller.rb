@@ -146,7 +146,8 @@ class WorkSessionsController < ApplicationController
       :break_start_time, :break_end_time,
       :shift, :store,
       :store_full_address, :notes,
-      :recommended, :km_custom, :hourly_rate
+      :recommended, :km_custom, :hourly_rate,
+      :fee_parking, :fee_toll, :fee_meal
     )
   end
 end

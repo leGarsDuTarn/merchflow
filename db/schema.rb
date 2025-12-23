@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_19_101300) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -176,6 +176,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_101300) do
     t.integer "duration_minutes", default: 0, null: false
     t.decimal "effective_km", precision: 5, scale: 2, default: "0.0", null: false
     t.datetime "end_time", null: false
+    t.decimal "fee_meal", precision: 10, scale: 2, default: "0.0"
+    t.decimal "fee_parking", precision: 10, scale: 2, default: "0.0"
+    t.decimal "fee_toll", precision: 10, scale: 2, default: "0.0"
     t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88", null: false
     t.decimal "km_custom", precision: 5, scale: 2
     t.integer "night_minutes", default: 0, null: false
