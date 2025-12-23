@@ -68,6 +68,26 @@ RSpec.describe WorkSession, type: :model do
   end
 
   # ------------------------------------------------------------
+  # CALLBACK : normalize_decimal_fields (NOUVEAU)
+  # ------------------------------------------------------------
+  describe 'Callback normalize_decimal_fields' do
+    it 'remplace les virgules par des points pour les frais' do
+      ws = build(:work_session,
+                 fee_meal: '12,50',
+                 fee_parking: '5,20',
+                 fee_toll: '10,00',
+                 hourly_rate: '11,88')
+
+      ws.valid? # Déclenche le callback
+
+      expect(ws.fee_meal).to eq(12.5)
+      expect(ws.fee_parking).to eq(5.2)
+      expect(ws.fee_toll).to eq(10.0)
+      expect(ws.hourly_rate).to eq(11.88)
+    end
+  end
+
+  # ------------------------------------------------------------
   # CALLBACK : compute_duration
   # ------------------------------------------------------------
   describe 'Callback compute_duration' do
@@ -112,12 +132,10 @@ RSpec.describe WorkSession, type: :model do
     end
 
     it 'somme les kilometer_logs si km_custom absent' do
-      # Ici, create(:work_session) fonctionnera grâce au before(:each)
       ws = create(:work_session, km_custom: nil)
       create(:kilometer_log, distance: 10, work_session: ws)
       create(:kilometer_log, distance: 5,  work_session: ws)
 
-      # On force la validation pour déclencher le callback
       ws.valid?
       expect(ws.effective_km).to eq(15.0)
     end
@@ -164,7 +182,7 @@ RSpec.describe WorkSession, type: :model do
       expect(ws.net).to eq(15.6)
     end
 
-    it 'calcule net + ifm + cp + km_payment_final' do
+    it 'calcule net + ifm + cp + km_payment_final + FRAIS' do
       contract = build(:contract, night_rate: 0, ifm_rate: 0, cp_rate: 0, km_rate: 0)
 
       ws = build(:work_session,
@@ -173,7 +191,9 @@ RSpec.describe WorkSession, type: :model do
                  end_time: Time.zone.parse("12:00"),
                  night_minutes: 0,
                  hourly_rate: 10,
-                 effective_km: 10)
+                 effective_km: 10,
+                 fee_meal: 10,
+                 fee_parking: 5)
 
       allow(contract).to receive(:ifm).and_return(5.0)
       allow(contract).to receive(:cp).and_return(5.0)
@@ -181,33 +201,57 @@ RSpec.describe WorkSession, type: :model do
 
       ws.valid?
 
-      net_ifm = 5.0 * 0.78 # 3.9
-      net_cp  = 5.0 * 0.78 # 3.9
-      # Net base = 15.6
+      net_ifm = 5.0 * 0.78
+      net_cp  = 5.0 * 0.78
+      # Frais = 15.0
 
-      expected_total = (ws.net + net_ifm + net_cp + 7.0).round(2)
+      expected_total = (ws.net + net_ifm + net_cp + 7.0 + 15.0).round(2)
       expect(ws.net_total).to eq(expected_total)
     end
   end
 
   # ------------------------------------------------------------
-  # total_payment
+  # total_payment (avec frais)
   # ------------------------------------------------------------
   describe 'Méthode total_payment' do
-    it 'calcule brut + ifm + cp + km' do
+    it 'calcule brut + ifm + cp + km + fees' do
       contract = build(:contract)
       ws = build(:work_session,
                  contract: contract,
                  duration_minutes: 120,
                  night_minutes: 0,
                  hourly_rate: 10,
-                 effective_km: 15)
+                 effective_km: 15,
+                 fee_meal: 15,    # +15
+                 fee_parking: 5,  # +5
+                 fee_toll: 2)     # +2 = Total frais 22
 
       allow(contract).to receive(:ifm).and_return(5)
       allow(contract).to receive(:cp).and_return(5)
       allow(contract).to receive(:km_payment).and_return(7)
 
-      expect(ws.total_payment).to eq(ws.brut + 5 + 5 + 7)
+      expect(ws.total_payment).to eq(ws.brut + 5 + 5 + 7 + 22)
+    end
+  end
+
+  # ------------------------------------------------------------
+  # IMPACT DES FRAIS SUR LE BRUT (Important !)
+  # ------------------------------------------------------------
+  describe 'Impact des frais' do
+    it "n'augmente PAS le salaire brut" do
+      ws = build(:work_session,
+                 hourly_rate: 10,
+                 start_time: '10:00',
+                 end_time: '11:00', # 1h = 10€ Brut
+                 fee_meal: 50)      # 50€ de frais
+
+      ws.valid?
+      expect(ws.brut).to eq(10.0) # Le brut doit rester 10€, pas 60€
+    end
+
+    it 'calcule correctement la somme des frais (total_fees)' do
+      ws = build(:work_session, fee_meal: 10, fee_parking: 5.5, fee_toll: 2.5)
+      expect(ws.total_fees).to eq(18.0)
     end
   end
 
@@ -263,7 +307,6 @@ RSpec.describe WorkSession, type: :model do
     end
 
     it 'trie les missions par date et start_time' do
-      # Note : Pour que ce test passe, le scope for_month doit avoir .order(:date, :start_time)
       expect(WorkSession.for_month(2025, 2)).to eq([ws1, ws2])
     end
 

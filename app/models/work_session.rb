@@ -220,7 +220,7 @@ class WorkSession < ApplicationRecord
 
   def normalize_decimal_fields
     # Ajout de km_custom et hourly_rate pour sécuriser aussi ces champs
-    fields_to_check = %i[fee_meal fee_parking fee_toll]
+    fields_to_check = %i[fee_meal fee_parking fee_toll km_custom hourly_rate]
 
     fields_to_check.each do |field|
       raw_value = read_attribute_before_type_cast(field)
