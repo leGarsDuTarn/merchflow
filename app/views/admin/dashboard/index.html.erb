@@ -4,7 +4,7 @@
   <div class="d-flex justify-content-between align-items-end mb-5">
     <div>
       <h1 class="fw-bold text-dark m-0">Tableau de Bord</h1>
-      <p class="text-muted mb-0">Vue d'ensemble </p>
+      <p class="text-muted mb-0">Vue d'ensemble (Hors Administrateurs)</p>
     </div>
     <div class="text-end">
       <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
@@ -88,19 +88,19 @@
       </div>
     </div>
 
-    <%# KPI : CHURN / RÉTENTION %>
+    <%# KPI : CHURN %>
     <div class="col-md-6 col-lg-3">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-danger">
         <div class="d-flex justify-content-between align-items-start mb-2">
-          <span class="text-muted small text-uppercase fw-bold ls-1">Risque Churn</span>
+          <span class="text-muted small text-uppercase fw-bold ls-1">Taux de Churn</span>
           <i class="fa-solid fa-circle-info text-muted opacity-25"
              data-bs-toggle="tooltip" data-bs-placement="top"
-             title="% d'utilisateurs inactifs depuis plus de 30 jours."></i>
+             title="% d'utilisateurs (inscrits > 7j) inactifs depuis 30 jours."></i>
         </div>
         <div class="d-flex align-items-baseline">
           <h2 class="fw-bold text-danger mb-0 me-2"><%= @churn_rate %>%</h2>
         </div>
-        <small class="text-muted" style="font-size: 0.75rem;"><%= @ghost_users_count %> inactifs (>30j)</small>
+        <small class="text-muted" style="font-size: 0.75rem;"><%= @ghost_users_count %> utilisateurs à relancer</small>
       </div>
     </div>
 
@@ -116,24 +116,24 @@
 
         <div class="d-flex justify-content-around align-items-end h-100 pb-2" style="min-height: 180px;">
           <%
-             # CALCUL DE L'ÉCHELLE : Minimum 10 pour éviter que "1" soit immense
+             # CALCUL DE L'ÉCHELLE : Minimum 10
              current_max = @registrations_by_day.values.max.to_i
              scale_max   = [current_max, 10].max
           %>
 
           <% @registrations_by_day.each do |date, count| %>
             <%
-               # Hauteur en % basée sur scale_max
+               # Hauteur en %
                height_percent = (count.to_f / scale_max * 100).round
             %>
             <div class="d-flex flex-column align-items-center w-100">
 
-              <%# Le chiffre (caché si 0) %>
+              <%# Le chiffre %>
               <div class="fw-bold text-muted mb-1 small" style="<%= 'visibility: hidden;' if count == 0 %>; font-size: 0.75rem;">
                 <%= count %>
               </div>
 
-              <%# La barre (Orange pastel #FFCC80) %>
+              <%# La barre (Orange pastel) %>
               <div class="w-50 rounded-top-pill"
                    data-bs-toggle="tooltip"
                    title="<%= count %> inscrit(s) le <%= l date %>"
@@ -151,7 +151,7 @@
       </div>
     </div>
 
-    <%# PERFORMANCE (Conversion & Temps) %>
+    <%# PERFORMANCE (Conversion & Temps & Total Missions) %>
     <div class="col-lg-4">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
         <h5 class="fw-bold text-dark mb-4">Performance</h5>
@@ -172,7 +172,7 @@
 
         <hr class="text-muted opacity-25 my-4">
 
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center mb-3">
           <div class="bg-light text-dark rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
             <i class="fa-regular fa-clock"></i>
           </div>
@@ -182,13 +182,23 @@
           </div>
         </div>
 
-        <div class="d-flex align-items-center mt-3">
+        <div class="d-flex align-items-center">
           <div class="bg-light text-dark rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
             <i class="fa-solid fa-briefcase"></i>
           </div>
-          <div>
-            <h6 class="fw-bold text-dark mb-0">Volume Mensuel</h6>
-            <p class="text-muted small mb-0"><%= @work_sessions_month %> missions saisies</p>
+          <div class="w-100">
+            <div class="d-flex justify-content-between align-items-baseline">
+               <h6 class="fw-bold text-dark mb-0">Missions Saisies</h6>
+            </div>
+
+            <div class="d-flex align-items-center mt-1">
+              <span class="text-orange fw-bold small me-2">
+                <%= @work_sessions_month %> ce mois
+              </span>
+              <span class="text-muted small border-start ps-2">
+                Total : <%= @total_work_sessions_all_time %>
+              </span>
+            </div>
           </div>
         </div>
       </div>
