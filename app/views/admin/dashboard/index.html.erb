@@ -1,148 +1,221 @@
-<div class="container mt-4 mb-5">
+<div class="container mt-4 mb-5" data-controller="tooltip">
 
-  <h1 class="fw-bold text-orange text-center mb-1">
-    Tableau de bord — Administration
-  </h1>
-  <p class="text-center text-muted mb-5">
-    Vue d'ensemble et indicateurs clés de performance (KPIs) de la plateforme.
-  </p>
+  <%# --- HEADER --- %>
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div>
+      <h1 class="fw-bold text-dark m-0">Tableau de Bord</h1>
+      <p class="text-muted mb-0">Vue d'ensemble </p>
+    </div>
+    <div class="text-end">
+      <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
+        <i class="fa-regular fa-calendar me-2"></i><%= l Date.current, format: "%B %Y" %>
+      </span>
+    </div>
+  </div>
 
-  <%# ========================================================== %>
-  <%# SECTION 1 : SANTÉ GLOBALE ET CROISSANCE %>
-  <%# ========================================================== %>
-  <h3 class="fw-bold text-dark mb-4 mt-5"><i class="fa-solid fa-chart-line me-2 text-orange"></i> 1. Santé Globale et Croissance</h3>
-  <hr class="opacity-25 my-3">
+  <%# --- 1. KPI PRINCIPAUX --- %>
+  <div class="row g-4 mb-4">
 
-  <div class="row g-4 justify-content-center">
+    <%# KPI : UTILISATEURS (TOTAL + SEMAINE + MOIS) %>
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-dark">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small text-uppercase fw-bold ls-1">Utilisateurs</span>
+          <i class="fa-solid fa-circle-info text-muted opacity-25"
+             data-bs-toggle="tooltip" data-bs-placement="top"
+             title="Total des comptes (Merch + FVE). Admin exclu."></i>
+        </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-start border-3 border-dark">
-        <h6 class="text-muted mb-1">Total Utilisateurs</h6>
-        <p class="display-6 fw-bold mt-2"><%= @total_users %></p>
+        <div class="mb-3">
+          <h2 class="fw-bold text-dark mb-2"><%= @total_users %></h2>
+
+          <div class="d-flex gap-2">
+            <span class="badge bg-orange-subtle text-gray rounded-pill small border border-orange-subtle">
+              <i class="fa-solid fa-calendar-week me-1"></i>+<%= @new_users_week %> (7j)
+            </span>
+            <span class="badge bg-light text-dark rounded-pill small border">
+              <i class="fa-regular fa-calendar me-1"></i>+<%= @new_users_month %> (Mois)
+            </span>
+          </div>
+        </div>
+
+        <%# DÉTAIL MERCH / FVE %>
+        <div class="d-flex justify-content-between border-top pt-2">
+          <div class="text-center">
+            <span class="d-block fw-bold text-dark small"><%= @total_merch %></span>
+            <span class="text-muted" style="font-size: 0.65rem;">MERCH</span>
+          </div>
+          <div class="border-end mx-2"></div>
+          <div class="text-center">
+            <span class="d-block fw-bold text-dark small"><%= @total_fve %></span>
+            <span class="text-muted" style="font-size: 0.65rem;">FVE</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-start border-3 border-success">
-        <h6 class="text-muted mb-1">Engagement (7 jours)</h6>
-        <p class="display-6 fw-bold mt-2 text-success">
-          <%= @engagement_rate %>%
-        </p>
+    <%# KPI : ENGAGEMENT %>
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-success">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small text-uppercase fw-bold ls-1">Engagement (7j)</span>
+          <i class="fa-solid fa-circle-info text-muted opacity-25"
+             data-bs-toggle="tooltip" data-bs-placement="top"
+             title="% d'utilisateurs uniques ayant saisi une mission ces 7 derniers jours."></i>
+        </div>
+        <div class="d-flex align-items-baseline">
+          <h2 class="fw-bold text-dark mb-0 me-2 text-success"><%= @engagement_rate %>%</h2>
+        </div>
+        <small class="text-muted" style="font-size: 0.75rem;">Utilisateurs actifs récents</small>
       </div>
     </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-start border-3 border-info">
-        <h6 class="text-muted mb-1">Nouveaux inscrits (mois)</h6>
-        <p class="display-6 fw-bold mt-2">
-          <%= @new_users_month %>
-        </p>
+    <%# KPI : VOLUME D'AFFAIRES %>
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-orange">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small text-uppercase fw-bold ls-1">Volume Géré</span>
+          <i class="fa-solid fa-circle-info text-muted opacity-25"
+             data-bs-toggle="tooltip" data-bs-placement="top"
+             title="Valeur totale estimée (Salaires + Frais) des missions saisies ce mois-ci."></i>
+        </div>
+        <div class="d-flex align-items-baseline">
+          <h2 class="fw-bold text-orange mb-0 me-2">
+            <%= number_to_currency(@total_volume_month, unit: "€", format: "%n %u") %>
+          </h2>
+        </div>
+        <small class="text-muted" style="font-size: 0.75rem;">Flux financier estimé</small>
+      </div>
+    </div>
+
+    <%# KPI : CHURN / RÉTENTION %>
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-danger">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small text-uppercase fw-bold ls-1">Risque Churn</span>
+          <i class="fa-solid fa-circle-info text-muted opacity-25"
+             data-bs-toggle="tooltip" data-bs-placement="top"
+             title="% d'utilisateurs inactifs depuis plus de 30 jours."></i>
+        </div>
+        <div class="d-flex align-items-baseline">
+          <h2 class="fw-bold text-danger mb-0 me-2"><%= @churn_rate %>%</h2>
+        </div>
+        <small class="text-muted" style="font-size: 0.75rem;"><%= @ghost_users_count %> inactifs (>30j)</small>
       </div>
     </div>
 
   </div>
 
-  <%# ========================================================== %>
-  <%# SECTION 2 : SEGMENTATION ET MONÉTISATION %>
-  <%# ========================================================== %>
-  <h3 class="fw-bold text-dark mb-4 mt-5"><i class="fa-solid fa-money-bill-transfer me-2 text-orange"></i> 2. Segmentation et Monétisation</h3>
-  <hr class="opacity-25 my-3">
+  <%# --- 2. GRAPHIQUE & PERFORMANCE --- %>
+  <div class="row g-4 mb-4">
 
-  <div class="row g-4">
+    <%# GRAPHIQUE INSCRIPTIONS (Avec échelle corrigée et couleur douce) %>
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
+        <h5 class="fw-bold text-dark mb-4">Inscriptions (7 derniers jours)</h5>
 
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">Total Merch</h6>
-        <p class="display-6 fw-bold mt-2"><%= @total_merch %></p>
+        <div class="d-flex justify-content-around align-items-end h-100 pb-2" style="min-height: 180px;">
+          <%
+             # CALCUL DE L'ÉCHELLE : Minimum 10 pour éviter que "1" soit immense
+             current_max = @registrations_by_day.values.max.to_i
+             scale_max   = [current_max, 10].max
+          %>
+
+          <% @registrations_by_day.each do |date, count| %>
+            <%
+               # Hauteur en % basée sur scale_max
+               height_percent = (count.to_f / scale_max * 100).round
+            %>
+            <div class="d-flex flex-column align-items-center w-100">
+
+              <%# Le chiffre (caché si 0) %>
+              <div class="fw-bold text-muted mb-1 small" style="<%= 'visibility: hidden;' if count == 0 %>; font-size: 0.75rem;">
+                <%= count %>
+              </div>
+
+              <%# La barre (Orange pastel #FFCC80) %>
+              <div class="w-50 rounded-top-pill"
+                   data-bs-toggle="tooltip"
+                   title="<%= count %> inscrit(s) le <%= l date %>"
+                   style="height: <%= [height_percent, 2].max %>%;
+                          background-color: <%= count > 0 ? '#FFCC80' : '#f8f9fa' %>;
+                          transition: height 0.5s;">
+              </div>
+
+              <div class="mt-2 text-muted fw-bold small text-uppercase" style="font-size: 0.65rem;">
+                <%= l date, format: "%a" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">Total FVE</h6>
-        <p class="display-6 fw-bold mt-2"><%= @total_fve %></p>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-end border-3 border-orange">
-        <h6 class="text-muted mb-1">FVE Premium</h6>
-        <p class="display-6 fw-bold mt-2 text-orange"><%= @total_premium_fve %></p>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100 border-end border-3 border-warning">
-        <h6 class="text-muted mb-1">Taux de Conversion Premium</h6>
-        <p class="display-6 fw-bold mt-2 text-warning">
-          <%= @premium_conversion_rate %>%
-        </p>
-      </div>
-    </div>
-
-  </div>
-
-  <%# ========================================================== %>
-  <%# SECTION 3 : FLUX DE TRAVAIL ET EFFICACITÉ (MISSIONS / INVITATIONS) %>
-  <%# ========================================================== %>
-  <h3 class="fw-bold text-dark mb-4 mt-5"><i class="fa-solid fa-briefcase me-2 text-orange"></i> 3. Flux de Travail et Efficacité</h3>
-  <hr class="opacity-25 my-3">
-
-  <div class="row g-4">
-
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">Missions réalisées (mois)</h6>
-        <p class="display-6 fw-bold mt-2">
-          <%= @work_sessions_month %>
-        </p>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 text-center h-100">
-        <h6 class="text-muted mb-1">Temps Moyen / Mission</h6>
-        <p class="display-6 fw-bold mt-2 text-info">
-          <%= @avg_mission_time_formatted %>
-        </p>
-      </div>
-    </div>
-
+    <%# PERFORMANCE (Conversion & Temps) %>
     <div class="col-lg-4">
-      <div class="card shadow-sm p-4 rounded-4 h-100 d-flex flex-column">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
+        <h5 class="fw-bold text-dark mb-4">Performance</h5>
 
-        <h5 class="fw-bold text-orange mb-3 text-center">
-          <i class="fa-solid fa-envelope me-2"></i> Invitations FVE
-        </h5>
-
-        <div class="d-flex justify-content-around text-center mb-3">
-            <div class="flex-fill">
-                <p class="text-muted small mb-0">Total</p>
-                <h4 class="fw-bold text-dark"><%= @invitations_total %></h4>
-            </div>
-            <div class="flex-fill border-start">
-                <p class="text-muted small mb-0">Non Utilisées</p>
-                <h4 class="fw-bold text-danger"><%= @invitations_unused %></h4>
-            </div>
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small fw-bold">Conversion Premium (FVE)</span>
+            <span class="text-orange small fw-bold"><%= @premium_conversion_rate %>%</span>
+          </div>
+          <div class="progress rounded-pill bg-light" style="height: 8px;">
+            <div class="progress-bar bg-orange" role="progressbar" style="width: <%= @premium_conversion_rate %>%"></div>
+          </div>
+          <div class="d-flex justify-content-between mt-2">
+            <small class="text-muted" style="font-size: 0.7rem;">Standard: <%= @total_fve - @total_premium_fve %></small>
+            <small class="text-dark fw-bold" style="font-size: 0.7rem;">Premium: <%= @total_premium_fve %></small>
+          </div>
         </div>
 
-        <p class="text-muted small text-center">Ratio invitations actives:
-            <span class="fw-bold"><%= @unused_invitations_ratio %>%</span>
-        </p>
+        <hr class="text-muted opacity-25 my-4">
 
-        <div class="text-center mt-3">
-          <%= link_to "Gérer les invitations",
-                      admin_fve_invitations_path,
-                      class: "btn btn-sm btn-orange fw-bold px-4 w-100" %>
+        <div class="d-flex align-items-center">
+          <div class="bg-light text-dark rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold text-dark mb-0">Temps moyen / mission</h6>
+            <p class="text-muted small mb-0"><%= @avg_mission_time_formatted %></p>
+          </div>
         </div>
 
+        <div class="d-flex align-items-center mt-3">
+          <div class="bg-light text-dark rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+            <i class="fa-solid fa-briefcase"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold text-dark mb-0">Volume Mensuel</h6>
+            <p class="text-muted small mb-0"><%= @work_sessions_month %> missions saisies</p>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
+  <%# --- 3. INVITATIONS --- %>
+  <div class="card border-0 shadow-sm rounded-4 p-4 mt-4 bg-orange-light">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <div class="d-flex align-items-center mb-3 mb-md-0">
+        <div class="bg-white text-orange rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 40px; height: 40px;">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold text-dark mb-0">Invitations FVE</h6>
+          <small class="text-muted">
+            <strong><%= @invitations_unused %></strong> invitations disponibles sur <%= @invitations_total %> générées.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <%= link_to admin_fve_invitations_path, class: "btn btn-white text-orange fw-bold rounded-pill px-4 shadow-sm border-0" do %>
+          Gérer les invitations <i class="fa-solid fa-arrow-right ms-2"></i>
+        <% end %>
+      </div>
+    </div>
   </div>
 
 </div>
-
-<footer class="text-center text-muted mt-5">
-  <small>© <%= Time.current.year %> MerchFlow — Administration</small>
-</footer>
