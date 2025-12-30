@@ -1,16 +1,13 @@
 class FveInvitationMailer < ApplicationMailer
-  # Optionnel : si tu as une adresse d'envoi spécifique
-  default from: 'grassiano.b@gmail.com'
+  # SUPPRIME la ligne 'default from' ici.
+  # Le mail partira automatiquement avec "contact@merchflow.fr" grâce à ApplicationMailer.
 
-  # MODIFICATION : Accepte deux arguments (l'invitation ET le label)
+  # Accepte deux arguments (l'invitation ET le label)
   def invite_fve(invitation, agency_label)
     @invitation = invitation
-    @agency_label = agency_label # <-- Nouvelle variable d'instance pour le template
-
-    # L'ancienne ligne @agency_label = Contract::AGENCY_LABELS[...] EST SUPPRIMÉE
+    @agency_label = agency_label
 
     # Génération du lien unique
-    # Rails saura utiliser localhost:3000 ou le domaine de prod selon la config
     @url = fve_accept_invitation_url(token: @invitation.token)
 
     mail(

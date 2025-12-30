@@ -1,4 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "from@example.com"
+  # On utilise l'adresse officielle validée chez Mailjet
+  default from: "contact@merchflow.fr"
   layout "mailer"
 end
