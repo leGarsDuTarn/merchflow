@@ -48,7 +48,6 @@ gem "devise"
 gem "sassc-rails"
 gem "bootstrap", "~> 5.3.2"
 gem 'simple_form'
-gem 'mailjet'
 # Pagination
 gem 'pagy'
 gem 'pundit'
