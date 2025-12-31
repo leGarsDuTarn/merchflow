@@ -10,7 +10,6 @@ Rails.application.configure do
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
   # Stockage des fichiers (Images)
-  # RAPPEL : Sur Heroku, le mode :local perd les images au redémarrage (toutes les 24h).
   config.active_storage.service = :local
   config.active_storage.variant_processor = nil
 
@@ -21,6 +20,11 @@ Rails.application.configure do
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
   config.silence_healthcheck_path = "/up"
   config.active_support.report_deprecations = false
+
+  # ==============================================================================
+  # FORCE L'ENVOI IMMÉDIAT (SANS FILE D'ATTENTE)
+  # ==============================================================================
+  config.active_job.queue_adapter = :inline
 
   # ==============================================================================
   # CONFIGURATION URL PRODUCTION (OFFICIEL MERCHFLOW)
@@ -42,8 +46,6 @@ Rails.application.configure do
   # ==============================================================================
   config.action_mailer.perform_caching = false
   config.action_mailer.raise_delivery_errors = true
-
-  # On passe en SMTP standard
   config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.smtp_settings = {
