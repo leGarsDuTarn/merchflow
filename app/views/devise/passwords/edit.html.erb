@@ -22,15 +22,17 @@
             <%= f.label :password, "Nouveau mot de passe", class: "form-label fw-semibold" %>
 
             <% if @minimum_password_length %>
-              <small class="text-muted">
-                (<%= @minimum_password_length %> caractères minimum)
-              </small>
+              <div class="mt-1">
+                <small class="text-muted" style="font-size: 0.8rem; display: block; line-height: 1.2;">
+                  Minimum 8 caractères, incluant une majuscule, une minuscule, un chiffre et un caractère spécial.
+                </small>
+              </div>
             <% end %>
 
             <%= f.password_field :password,
                   autofocus: true,
                   autocomplete: "new-password",
-                  class: "form-control" %>
+                  class: "form-control mt-2" %>
 
             <%= inline_error_for(resource, :password) %>
           </div>
@@ -495,4 +497,3 @@
 <footer class="text-center text-muted mt-2 mb-3">
   <small>© <%= Time.current.year %> MerchFlow — Votre assistant administratif merch.</small>
 </footer>
-
