@@ -12,6 +12,7 @@
 
       <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
 
+        <%# En-tête %>
         <div class="text-center mb-5">
           <h1 class="fw-bold text-orange mb-3">
             <i class="fa-solid fa-headset me-2"></i> Nous Contacter
@@ -21,22 +22,23 @@
           </p>
         </div>
 
-        <div class="row g-4 text-center">
+        <%# Section Contact Direct %>
+        <div class="row g-4 text-center mb-5">
 
-          <%# Contact Email (MIS À JOUR AVEC BTN-ORANGE) %>
+          <%# Carte Email %>
           <div class="col-md-6">
             <div class="p-3 border rounded-3 h-100 d-flex flex-column">
               <i class="fa-solid fa-envelope fs-2 text-orange mb-3"></i>
               <h5 class="fw-bold">Support Technique & Général</h5>
               <p class="text-muted mt-auto mb-3">Pour toute question sur l'utilisation de Merchflow.</p>
 
-              <a href="mailto:grassiano.b@gmail.com" class="btn btn-orange rounded-pill fw-bold mt-auto">
-                <i class="fa-solid fa-paper-plane me-2"></i> grassiano.b@gmail.com
+              <a href="mailto:contact@merchflow.fr" class="btn btn-orange rounded-pill fw-bold mt-auto">
+                <i class="fa-solid fa-paper-plane me-2"></i> contact@merchflow.fr
               </a>
             </div>
           </div>
 
-          <%# Contact Adresse/Téléphone %>
+          <%# Carte Adresse/Téléphone %>
           <div class="col-md-6">
             <div class="p-3 border rounded-3 h-100">
               <i class="fa-solid fa-location-dot fs-2 text-orange mb-3"></i>
@@ -57,9 +59,61 @@
         <h4 class="fw-bold text-center mb-4">
           Vous préférez un formulaire ?
         </h4>
-        <div class="alert alert-warning text-center">
-          La fonctionnalité de formulaire de contact est en cours de développement. Veuillez utiliser l'email ci-dessus pour le moment.
+
+        <%# DEBUT DU FORMULAIRE SIMPLE FORM %>
+        <div class="bg-light p-4 rounded-4 border">
+
+          <%# On pointe vers le ContactsController (create) %>
+          <%= simple_form_for @contact, url: contacts_path, data: { turbo: false } do |f| %>
+
+            <%# Affichage des erreurs globales si besoin (Simple Form le fait souvent par champ, mais ça sécurise l'affichage) %>
+            <%= f.error_notification %>
+            <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
+
+            <div class="row g-3">
+
+              <%# Champ NOM %>
+              <div class="col-md-6">
+                <%= f.input :name,
+                            label: "Votre nom complet",
+                            placeholder: "Jean Dupont",
+                            required: true,
+                            input_html: { class: "form-control rounded-3" },
+                            label_html: { class: "fw-bold text-muted mb-1" } %>
+              </div>
+
+              <%# Champ EMAIL %>
+              <div class="col-md-6">
+                <%= f.input :email,
+                            label: "Votre adresse email",
+                            placeholder: "name@example.com",
+                            required: true,
+                            input_html: { class: "form-control rounded-3" },
+                            label_html: { class: "fw-bold text-muted mb-1" } %>
+              </div>
+
+              <%# Champ MESSAGE %>
+              <div class="col-12">
+                <%= f.input :message,
+                            as: :text,
+                            label: "Comment pouvons-nous vous aider ?",
+                            placeholder: "Détaillez votre demande ici...",
+                            required: true,
+                            input_html: { class: "form-control rounded-3", style: "height: 150px" },
+                            label_html: { class: "fw-bold text-muted mb-1" } %>
+              </div>
+
+              <%# BOUTON SUBMIT %>
+              <div class="col-12 text-center mt-4">
+                <%= button_tag type: 'submit', class: "btn btn-orange btn-lg rounded-pill px-5 fw-bold shadow-sm transition hover-transform" do %>
+                  Envoyer le message <i class="fa-solid fa-paper-plane ms-2"></i>
+                <% end %>
+              </div>
+
+            </div>
+          <% end %>
         </div>
+        <%# FIN DU FORMULAIRE %>
 
       </div>
     </div>

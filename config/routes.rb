@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   devise_for :users, controllers: { passwords: 'users/passwords' }
 
   resources :users, only: [:show]
+  resources :contacts, only: [:new, :create]
   get 'confidentialite', to: 'static_pages#privacy', as: :privacy
   get 'mentions-legales', to: 'static_pages#legal_notices', as: :legal_notices
   get 'cgu', to: 'static_pages#terms', as: :terms

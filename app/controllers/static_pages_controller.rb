@@ -1,11 +1,12 @@
 class StaticPagesController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:privacy, :contact, :legal_notices, :terms, :community]
 
   def privacy
     # Le contenu est rendu directement par la vue
   end
 
   def contact
-    # Le contenu est rendu directement par la vue
+    @contact = Contact.new
   end
 
   def legal_notices
