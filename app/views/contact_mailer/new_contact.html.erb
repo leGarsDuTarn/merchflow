@@ -1,11 +1,56 @@
-<p><strong>Nouveau message reçu depuis le site MerchFlow !</strong> 🚀</p>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 20px;">
 
-<ul>
-  <li><strong>Nom :</strong> <%= @contact.name %></li>
-  <li><strong>Email :</strong> <%= @contact.email %></li>
-</ul>
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
 
-<hr>
+      <h2 style="color: #FF5722; margin-top: 0; border-bottom: 2px solid #FF5722; padding-bottom: 15px;">
+        🚀 Nouveau message reçu !
+      </h2>
 
-<p><strong>Message :</strong></p>
-<p style="white-space: pre-wrap;"><%= @contact.message %></p>
+      <p style="font-size: 16px; line-height: 1.5;">
+        Bonjour Benjamin,
+      </p>
+
+      <p style="font-size: 16px; line-height: 1.5;">
+        Quelqu'un vient de remplir le formulaire de contact sur <strong>Merchflow</strong>. Voici les détails :
+      </p>
+
+      <div style="background-color: #f4f4f4; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <p style="margin: 5px 0; font-size: 15px;">
+          <strong>👤 Nom :</strong> <%= @contact.name %>
+        </p>
+        <p style="margin: 5px 0; font-size: 15px;">
+          <strong>📧 Email :</strong>
+          <a href="mailto:<%= @contact.email %>" style="color: #FF5722; text-decoration: none; font-weight: bold;">
+            <%= @contact.email %>
+          </a>
+        </p>
+      </div>
+
+      <p style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">📝 Message :</p>
+
+      <div style="background-color: #ffffff; border-left: 4px solid #FF5722; padding: 10px 20px; margin-bottom: 30px; color: #555; font-style: italic; white-space: pre-wrap; line-height: 1.6;">
+<%= @contact.message %>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <a href="mailto:<%= @contact.email %>"
+           style="background-color: #FF5722; color: white; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; display: inline-block;">
+          Répondre directement
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+      <p style="font-size: 12px; color: #999; text-align: center;">
+        Cet email a été envoyé automatiquement via le site Merchflow.fr<br>
+        Date de réception : <%= Time.now.strftime("%d/%m/%Y à %H:%M") %>
+      </p>
+
+    </div>
+  </body>
+</html>
