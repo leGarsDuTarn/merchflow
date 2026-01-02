@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_02_173937) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,6 +82,47 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
     t.index ["token"], name: "index_fve_invitations_on_token", unique: true
   end
 
+  create_table "job_applications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "job_offer_id", null: false
+    t.bigint "merch_id", null: false
+    t.text "message"
+    t.string "status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.index ["job_offer_id", "merch_id"], name: "index_job_applications_on_job_offer_id_and_merch_id", unique: true
+    t.index ["job_offer_id"], name: "index_job_applications_on_job_offer_id"
+    t.index ["merch_id"], name: "index_job_applications_on_merch_id"
+  end
+
+  create_table "job_offers", force: :cascade do |t|
+    t.string "address"
+    t.datetime "break_end_time"
+    t.datetime "break_start_time"
+    t.string "city"
+    t.string "company_name", null: false
+    t.string "contract_type", null: false
+    t.datetime "created_at", null: false
+    t.string "department_code"
+    t.text "description", null: false
+    t.integer "duration_minutes", default: 0, null: false
+    t.datetime "end_date", null: false
+    t.bigint "fve_id", null: false
+    t.integer "headcount_required", default: 1, null: false
+    t.decimal "hourly_rate", precision: 5, scale: 2, default: "12.02", null: false
+    t.decimal "km_limit", precision: 5, scale: 2
+    t.decimal "km_rate", precision: 5, scale: 2
+    t.boolean "km_unlimited", default: false
+    t.string "mission_type", null: false
+    t.datetime "start_date", null: false
+    t.string "status", default: "draft", null: false
+    t.string "store_name"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "zipcode"
+    t.index ["fve_id"], name: "index_job_offers_on_fve_id"
+    t.index ["status", "department_code", "mission_type"], name: "index_job_offers_search"
+  end
+
   create_table "kilometer_logs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description", default: ""
@@ -102,12 +143,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
     t.boolean "allow_none", default: false
     t.datetime "created_at", null: false
     t.string "preferred_contact_channel", default: "phone"
+    t.string "preferred_departments", default: [], array: true
     t.boolean "role_anim", default: false
     t.boolean "role_merch", default: true
     t.boolean "share_address", default: false, null: false
     t.boolean "share_planning", default: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["preferred_departments"], name: "index_merch_settings_on_preferred_departments", using: :gin
     t.index ["user_id"], name: "index_merch_settings_on_user_id", unique: true
   end
 
@@ -119,7 +162,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
     t.decimal "effective_km", precision: 5, scale: 2
     t.datetime "end_time", null: false
     t.bigint "fve_id", null: false
-    t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88"
+    t.decimal "hourly_rate", precision: 5, scale: 2, default: "12.02"
     t.bigint "merch_id", null: false
     t.text "message"
     t.datetime "start_time", null: false
@@ -179,7 +222,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
     t.decimal "fee_meal", precision: 10, scale: 2, default: "0.0"
     t.decimal "fee_parking", precision: 10, scale: 2, default: "0.0"
     t.decimal "fee_toll", precision: 10, scale: 2, default: "0.0"
-    t.decimal "hourly_rate", precision: 5, scale: 2, default: "11.88", null: false
+    t.decimal "hourly_rate", precision: 5, scale: 2, default: "12.02", null: false
     t.decimal "km_custom", precision: 5, scale: 2
     t.integer "night_minutes", default: 0, null: false
     t.text "notes"
@@ -198,6 +241,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_133831) do
   add_foreign_key "declarations", "users"
   add_foreign_key "favorites", "users", column: "fve_id"
   add_foreign_key "favorites", "users", column: "merch_id"
+  add_foreign_key "job_applications", "job_offers"
+  add_foreign_key "job_applications", "users", column: "merch_id"
+  add_foreign_key "job_offers", "users", column: "fve_id"
   add_foreign_key "kilometer_logs", "work_sessions"
   add_foreign_key "merch_settings", "users"
   add_foreign_key "mission_proposals", "users", column: "fve_id"
