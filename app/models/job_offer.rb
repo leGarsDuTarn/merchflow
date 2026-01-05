@@ -64,6 +64,14 @@ class JobOffer < ApplicationRecord
 
   # --- MÉTHODES INTELLIGENTES ---
 
+  def agency_label
+    # Va chercher l'agence via l'utilisateur qui a créé l'offre (le FVE)
+    return "Non spécifié" if fve.nil? || fve.agency.blank?
+
+    # Cherche le nom de l'agence dans la table Agency à partir du code
+    Agency.find_by(code: fve.agency)&.label || fve.agency
+  end
+
   def duration_hours
     (duration_minutes / 60.0).round(2)
   end
