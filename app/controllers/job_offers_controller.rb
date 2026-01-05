@@ -4,35 +4,40 @@ class JobOffersController < ApplicationController
   before_action :authenticate_user!, except: [:index]
   before_action :set_job_offer, only: [:show]
 
-  def index
-    # On ne montre que ce qui est prêt à être vu
-    @job_offers = JobOffer.published.order(start_date: :asc)
-
-    # Filtres simples par type de mission
-    if params[:filter] == 'merchandising'
-      @job_offers = @job_offers.where(mission_type: 'merchandising')
-    elsif params[:filter] == 'animation'
-      @job_offers = @job_offers.where(mission_type: 'animation')
-    end
-  end
+ def index
+    @job_offers = JobOffer.published
+                          .upcoming
+                          .by_location(params[:city])     # Recherche texte (Ville/Zip)
+                          .by_department(params[:department])
+                          .by_type(params[:type])
+                          .by_contract(params[:contract_type])
+                          .min_rate(params[:min_rate])
+                          .starting_after(params[:start_date])
+                          .order(start_date: :asc)
+ end
 
   def show
-    # On initialise l'objet pour le formulaire de candidature (modal ou bas de page)
+    # On initialise l'objet pour le formulaire de candidature
     @job_application = JobApplication.new
 
-    # On vérifie si l'utilisateur est connecté ET s'il a déjà postulé
-    # Utilisation de current_user.id pour la clarté
-    @already_applied = @job_offer.job_applications.exists?(merch_id: current_user.id)
+    # Sécurité : On vérifie si l'user est connecté avant de checker sa candidature
+    # afin d'éviter un crash pour les visiteurs non-connectés
+    @already_applied = if current_user
+                         @job_offer.job_applications.exists?(merch_id: current_user.id)
+                       else
+                         false
+                       end
   end
 
   private
 
   def set_job_offer
-    # On s'assure de ne trouver que des offres existantes
+    # On récupère l'offre
     @job_offer = JobOffer.find(params[:id])
 
-    # Sécurité supplémentaire : si un candidat essaie d'accéder à une offre "draft" via ID
-    if @job_offer.status != 'published' && !current_user.fve?
+    # Sécurité supplémentaire : si un candidat tente d'accéder à un brouillon (draft) via ID
+    # Seul l'auteur (FVE) ou un admin peut voir une offre non publiée
+    if @job_offer.status != 'published' && (current_user.nil? || !current_user.fve?)
       redirect_to job_offers_path, alert: "Cette offre n'est plus disponible."
     end
   end

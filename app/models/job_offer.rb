@@ -14,33 +14,22 @@ class JobOffer < ApplicationRecord
   has_many :candidates, through: :job_applications, source: :merch
 
   # --- VALIDATIONS ---
-
-  # Infos Générales
   validates :title, presence: true, length: { minimum: 5, maximum: 100 }
   validates :description, presence: true, length: { minimum: 20 }
   validates :mission_type, inclusion: { in: MISSION_TYPES }
   validates :contract_type, inclusion: { in: CONTRACT_TYPES }
   validates :company_name, presence: true
-
-  # Contact
   validates :contact_email, presence: { message: "est obligatoire pour valider l'offre" },
                             format: { with: URI::MailTo::EMAIL_REGEXP, message: "ne semble pas être un email valide" }
-
   validates :contact_phone, presence: { message: "est obligatoire pour valider l'offre" },
                             format: { with: /\A0[1-9]\d{8}\z/, message: "doit contenir 10 chiffres (ex: 0612345678)" }
-
-  # Géolocalisation
   validates :address, :city, :zipcode, presence: true
   validates :zipcode, format: { with: /\A\d{5}\z/, message: "doit contenir 5 chiffres" }
-
-  # Dates et Horaires
   validates :start_date, :end_date, presence: true
   validate :end_date_after_start_date
   validate :break_time_consistency
-
-  # Financier
   validates :hourly_rate, numericality: { greater_than_or_equal_to: 12.02, message: "ne peut pas être inférieur au SMIC Brut (12.02 €)" }
-  validates :night_rate, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 3.0 } # Max 300% de majoration, sécurité
+  validates :night_rate, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 3.0 }
   validates :headcount_required, numericality: { only_integer: true, greater_than: 0 }
 
   # --- CALLBACKS ---
@@ -49,14 +38,41 @@ class JobOffer < ApplicationRecord
   before_save :normalize_status
 
   # --- SCOPES ---
+  # Filtres de base
   scope :published, -> { where(status: 'published') }
+  scope :upcoming,  -> { where("start_date >= ?", Date.today) }
 
+  # Filtrage par Localisation (Texte libre : Ville ou CP)
+  scope :by_location, ->(query) {
+    if query.present?
+      q = "%#{query}%"
+      where("city ILIKE ? OR zipcode ILIKE ?", q, q)
+    end
+  }
+
+  # Filtre par Département (Code strict ex: "81")
+  scope :by_department, ->(dept_code) { where(department_code: dept_code) if dept_code.present? }
+
+  # Filtre par Type de mission (merchandising / animation)
+  scope :by_type, ->(type) { where(mission_type: type) if type.present? }
+
+  # Filtre par Type de contrat (CDD, Interim...)
+  scope :by_contract, ->(contract) { where(contract_type: contract) if contract.present? }
+
+  # Filtre par Rémunération minimum
+  scope :min_rate, ->(rate) { where("hourly_rate >= ?", rate.to_f) if rate.present? }
+
+  # Filtre par Date de début (Missions commençant après X)
+  scope :starting_after, ->(date) { where("start_date >= ?", date.to_date) if date.present? }
+
+  # Ton scope intelligent pour le dashboard Merch (ne pas toucher)
   scope :relevant_for, ->(user) {
     wanted_types = []
     wanted_types << 'merchandising' if user.merch_setting.role_merch
     wanted_types << 'animation' if user.merch_setting.role_anim
 
     published
+      .upcoming
       .where(mission_type: wanted_types)
       .where(department_code: user.merch_setting.preferred_departments)
       .order(start_date: :asc)
@@ -65,10 +81,7 @@ class JobOffer < ApplicationRecord
   # --- MÉTHODES INTELLIGENTES ---
 
   def agency_label
-    # Va chercher l'agence via l'utilisateur qui a créé l'offre (le FVE)
     return "Non spécifié" if fve.nil? || fve.agency.blank?
-
-    # Cherche le nom de l'agence dans la table Agency à partir du code
     Agency.find_by(code: fve.agency)&.label || fve.agency
   end
 
@@ -76,27 +89,17 @@ class JobOffer < ApplicationRecord
     (duration_minutes / 60.0).round(2)
   end
 
-  # Estimation PRÉCISE du salaire Brut (Jour + Nuit majorée)
   def estimated_total_brut
     night_mins = compute_night_minutes_estimation
     day_mins = duration_minutes - night_mins
-
-    # Conversion en heures
     h_day = day_mins / 60.0
     h_night = night_mins / 60.0
-
-    # Calcul financier :
-    # Jour : Taux normal
-    # Nuit : Taux normal * (1 + Taux Majoration Nuit)
     pay_day = h_day * hourly_rate
     pay_night = h_night * (hourly_rate * (1 + night_rate))
-
     (pay_day + pay_night).round(2)
   end
 
   private
-
-  # --- LOGIQUE INTERNE ---
 
   def set_department_code
     self.department_code = zipcode[0..1] if zipcode.present?
@@ -105,7 +108,6 @@ class JobOffer < ApplicationRecord
   def compute_duration_minutes
     return unless start_date && end_date
     raw_minutes = ((end_date - start_date) / 60).to_i
-
     if break_start_time.present? && break_end_time.present?
       break_minutes = ((break_end_time - break_start_time) / 60).to_i
       self.duration_minutes = raw_minutes - break_minutes
@@ -118,14 +120,10 @@ class JobOffer < ApplicationRecord
     self.status ||= 'draft'
   end
 
-  # --- DÉTECTION NUIT (Miroir de WorkSession) ---
-
   def compute_night_minutes_estimation
     return 0 unless start_date && end_date
     minutes = 0
     current = start_date
-
-    # Boucle minute par minute (Robuste pour les passages de minuit)
     while current < end_date
       unless in_break_estimation?(current)
         if current.hour >= NIGHT_START || current.hour < NIGHT_END
@@ -141,8 +139,6 @@ class JobOffer < ApplicationRecord
     return false unless break_start_time.present? && break_end_time.present?
     time >= break_start_time && time < break_end_time
   end
-
-  # --- VALIDATIONS ---
 
   def end_date_after_start_date
     return if end_date.blank? || start_date.blank?

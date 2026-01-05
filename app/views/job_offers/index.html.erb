@@ -1,112 +1,205 @@
-<div class="container my-5">
+<div class="container mt-4 mb-5">
 
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
-    <div>
-      <h1 class="fw-bold text-gray m-0 text-center text-md-start">Missions disponibles</h1>
-      <p class="text-muted mb-0 text-center text-md-start">Trouvez votre prochaine mission en quelques clics.</p>
-    </div>
+  <div class="text-center mb-5">
+    <h1 class="fw-bold text-orange mb-2">Missions disponibles</h1>
+    <p class="text-muted small">Recherchez, filtrez et postulez aux missions qui vous correspondent.</p>
   </div>
 
-  <div class="row g-4">
-    <div class="col-lg-3">
-      <div class="card shadow border-0 rounded-4 p-4 sticky-top" style="top: 100px;">
-        <h5 class="fw-bold text-dark mb-4"><i class="fa-solid fa-filter text-orange me-2"></i>Filtrer</h5>
+  <div class="card shadow rounded-4 border-0 mb-5 overflow-hidden">
 
-        <%= form_with url: job_offers_path, method: :get, class: "row g-3" do |f| %>
-          <div class="col-12">
-            <%= f.label :city, "Ville", class: "form-label small fw-bold text-muted" %>
-            <%= f.text_field :city, value: params[:city], class: "form-control rounded-3 border-light bg-light", placeholder: "Ex: Albi..." %>
-          </div>
-
-          <div class="col-12">
-            <%= f.label :type, "Type de mission", class: "form-label small fw-bold text-muted" %>
-            <%= f.select :type, JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, { include_blank: "Toutes", selected: params[:type] }, { class: "form-select rounded-3 border-light bg-light" } %>
-          </div>
-
-          <div class="col-12 mt-4 d-grid gap-2">
-            <%= f.submit "Rechercher", class: "btn btn-orange rounded-pill fw-bold" %>
-            <%= link_to "Réinitialiser", job_offers_path, class: "btn btn-light btn-sm text-muted rounded-pill" %>
-          </div>
-        <% end %>
-      </div>
+    <div class="card-header bg-white border-bottom-0 p-4 pb-0">
+      <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+        <span class="bg-orange-light text-orange rounded-3 p-2 me-3 d-inline-flex">
+          <i class="fa-solid fa-magnifying-glass fa-sm"></i>
+        </span>
+        Critères de recherche
+      </h5>
     </div>
 
-    <div class="col-lg-9">
-      <% if @job_offers.any? %>
-        <div class="row g-4">
-          <% @job_offers.each do |offer| %>
-            <div class="col-md-6">
-              <div class="card shadow border-0 rounded-4 p-3 h-100 d-flex flex-column position-relative overflow-hidden">
+    <div class="card-body p-4 bg-white">
+      <%= form_with url: job_offers_path, method: :get, local: true, class: "row g-3" do |f| %>
 
-                <%# Détection de candidature existante %>
-                <% application = current_user.job_applications.find_by(job_offer: offer) if user_signed_in? %>
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-bold small text-muted text-uppercase ls-1">Localisation</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3 text-orange">
+              <i class="fa-solid fa-location-dot"></i>
+            </span>
+            <%= f.text_field :city, value: params[:city], class: "form-control bg-light border-0 py-2", placeholder: "Ville ou Code Postal..." %>
+          </div>
+        </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small">
-                    <%= offer.mission_type.capitalize %>
-                  </span>
-                  <div class="text-end">
-                    <span class="fw-bold text-dark fs-5"><%= number_to_currency(offer.hourly_rate) %></span>
-                    <small class="text-muted d-block" style="font-size: 0.65rem;">BRUT / H</small>
-                  </div>
-                </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-bold small text-muted text-uppercase ls-1">Département</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3 text-orange">
+              <i class="fa-solid fa-map"></i>
+            </span>
+            <% available_depts = JobOffer.published.distinct.pluck(:department_code).sort %>
+            <%= f.select :department,
+                         available_depts,
+                         { include_blank: "Tous les départements", selected: params[:department] },
+                         { class: "form-select bg-light border-0 py-2" } %>
+          </div>
+        </div>
 
-                <h5 class="fw-bold text-dark mb-1"><%= offer.title %></h5>
-                <div class="d-flex align-items-center text-muted small mb-3">
-                  <i class="fa-solid fa-store me-2 text-orange"></i>
-                  <span><%= offer.store_name %> • <%= offer.city %></span>
-                </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-bold small text-muted text-uppercase ls-1">Type de mission</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3 text-orange">
+              <i class="fa-solid fa-tag"></i>
+            </span>
+            <%= f.select :type,
+                         JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] },
+                         { include_blank: "Toutes les missions", selected: params[:type] },
+                         { class: "form-select bg-light border-0 py-2" } %>
+          </div>
+        </div>
 
-                <div class="bg-light p-3 rounded-3 small mb-4">
-                  <div class="d-flex align-items-center mb-2">
-                    <i class="fa-regular fa-calendar text-orange me-2"></i>
-                    <span class="fw-bold text-dark">
-                      <%= l(offer.start_date.to_date, format: :long).capitalize %>
-                    </span>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <i class="fa-regular fa-clock text-orange me-2"></i>
-                    <span class="text-muted"><%= offer.start_date.strftime("%H:%M") %> à <%= offer.end_date.strftime("%H:%M") %></span>
-                  </div>
-                </div>
+        <div class="col-12 mt-4 d-flex justify-content-center gap-2 flex-wrap">
+          <button type="submit" class="btn btn-orange fw-bold rounded-pill shadow-sm px-5 py-2">
+            <i class="fa-solid fa-search me-2"></i>Rechercher
+          </button>
 
-                <div class="mt-auto">
-                  <% if application %>
-                    <div class="d-flex align-items-center justify-content-between bg-orange-light bg-opacity-50 p-2 rounded-3 border border-orange-subtle mb-2">
-                      <small class="fw-bold text-orange px-2">
-                        <i class="fa-solid fa-circle-check me-1"></i> Déjà postulé
-                      </small>
-                      <%= job_status_badge(application.status) %>
-                    </div>
-                    <%= link_to job_offer_path(offer), class: "btn btn-light border text-muted w-100 fw-bold rounded-3" do %>
-                      Voir le détail
-                    <% end %>
-                  <% else %>
-                    <%= link_to job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm" do %>
-                      <i class="fa-solid fa-eye me-1"></i> Voir l'offre
-                    <% end %>
-                  <% end %>
-
-                  <div class="text-center mt-3">
-                    <small class="text-muted italic" style="font-size: 0.7rem;">
-                      Publié il y a <%= time_ago_in_words(offer.created_at) %>
-                    </small>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+          <%= link_to job_offers_path, class: "btn btn-light text-muted border rounded-pill px-3 py-2 fw-semibold" do %>
+            <i class="fa-solid fa-arrow-rotate-left me-1"></i> Effacer
           <% end %>
         </div>
-      <% else %>
-        <div class="text-center py-5">
-          <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
-            <i class="fa-solid fa-magnifying-glass fa-3x text-muted opacity-25"></i>
-          </div>
-          <h4 class="fw-bold text-dark">Aucune mission trouvée</h4>
-          <p class="text-muted small">Modifiez vos filtres ou revenez plus tard.</p>
+
+        <div class="col-12 mt-3 text-center">
+          <a class="btn btn-link text-decoration-none text-muted fw-bold small"
+             data-bs-toggle="collapse" href="#advancedFilters" role="button" aria-expanded="false">
+            <i class="fa-solid fa-sliders me-1"></i>
+            Plus de filtres (Date, Contrat, Tarif...)
+          </a>
         </div>
+
+        <div class="collapse col-12" id="advancedFilters">
+          <div class="p-4 bg-light rounded-4 mt-2 border border-light position-relative overflow-hidden">
+            <i class="fa-regular fa-calendar-check position-absolute text-orange opacity-10" style="right: -20px; bottom: -20px; font-size: 8rem;"></i>
+
+            <div class="row g-4 position-relative">
+
+              <div class="col-12 col-md-4 border-end-md">
+                <h6 class="fw-bold text-orange mb-3 small text-uppercase"><i class="fa-regular fa-clock me-2"></i>Disponibilité</h6>
+                <div class="mb-2">
+                  <%= f.label :start_date, "À partir du", class: "form-label small text-muted fw-bold" %>
+                  <%= f.date_field :start_date, value: params[:start_date], class: "form-control shadow-sm border-0" %>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-8 ps-md-4">
+                <h6 class="fw-bold text-orange mb-3 small text-uppercase"><i class="fa-solid fa-file-signature me-2"></i>Détails de l'offre</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <%= f.label :contract_type, "Type de contrat", class: "form-label small text-muted fw-bold" %>
+                    <%= f.select :contract_type,
+                                 JobOffer::CONTRACT_TYPES.map { |c| [c.upcase, c] },
+                                 { include_blank: "Peu importe", selected: params[:contract_type] },
+                                 { class: "form-select shadow-sm border-0" } %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= f.label :min_rate, "Taux horaire minimum", class: "form-label small text-muted fw-bold" %>
+                    <%= f.select :min_rate,
+                                 [["12€/h +", 12], ["13€/h +", 13], ["14€/h +", 14], ["15€/h +", 15]],
+                                 { include_blank: "Peu importe", selected: params[:min_rate] },
+                                 { class: "form-select shadow-sm border-0" } %>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       <% end %>
     </div>
   </div>
+
+  <%
+     # Détection des filtres actifs pour l'affichage
+     search_keys = %w[city department type start_date contract_type min_rate]
+     has_search = search_keys.any? { |key| params[key].present? }
+  %>
+
+  <div class="d-flex justify-content-between align-items-end mb-4 px-2">
+    <div>
+      <h4 class="fw-bold text-dark mb-0">Résultats</h4>
+      <% if has_search %>
+        <span class="badge bg-orange-subtle text-orange mt-1 rounded-pill">
+          <i class="fa-solid fa-filter me-1"></i> Filtres appliqués
+        </span>
+      <% end %>
+    </div>
+    <span class="badge bg-orange rounded-pill px-3 py-2 shadow-sm"><%= @job_offers.count %> Offres</span>
+  </div>
+
+  <% if @job_offers.any? %>
+    <div class="row g-4">
+      <% @job_offers.each do |offer| %>
+        <div class="col-md-6 col-lg-6"> <div class="card shadow border-0 rounded-4 p-4 h-100 d-flex flex-column position-relative overflow-hidden transition-hover">
+            <% application = current_user.job_applications.find_by(job_offer: offer) if user_signed_in? %>
+
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div class="d-flex flex-column gap-1">
+                <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small align-self-start" style="font-size: 0.65rem;">
+                  <i class="fa-solid fa-tag me-1"></i> <%= offer.mission_type.capitalize %>
+                </span>
+                <h5 class="fw-bold text-dark mb-0 mt-1"><%= offer.title %></h5>
+              </div>
+              <div class="text-end min-w-80">
+                <span class="fw-bold text-dark fs-5"><%= number_to_currency(offer.hourly_rate) %></span>
+                <small class="text-muted d-block" style="font-size: 0.65rem;">BRUT / H</small>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center text-muted small mb-3">
+              <i class="fa-solid fa-store me-2 text-orange"></i>
+              <span><%= offer.store_name %> • <%= offer.city %> (<%= offer.department_code %>)</span>
+            </div>
+
+            <div class="bg-light p-3 rounded-4 small mb-4">
+              <div class="d-flex align-items-center mb-2">
+                <i class="fa-regular fa-calendar text-orange me-2"></i>
+                <span class="fw-bold text-dark"><%= l(offer.start_date.to_date, format: :long).capitalize %></span>
+              </div>
+              <div class="d-flex align-items-center">
+                <i class="fa-regular fa-clock text-orange me-2"></i>
+                <span class="text-muted"><%= offer.start_date.strftime("%H:%M") %> à <%= offer.end_date.strftime("%H:%M") %></span>
+              </div>
+            </div>
+
+            <div class="mt-auto">
+              <% if application %>
+                <div class="d-flex align-items-center justify-content-between bg-orange-light bg-opacity-50 p-2 rounded-3 border border-orange-subtle mb-3">
+                  <small class="fw-bold text-orange px-2"><i class="fa-solid fa-circle-check me-1"></i> Déjà postulé</small>
+                  <%= job_status_badge(application.status) %>
+                </div>
+                <%= link_to job_offer_path(offer), class: "btn btn-light border text-muted w-100 fw-bold rounded-3 shadow-sm" do %>Voir le détail<% end %>
+              <% else %>
+                <%= link_to job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm py-2" do %><i class="fa-solid fa-eye me-1"></i> Voir l'offre<% end %>
+              <% end %>
+
+              <div class="text-center mt-3">
+                <small class="text-muted italic" style="font-size: 0.7rem;">Publié il y a <%= time_ago_in_words(offer.created_at) %></small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
+      <div class="mb-3 text-muted opacity-25">
+        <i class="fa-solid fa-magnifying-glass fa-4x"></i>
+      </div>
+      <h4 class="fw-bold text-dark">Aucune mission trouvée</h4>
+      <p class="text-muted small">
+        Essayez d'élargir vos critères (dates, tarif) ou de changer de zone géographique.
+      </p>
+      <%= link_to "Effacer tous les filtres", job_offers_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-bold btn-sm mt-2" %>
+    </div>
+  <% end %>
+
 </div>
