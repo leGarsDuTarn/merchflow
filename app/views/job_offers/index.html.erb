@@ -1,27 +1,31 @@
-<div class="container mt-5">
-  <div class="row mb-5">
-    <div class="col-md-8">
-      <h1 class="display-5 fw-bold text-dark">Missions disponibles</h1>
-      <p class="lead text-muted">Trouvez votre prochaine mission de merchandising en quelques clics.</p>
+<div class="container my-5">
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+    <div>
+      <h1 class="fw-bold text-gray m-0 text-center text-md-start">Missions disponibles</h1>
+      <p class="text-muted mb-0 text-center text-md-start">Trouvez votre prochaine mission en quelques clics.</p>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-lg-3 mb-4">
-      <div class="card border-0 shadow-sm p-3 sticky-top" style="top: 20px;">
-        <h5 class="mb-3">Filtrer par</h5>
+  <div class="row g-4">
+    <div class="col-lg-3">
+      <div class="card shadow border-0 rounded-4 p-4 sticky-top" style="top: 100px;">
+        <h5 class="fw-bold text-dark mb-4"><i class="fa-solid fa-filter text-orange me-2"></i>Filtrer</h5>
+
         <%= form_with url: job_offers_path, method: :get, class: "row g-3" do |f| %>
           <div class="col-12">
-            <%= f.label :city, "Ville", class: "form-label small fw-bold" %>
-            <%= f.text_field :city, value: params[:city], class: "form-control form-control-sm", placeholder: "Ex: Paris..." %>
+            <%= f.label :city, "Ville", class: "form-label small fw-bold text-muted" %>
+            <%= f.text_field :city, value: params[:city], class: "form-control rounded-3 border-light bg-light", placeholder: "Ex: Albi..." %>
           </div>
+
           <div class="col-12">
-            <%= f.label :type, "Type de mission", class: "form-label small fw-bold" %>
-            <%= f.select :type, JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, { include_blank: "Tous", selected: params[:type] }, { class: "form-select form-select-sm" } %>
+            <%= f.label :type, "Type de mission", class: "form-label small fw-bold text-muted" %>
+            <%= f.select :type, JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, { include_blank: "Toutes", selected: params[:type] }, { class: "form-select rounded-3 border-light bg-light" } %>
           </div>
-          <div class="col-12 mt-4">
-            <%= f.submit "Rechercher", class: "btn btn-primary btn-sm w-100" %>
-            <%= link_to "Réinitialiser", job_offers_path, class: "btn btn-link btn-sm w-100 text-muted mt-2" %>
+
+          <div class="col-12 mt-4 d-grid gap-2">
+            <%= f.submit "Rechercher", class: "btn btn-orange rounded-pill fw-bold" %>
+            <%= link_to "Réinitialiser", job_offers_path, class: "btn btn-light btn-sm text-muted rounded-pill" %>
           </div>
         <% end %>
       </div>
@@ -29,62 +33,80 @@
 
     <div class="col-lg-9">
       <% if @job_offers.any? %>
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="row g-4">
           <% @job_offers.each do |offer| %>
-            <div class="col">
-              <div class="card h-100 border-0 shadow-sm hover-shadow transition">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1">
-                      <%= offer.mission_type.capitalize %>
+            <div class="col-md-6">
+              <div class="card shadow border-0 rounded-4 p-3 h-100 d-flex flex-column position-relative overflow-hidden">
+
+                <%# Détection de candidature existante %>
+                <% application = current_user.job_applications.find_by(job_offer: offer) if user_signed_in? %>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small">
+                    <%= offer.mission_type.capitalize %>
+                  </span>
+                  <div class="text-end">
+                    <span class="fw-bold text-dark fs-5"><%= number_to_currency(offer.hourly_rate) %></span>
+                    <small class="text-muted d-block" style="font-size: 0.65rem;">BRUT / H</small>
+                  </div>
+                </div>
+
+                <h5 class="fw-bold text-dark mb-1"><%= offer.title %></h5>
+                <div class="d-flex align-items-center text-muted small mb-3">
+                  <i class="fa-solid fa-store me-2 text-orange"></i>
+                  <span><%= offer.store_name %> • <%= offer.city %></span>
+                </div>
+
+                <div class="bg-light p-3 rounded-3 small mb-4">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fa-regular fa-calendar text-orange me-2"></i>
+                    <span class="fw-bold text-dark">
+                      <%= l(offer.start_date.to_date, format: :long).capitalize %>
                     </span>
-                    <span class="fw-bold text-success"><%= offer.hourly_rate %>€/h</span>
                   </div>
-
-                  <h5 class="card-title fw-bold mb-1"><%= offer.title %></h5>
-                  <p class="text-muted small mb-3">
-                    <i class="fas fa-store me-1"></i> <%= offer.store_name %> •
-                    <i class="fas fa-map-marker-alt ms-2 me-1"></i> <%= offer.city %>
-                  </p>
-
-                  <div class="d-flex align-items-center text-secondary small mb-4">
-                    <i class="far fa-calendar-alt me-2"></i>
-                    <%= l(offer.start_date, format: "%d %b %Y") %>
-                    <span class="mx-2">|</span>
-                    <i class="far fa-clock me-2"></i>
-                    <%= offer.start_date.strftime("%H:%M") %>
+                  <div class="d-flex align-items-center">
+                    <i class="fa-regular fa-clock text-orange me-2"></i>
+                    <span class="text-muted"><%= offer.start_date.strftime("%H:%M") %> à <%= offer.end_date.strftime("%H:%M") %></span>
                   </div>
+                </div>
 
-                  <%= link_to job_offer_path(offer), class: "btn btn-outline-primary w-100 stretched-link" do %>
-                    Voir les détails
+                <div class="mt-auto">
+                  <% if application %>
+                    <div class="d-flex align-items-center justify-content-between bg-orange-light bg-opacity-50 p-2 rounded-3 border border-orange-subtle mb-2">
+                      <small class="fw-bold text-orange px-2">
+                        <i class="fa-solid fa-circle-check me-1"></i> Déjà postulé
+                      </small>
+                      <%= job_status_badge(application.status) %>
+                    </div>
+                    <%= link_to job_offer_path(offer), class: "btn btn-light border text-muted w-100 fw-bold rounded-3" do %>
+                      Voir le détail
+                    <% end %>
+                  <% else %>
+                    <%= link_to job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm" do %>
+                      <i class="fa-solid fa-eye me-1"></i> Voir l'offre
+                    <% end %>
                   <% end %>
+
+                  <div class="text-center mt-3">
+                    <small class="text-muted italic" style="font-size: 0.7rem;">
+                      Publié il y a <%= time_ago_in_words(offer.created_at) %>
+                    </small>
+                  </div>
                 </div>
-                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                  <small class="text-muted italic">
-                    Publié <%= time_ago_in_words(offer.created_at) %> ago
-                  </small>
-                </div>
+
               </div>
             </div>
           <% end %>
         </div>
       <% else %>
         <div class="text-center py-5">
-          <i class="fas fa-search fa-3x text-light mb-3"></i>
-          <h3>Aucune mission trouvée</h3>
-          <p class="text-muted">Essayez de modifier vos filtres ou revenez plus tard.</p>
+          <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+            <i class="fa-solid fa-magnifying-glass fa-3x text-muted opacity-25"></i>
+          </div>
+          <h4 class="fw-bold text-dark">Aucune mission trouvée</h4>
+          <p class="text-muted small">Modifiez vos filtres ou revenez plus tard.</p>
         </div>
       <% end %>
     </div>
   </div>
 </div>
-
-<style>
-  .hover-shadow:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
-  }
-  .transition {
-    transition: all 0.3s ease;
-  }
-</style>
