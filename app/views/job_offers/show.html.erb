@@ -2,7 +2,7 @@
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="fw-bold text-dark m-0">Détail de l'offre</h1>
+      <h1 class="fw-bold text-dark m-0">Détail de la mission</h1>
       <p class="text-muted mb-0">Réf: #OFFRE-<%= @job_offer.id %></p>
     </div>
 
@@ -15,8 +15,9 @@
 
   <div class="row g-4">
 
-    <%# --- COLONNE GAUCHE : INFOS MISSION --- %>
+    <%# --- COLONNE GAUCHE : DÉTAILS OPÉRATIONNELS --- %>
     <div class="col-lg-8">
+
       <div class="card shadow border-0 rounded-4 overflow-hidden mb-4">
         <div class="card-body p-4 p-md-5">
 
@@ -33,10 +34,10 @@
                 <div>
                   <h2 class="fw-bold text-dark mb-1"><%= @job_offer.title %></h2>
                   <div class="d-flex align-items-center text-muted">
-                    <i class="fa-solid fa-store me-2 text-orange"></i>
-                    <span class="fw-semibold text-dark opacity-75"><%= @job_offer.store_name %></span>
+                    <i class="fa-solid fa-building me-2 text-orange"></i>
+                    <span class="fw-bold text-dark"><%= @job_offer.company_name %></span>
                     <span class="mx-2">•</span>
-                    <span><%= @job_offer.agency_label rescue @job_offer.company_name %></span>
+                    <span><%= @job_offer.store_name %></span>
                   </div>
                 </div>
               </div>
@@ -55,7 +56,7 @@
               <div class="bg-light rounded-4 p-3 border border-white h-100 shadow-sm">
                 <div class="d-flex align-items-center mb-1">
                   <i class="fa-regular fa-calendar text-orange me-2"></i>
-                  <small class="text-muted fw-bold text-uppercase ls-1" style="font-size: 0.7rem;">Date de mission</small>
+                  <small class="text-muted fw-bold text-uppercase ls-1" style="font-size: 0.7rem;">Date</small>
                 </div>
                 <span class="fw-bold text-dark fs-5"><%= l(@job_offer.start_date.to_date, format: :long).capitalize %></span>
               </div>
@@ -67,24 +68,59 @@
                   <small class="text-muted fw-bold text-uppercase ls-1" style="font-size: 0.7rem;">Horaires</small>
                 </div>
                 <span class="fw-bold text-dark fs-5">
-                  <%= @job_offer.start_date.strftime("%H:%M") %> à <%= @job_offer.end_date.strftime("%H:%M") %>
+                  <%= @job_offer.start_date.strftime("%H:%M") %> - <%= @job_offer.end_date.strftime("%H:%M") %>
                 </span>
+
+                <% if @job_offer.break_start_time.present? && @job_offer.break_end_time.present? %>
+                  <div class="mt-2 pt-2 border-top border-muted border-opacity-25 d-flex align-items-center text-muted small">
+                     <i class="fa-solid fa-mug-hot text-orange me-2"></i>
+                     <span>Pause prévue : <strong><%= @job_offer.break_start_time.strftime("%H:%M") %> à <%= @job_offer.break_end_time.strftime("%H:%M") %></strong></span>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
 
-          <h5 class="fw-bold text-dark mb-3 mt-2"><i class="fa-solid fa-align-left text-orange me-2"></i>Description</h5>
+          <div class="bg-orange-light bg-opacity-25 rounded-4 p-3 mb-4 d-flex align-items-center border border-orange-subtle border-dashed">
+             <i class="fa-solid fa-location-dot text-orange fs-3 me-3 ms-2"></i>
+             <div>
+               <small class="text-uppercase text-muted fw-bold ls-1" style="font-size: 0.65rem;">Lieu d'intervention</small>
+               <div class="fw-bold text-dark"><%= @job_offer.address %></div>
+               <div class="text-dark"><%= @job_offer.zipcode %> <%= @job_offer.city %></div>
+             </div>
+          </div>
+
+          <h5 class="fw-bold text-dark mb-3 mt-4"><i class="fa-solid fa-align-left text-orange me-2"></i>Description & Consignes</h5>
           <div class="text-secondary lh-lg mb-4" style="white-space: pre-wrap; font-size: 0.95rem;">
             <%= @job_offer.description %>
           </div>
+
+          <% if @job_offer.contact_email.present? || @job_offer.contact_phone.present? %>
+            <hr class="text-muted opacity-10 my-4">
+            <h6 class="fw-bold text-dark mb-3">Contacts Agence</h6>
+            <div class="d-flex flex-wrap gap-3">
+              <% if @job_offer.contact_email.present? %>
+                <div class="bg-white border rounded-pill px-3 py-2 shadow-sm d-flex align-items-center">
+                  <i class="fa-regular fa-envelope text-orange me-2"></i>
+                  <span class="small fw-bold text-dark"><%= @job_offer.contact_email %></span>
+                </div>
+              <% end %>
+              <% if @job_offer.contact_phone.present? %>
+                <div class="bg-white border rounded-pill px-3 py-2 shadow-sm d-flex align-items-center">
+                  <i class="fa-solid fa-phone text-orange me-2"></i>
+                  <span class="small fw-bold text-dark"><%= @job_offer.contact_phone %></span>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
         </div>
       </div>
     </div>
 
-    <%# --- COLONNE DROITE : SIMULATEUR STIMULUS --- %>
+    <%# --- COLONNE DROITE : SIMULATEUR FINANCIER STIMULUS --- %>
     <div class="col-lg-4">
       <%
-         # Préparation des variables pour Stimulus
          hours = (@job_offer.duration_minutes / 60.0).round(2)
          base_pay = hours * @job_offer.hourly_rate
          ifm_rate = @job_offer.ifm_rate || 10
@@ -101,49 +137,67 @@
            data-calculator-km-limit-value="<%= @job_offer.km_limit || 9999 %>">
 
         <div class="card-header bg-orange text-white p-4 rounded-top-4 border-0">
-          <h5 class="fw-bold mb-0"><i class="fa-solid fa-coins me-2"></i>Rémunération estimée</h5>
-          <small class="opacity-75">Simulation pour <%= hours %>h de mission</small>
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-calculator me-2"></i>Simulateur de revenus</h5>
+          <small class="opacity-75">Estimation contractuelle pour <%= hours %>h</small>
         </div>
 
         <div class="card-body p-4 bg-white">
 
           <% if @job_offer.km_rate.present? && @job_offer.km_rate > 0 %>
-            <div class="mb-4 p-3 bg-orange-light bg-opacity-25 rounded-4 border border-orange border-dashed">
-              <label class="form-label small fw-bold text-dark mb-2 text-uppercase ls-1">Distance trajet (km AR)</label>
-              <div class="input-group shadow-sm rounded-pill overflow-hidden border border-white">
-                <span class="input-group-text bg-white border-0 text-orange ps-3"><i class="fa-solid fa-car"></i></span>
+            <div class="mb-4 p-3 bg-orange-light bg-opacity-25 rounded-4 border border-orange border-dashed position-relative">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label small fw-bold text-dark mb-0 text-uppercase ls-1">Estimation Trajet (AR)</label>
+                <span class="badge bg-white text-orange border border-orange-subtle rounded-pill shadow-sm" style="font-size: 0.6rem;">BARÈME FIXE</span>
+              </div>
+
+              <div class="input-group shadow-sm rounded-pill overflow-hidden border border-white mb-2">
+                <span class="input-group-text bg-white border-0 text-orange ps-3"><i class="fa-solid fa-car-side"></i></span>
                 <input type="number"
                        data-calculator-target="kmInput"
                        data-action="input->calculator#calculate"
                        class="form-control border-0 py-2 fw-bold text-center"
-                       placeholder="Ex: 40">
+                       placeholder="Saisissez vos kms...">
                 <span class="input-group-text bg-white border-0 pe-3 text-muted small">km</span>
               </div>
-              <div class="mt-2 text-center">
-                <small class="text-muted" style="font-size: 0.7rem;">
-                  Indemnité : <span class="fw-bold text-orange"><%= @job_offer.km_rate %> €/km</span>
-                </small>
+
+              <div class="bg-white bg-opacity-60 rounded-3 p-2 border border-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <small class="text-muted" style="font-size: 0.7rem;">Taux :</small>
+                  <small class="fw-bold text-dark" style="font-size: 0.7rem;"><%= @job_offer.km_rate %> €/km</small>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted" style="font-size: 0.7rem;">Prise en charge max :</small>
+                  <small class="fw-bold text-dark" style="font-size: 0.7rem;">
+                    <% if @job_offer.km_unlimited %>
+                      Illimité
+                    <% elsif @job_offer.km_limit.present? %>
+                      <%= @job_offer.km_limit.to_i %> km <span class="fw-strong text-dark">AR</span>
+                    <% else %>
+                      -
+                    <% end %>
+                  </small>
+                </div>
               </div>
             </div>
           <% end %>
 
           <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted small">Salaire de base</span>
+            <span class="text-muted small">Base (<%= hours %>h)</span>
             <span class="fw-bold text-dark"><%= number_to_currency(base_pay) %></span>
           </div>
 
           <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted small">Précarité (IFM <%= ifm_rate.to_i %>%)</span>
+            <span class="text-muted small">IFM (<%= ifm_rate.to_i %>%)</span>
             <span class="fw-semibold text-success" data-calculator-target="ifm"></span>
           </div>
 
           <div class="d-flex justify-content-between mb-2 border-bottom border-light pb-3">
-            <span class="text-muted small">Congés Payés (CP <%= cp_rate.to_i %>%)</span>
+            <span class="text-muted small">Congés Payés (<%= cp_rate.to_i %>%)</span>
             <span class="fw-semibold text-success" data-calculator-target="cp"></span>
           </div>
 
           <div data-calculator-target="kmRow" class="d-flex justify-content-between mb-3 d-none">
-            <span class="text-muted small">Frais kilométriques</span>
+            <span class="text-muted small">Indemnités KM</span>
             <span class="fw-bold text-primary" data-calculator-target="kmResult"></span>
           </div>
 
@@ -157,44 +211,44 @@
 
           <hr class="my-4 opacity-10">
 
-          <%# --- LOGIQUE POSTULER --- %>
           <% if user_signed_in? %>
             <% if @already_applied %>
               <div class="bg-success bg-opacity-10 border border-success rounded-4 p-4 text-center">
                 <i class="fa-solid fa-circle-check text-success fs-2 mb-2"></i>
                 <h6 class="fw-bold text-success mb-1">Candidature envoyée</h6>
-                <p class="small text-muted mb-0">Vous recevrez une notification par email si vous êtes retenu.</p>
               </div>
             <% else %>
               <%= simple_form_for([@job_offer, @job_application]) do |f| %>
                 <div class="mb-3">
                   <%= f.input :message,
                               label: false,
-                              placeholder: "Message facultatif pour le recruteur...",
-                              input_html: { rows: 3, class: "rounded-4 border-light bg-light small p-3" } %>
+                              placeholder: "Message pour l'agence (facultatif)...",
+                              input_html: { rows: 3, class: "rounded-4 border-light bg-light small p-3 w-100" } %>
                 </div>
-                <%= f.button :submit, "Postuler maintenant", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm pulse-button" %>
+                <%= f.button :submit, "Postuler à cette mission", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm pulse-button" %>
+                  <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.7rem; line-height: 1.4;">
+                  <i class="fa-solid fa-user-shield me-1"></i>
+                  En postulant, vous acceptez de partager les informations de votre profil et vos coordonnées avec l'agence <strong><%= @job_offer.agency_label rescue "recruteuse" %></strong>.
+                  </p>
               <% end %>
             <% end %>
           <% else %>
-             <%= link_to "Se connecter pour postuler", new_user_session_path, class: "btn btn-dark w-100 rounded-pill fw-bold py-3" %>
+             <%= link_to "Connexion requise", new_user_session_path, class: "btn btn-dark w-100 rounded-pill fw-bold py-3" %>
           <% end %>
 
         </div>
 
-        <%# --- FOOTER DATE --- %>
         <div class="card-footer bg-light p-3 rounded-bottom-4 border-top-0 border-top border-white">
           <div class="d-flex align-items-center justify-content-between mb-2">
-            <small class="text-muted">Offre publiée par</small>
+            <small class="text-muted">Agence</small>
             <span class="badge bg-white text-dark border shadow-sm px-3 py-1 rounded-pill fw-bold">
-              <%= @job_offer.agency_label rescue "Recruteur" %>
+              <%= @job_offer.agency_label rescue "MerchFlow" %>
             </span>
           </div>
           <div class="d-flex align-items-center justify-content-between pt-1">
-            <small class="text-muted">Mise en ligne</small>
+            <small class="text-muted">Publié le</small>
             <div class="text-dark small fw-bold">
-              <i class="fa-regular fa-clock text-orange me-1"></i>
-              <%= l(@job_offer.created_at, format: "%d/%m/%y à %H:%M") %>
+              <%= l(@job_offer.created_at, format: "%d/%m/%y") %>
             </div>
           </div>
         </div>
@@ -202,12 +256,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .ls-1 { letter-spacing: 0.5px; }
-  .transition-hover { transition: all 0.2s ease; }
-  .transition-hover:hover { transform: translateY(-2px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important; }
-
-  .border-dashed { border-style: dashed !important; }
-  .min-w-150 { min-width: 150px; }
-</style>
