@@ -68,7 +68,7 @@
 
                   <% if app.status == 'rejected' %>
                     <%# BOUTON SUPPRIMER (POUBELLE ROUGE) %>
-                    <%= link_to job_application_path(app),
+                    <%= link_to fve_job_application_path(app),
                                 data: { turbo_method: :delete, turbo_confirm: "Supprimer cette candidature de votre liste ?" },
                                 class: "btn btn-white text-danger rounded-3 border shadow-sm d-flex align-items-center justify-content-center",
                                 style: "width: 42px; height: 42px;", title: "Supprimer" do %>

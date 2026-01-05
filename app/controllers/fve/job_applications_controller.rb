@@ -5,13 +5,16 @@ module Fve
 
     def destroy
       @application = JobApplication.find(params[:id])
-      # On vérifie que c'est bien l'offre du FVE connecté
-      if @application.job_offer.fve == current_user
-        @application.destroy
-        redirect_to fve_job_offer_path(@application.job_offer), notice: 'Candidature supprimée.', status: :see_other
-      else
-        redirect_to root_path, alert: 'Action non autorisée.'
-      end
+      authorize [:fve, @application]
+      @job_offer = @application.job_offer
+
+      # AU LIEU DE DESTROY : archive
+      # Cela garde la trace en DB, donc le bouton "Déjà postulé" reste chez le Merch
+      @application.update(status: 'archived')
+
+      redirect_to fve_job_offer_path(@job_offer),
+              notice: 'Candidat définitivement écarté de cette mission.',
+              status: :see_other
     end
 
     private

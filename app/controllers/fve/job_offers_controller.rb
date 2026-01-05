@@ -13,7 +13,10 @@ module Fve
     def show
       authorize [:fve, @job_offer]
       # Correction : on inclut :merch (et non :user) pour correspondre à ton modèle
-      @job_applications = @job_offer.job_applications.includes(:merch).order(created_at: :desc)
+      @job_applications = @job_offer.job_applications
+                                .includes(:merch)
+                                .where.not(status: 'archived')
+                                .order(created_at: :desc)
     end
 
     def new
