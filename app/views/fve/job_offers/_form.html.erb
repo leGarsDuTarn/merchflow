@@ -1,0 +1,87 @@
+<%= simple_form_for([:fve, job_offer], html: { class: "row g-3" }) do |f| %>
+  <%= f.error_notification %>
+  <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
+
+  <div class="col-md-12">
+    <%= f.input :title, label: "Titre de l'annonce", placeholder: "Ex: Merchandiser expert - Paris 15" %>
+  </div>
+
+  <div class="col-md-12">
+    <%= f.input :description, label: "Description de la mission", input_html: { rows: 5 } %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.input :mission_type, label: "Type de mission",
+                collection: JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] },
+                prompt: "Sélectionner..." %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.input :contract_type, label: "Type de contrat",
+                collection: JobOffer::CONTRACT_TYPES.map { |c| [c.upcase, c] },
+                prompt: "Sélectionner..." %>
+  </div>
+
+  <hr class="my-4">
+
+  <div class="col-md-6">
+    <%= f.input :start_date, label: "Date et heure de début", as: :datetime, html5: true %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.input :end_date, label: "Date et heure de fin", as: :datetime, html5: true %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.input :break_start_time, label: "Début de la pause", as: :time, html5: true %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.input :break_end_time, label: "Fin de la pause", as: :time, html5: true %>
+  </div>
+
+  <hr class="my-4">
+
+  <div class="col-md-4">
+    <%= f.input :company_name, label: "Entreprise / Client" %>
+  </div>
+
+  <div class="col-md-4">
+    <%= f.input :store_name, label: "Enseigne / Magasin" %>
+  </div>
+
+  <div class="col-md-4">
+    <%= f.input :headcount_required, label: "Nombre de personnes", input_html: { min: 1 } %>
+  </div>
+
+  <div class="col-md-12">
+    <%= f.input :address, label: "Adresse exacte" %>
+  </div>
+
+  <div class="col-md-4">
+    <%= f.input :zipcode, label: "Code Postal" %>
+  </div>
+
+  <div class="col-md-8">
+    <%= f.input :city, label: "Ville" %>
+  </div>
+
+  <hr class="my-4">
+
+  <div class="col-md-4">
+    <%= f.input :hourly_rate, label: "Taux horaire (€)", input_html: { step: 0.01 } %>
+  </div>
+
+  <div class="col-md-4">
+    <%= f.input :contact_email, label: "Email de contact" %>
+  </div>
+
+  <div class="col-md-4">
+    <%= f.input :contact_phone, label: "Téléphone de contact" %>
+  </div>
+
+  <div class="col-12 mt-4 text-center">
+    <%= f.button :submit, job_offer.new_record? ? "🚀 Publier l'annonce" : "💾 Mettre à jour",
+                 class: "btn btn-primary btn-lg px-5" %>
+  </div>
+<% end %>

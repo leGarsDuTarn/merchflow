@@ -1,0 +1,42 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Mes Annonces de Mission</h1>
+    <%= link_to 'Publier une nouvelle offre', new_fve_job_offer_path, class: 'btn btn-primary' %>
+  </div>
+
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Type</th>
+        <th>Début</th>
+        <th>Candidats</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @job_offers.each do |offer| %>
+        <tr>
+          <td><%= offer.title %></td>
+          <td><span class="badge bg-secondary"><%= offer.mission_type.capitalize %></span></td>
+          <td><%= l(offer.start_date, format: :short) %></td>
+          <td>
+            <span class="badge rounded-pill bg-info text-dark">
+              <%= offer.job_applications.count %>
+            </span>
+          </td>
+          <td>
+            <span class="badge <%= offer.status == 'published' ? 'bg-success' : 'bg-warning' %>">
+              <%= offer.status %>
+            </span>
+          </td>
+          <td>
+            <%= link_to 'Gérer', fve_job_offer_path(offer), class: 'btn btn-sm btn-outline-primary' %>
+            <%= link_to 'Éditer', edit_fve_job_offer_path(offer), class: 'btn btn-sm btn-outline-secondary' %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

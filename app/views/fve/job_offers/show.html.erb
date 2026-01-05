@@ -1,0 +1,57 @@
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><%= link_to "Mes offres", fve_job_offers_path %></li>
+      <li class="breadcrumb-item active"><%= @job_offer.title %></li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Détails de la mission</h5>
+          <hr>
+          <p><strong>Lieu :</strong> <%= @job_offer.city %> (<%= @job_offer.zipcode %>)</p>
+          <p><strong>Enseigne :</strong> <%= @job_offer.store_name %></p>
+          <p><strong>Salaire :</strong> <%= @job_offer.hourly_rate %>€/h</p>
+          <p><strong>Période :</strong> Du <%= l(@job_offer.start_date, format: :short) %> au <%= l(@job_offer.end_date, format: :short) %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <h3>Candidatures reçues</h3>
+
+      <% if @job_applications.any? %>
+        <% @job_applications.each do |app| %>
+          <div class="card mb-3 <%= 'border-success' if app.status == 'accepted' %>">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="mb-1"><%= app.merch.displayable_name(current_user) %></h5>
+                <small class="text-muted">Postulé le <%= l(app.created_at, format: :short) %></small>
+                <% if app.message.present? %>
+                  <p class="mt-2 mb-0 italic">"<%= app.message %>"</p>
+                <% end %>
+              </div>
+
+              <div>
+                <% if app.status == 'pending' %>
+                  <%= button_to "Recruter ce candidat",
+                                accept_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                                method: :post,
+                                data: { confirm: "Confirmer le recrutement ? Cela générera le contrat et les sessions de travail." },
+                                class: "btn btn-success" %>
+                <% else %>
+                  <span class="text-success fw-bold">✓ Recruté</span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="alert alert-light">Aucune candidature pour le moment.</div>
+      <% end %>
+    </div>
+  </div>
+</div>
