@@ -1,12 +1,15 @@
 <div class="bg-light min-vh-100 py-5">
   <div class="container">
 
-    <div class="row justify-content-center mb-4">
+    <div class="row justify-content-center mb-5">
       <div class="col-lg-10">
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
           <div class="d-flex align-items-center">
-            <%# Retour vers le show de l'offre ou l'index %>
-            <%= link_to fve_job_offer_path(@job_offer), class: "btn btn-white bg-white rounded-circle shadow-sm me-4 p-0 d-flex align-items-center justify-content-center transition-hover text-decoration-none", style: "width: 55px; height: 55px; border: 1px solid #eee;" do %>
+            <%= link_to fve_job_offer_path(@job_offer),
+                        class: "btn btn-white bg-white rounded-circle shadow-sm me-4 p-0 d-flex align-items-center justify-content-center transition-hover text-decoration-none border",
+                        style: "width: 55px; height: 55px;",
+                        title: "Retour à l'annonce" do %>
               <i class="fa-solid fa-arrow-left text-muted fs-5"></i>
             <% end %>
 
@@ -26,7 +29,7 @@
           <div class="text-end">
             <%= link_to fve_job_offer_path(@job_offer),
                         data: { turbo_method: :delete, turbo_confirm: "⚠️ Attention : Cette action est irréversible. Souhaitez-vous vraiment supprimer cette annonce ?" },
-                        class: "btn btn-outline-danger btn-sm rounded-pill fw-bold px-3 transition-hover" do %>
+                        class: "btn btn-outline-danger btn-sm rounded-pill fw-bold px-3 transition-hover shadow-sm" do %>
               <i class="fa-solid fa-trash-can me-1"></i> Supprimer l'offre
             <% end %>
           </div>
@@ -36,16 +39,19 @@
 
     <div class="row justify-content-center">
       <div class="col-lg-10">
-        <%= render 'form', job_offer: @job_offer %>
+        <%# C'EST ICI QUE CA CHANGE : Juste un render, pas de variables %>
+        <%= render "form" %>
       </div>
     </div>
 
-    <div class="row justify-content-center mt-4">
-      <div class="col-lg-10 text-center">
-        <p class="text-muted small">
-          <i class="fa-solid fa-circle-info me-1"></i>
-          Les modifications seront visibles immédiatement par les candidats après enregistrement.
-        </p>
+    <div class="row justify-content-center mt-5">
+      <div class="col-lg-10">
+        <div class="text-center p-4 bg-white bg-opacity-50 rounded-4 border border-white">
+          <p class="text-muted small mb-0">
+            <i class="fa-solid fa-circle-info text-orange me-1"></i>
+            <strong>Note :</strong> Les modifications apportées seront appliquées en temps réel.
+          </p>
+        </div>
       </div>
     </div>
 

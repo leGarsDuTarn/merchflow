@@ -1,209 +1,234 @@
-<%= simple_form_for([:fve, job_offer], html: { class: "row g-4" }) do |f| %>
+<%# app/views/fve/job_offers/_form.html.erb %>
 
-  <%# ===== COLONNE GAUCHE (8) : INFOS & PLANNING ===== %>
-  <div class="col-lg-8">
+<%# ON DÉCLARE LE FORMULAIRE ICI DIRECTEMENT %>
+<%= simple_form_for([:fve, @job_offer]) do |f| %>
 
-    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4 position-relative overflow-hidden">
-      <div class="position-absolute top-0 start-0 w-1 bg-orange h-100"></div>
+  <div class="row g-4">
 
-      <div class="d-flex align-items-center mb-4">
-        <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
-          <i class="fa-solid fa-briefcase fs-4"></i>
-        </div>
-        <div>
-          <h5 class="fw-bold text-dark m-0">Informations Mission</h5>
-          <p class="text-muted small mb-0">Définissez le cadre du poste.</p>
-        </div>
-      </div>
+    <%# ===== COLONNE GAUCHE (8) : INFOS & PLANNING ===== %>
+    <div class="col-lg-8">
 
-      <div class="row g-4">
-        <div class="col-12">
-          <%= f.label :title, "TITRE DE L'ANNONCE", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold fs-6", placeholder: "Ex: Merchandiser Expert - Rayon Liquide" %>
-        </div>
+      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4 position-relative overflow-hidden">
+        <div class="position-absolute top-0 start-0 w-1 bg-orange h-100"></div>
 
-        <div class="col-12">
-          <%= f.label :description, "DESCRIPTION", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :description, as: :text, rows: 6, class: "form-control bg-light border-0 rounded-4 p-4", placeholder: "Détaillez les tâches..." %>
-        </div>
-
-        <div class="col-md-4">
-          <%= f.label :mission_type, "TYPE", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :mission_type, collection: JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
-        </div>
-
-        <div class="col-md-4">
-          <%= f.label :contract_type, "CONTRAT", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :contract_type, collection: JobOffer::CONTRACT_TYPES.map { |c| [c.upcase, c] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
-        </div>
-
-        <div class="col-md-4">
-          <%= f.label :headcount_required, "EFFECTIF", class: "form-label small fw-bold text-muted ls-1" %>
-          <div class="input-group bg-light rounded-pill overflow-hidden">
-             <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="fa-solid fa-users"></i></span>
-             <%= f.input_field :headcount_required, class: "form-control bg-transparent border-0 py-3 text-center fw-bold", min: 1 %>
+        <div class="d-flex align-items-center mb-4">
+          <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
+            <i class="fa-solid fa-briefcase fs-4"></i>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4">
-      <div class="d-flex align-items-center mb-4">
-        <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
-          <i class="fa-regular fa-calendar-check fs-4"></i>
-        </div>
-        <div>
-          <h5 class="fw-bold text-dark m-0">Planning</h5>
-          <p class="text-muted small mb-0">Horaires et coupures.</p>
-        </div>
-      </div>
-
-      <div class="row g-4">
-        <div class="col-md-6">
-          <%= f.label :start_date, "DÉBUT MISSION", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :start_date, as: :datetime, html5: true, class: "form-control bg-light border-0 rounded-pill py-3 px-4" %>
-        </div>
-        <div class="col-md-6">
-          <%= f.label :end_date, "FIN MISSION", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :end_date, as: :datetime, html5: true, class: "form-control bg-light border-0 rounded-pill py-3 px-4" %>
-        </div>
-
-        <div class="col-12 my-2">
-          <div class="d-flex align-items-center">
-            <hr class="flex-grow-1 opacity-10">
-            <span class="px-3 text-muted small fw-bold text-uppercase ls-1">
-              <i class="fa-solid fa-mug-hot text-orange me-2"></i>Pause Déjeuner
-            </span>
-            <hr class="flex-grow-1 opacity-10">
+          <div>
+            <h5 class="fw-bold text-dark m-0">Informations Mission</h5>
+            <p class="text-muted small mb-0">Définissez le cadre du poste.</p>
           </div>
         </div>
 
-        <div class="col-md-6">
-          <%= f.label :break_start_time, "DÉBUT PAUSE", class: "form-label small fw-bold text-muted ls-1" %>
-          <div class="input-group bg-light rounded-pill overflow-hidden">
-            <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i class="fa-regular fa-clock"></i></span>
-            <%= f.input_field :break_start_time, as: :time, html5: true, class: "form-control bg-transparent border-0 py-3 text-center" %>
+        <div class="row g-4">
+          <div class="col-12">
+            <%= f.label :title, "TITRE DE L'ANNONCE", class: "form-label small fw-bold text-muted ls-1" %>
+            <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold fs-6", placeholder: "Ex: Merchandiser Expert - Rayon Liquide" %>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :description, "DESCRIPTION", class: "form-label small fw-bold text-muted ls-1" %>
+            <%= f.input_field :description, as: :text, rows: 6, class: "form-control bg-light border-0 rounded-4 p-4", placeholder: "Détaillez les tâches..." %>
+          </div>
+
+          <div class="col-md-4">
+            <%= f.label :mission_type, "TYPE", class: "form-label small fw-bold text-muted ls-1" %>
+            <%= f.input_field :mission_type, collection: JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
+          </div>
+
+          <div class="col-md-4">
+            <%= f.label :contract_type, "CONTRAT", class: "form-label small fw-bold text-muted ls-1" %>
+            <%= f.input_field :contract_type, collection: JobOffer::CONTRACT_TYPES.map { |c| [c.upcase, c] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
+          </div>
+
+          <div class="col-md-4">
+            <%= f.label :headcount_required, "EFFECTIF", class: "form-label small fw-bold text-muted ls-1" %>
+            <div class="input-group bg-light rounded-pill overflow-hidden">
+               <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="fa-solid fa-users"></i></span>
+               <%= f.input_field :headcount_required, class: "form-control bg-transparent border-0 py-3 text-center fw-bold", min: 1 %>
+            </div>
           </div>
         </div>
-        <div class="col-md-6">
-          <%= f.label :break_end_time, "FIN PAUSE", class: "form-label small fw-bold text-muted ls-1" %>
-          <div class="input-group bg-light rounded-pill overflow-hidden">
-            <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i class="fa-solid fa-arrow-right"></i></span>
-            <%= f.input_field :break_end_time, as: :time, html5: true, class: "form-control bg-transparent border-0 py-3 text-center" %>
+      </div>
+
+      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4">
+        <div class="d-flex align-items-center mb-4">
+          <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
+            <i class="fa-regular fa-calendar-check fs-4"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold text-dark m-0">Planning</h5>
+            <p class="text-muted small mb-0">Horaires et coupures.</p>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <%= f.label :start_date, "DÉBUT MISSION", class: "form-label small fw-bold text-muted ls-1" %>
+            <%= f.input_field :start_date, as: :datetime, html5: true, class: "form-control bg-light border-0 rounded-pill py-3 px-4" %>
+          </div>
+          <div class="col-md-6">
+            <%= f.label :end_date, "FIN MISSION", class: "form-label small fw-bold text-muted ls-1" %>
+            <%= f.input_field :end_date, as: :datetime, html5: true, class: "form-control bg-light border-0 rounded-pill py-3 px-4" %>
+          </div>
+
+          <div class="col-12 my-2">
+            <div class="d-flex align-items-center">
+              <hr class="flex-grow-1 opacity-10">
+              <span class="px-3 text-muted small fw-bold text-uppercase ls-1">
+                <i class="fa-solid fa-mug-hot text-orange me-2"></i>Pause Déjeuner
+              </span>
+              <hr class="flex-grow-1 opacity-10">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <%= f.label :break_start_time, "DÉBUT PAUSE", class: "form-label small fw-bold text-muted ls-1" %>
+            <div class="input-group bg-light rounded-pill overflow-hidden">
+              <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i class="fa-regular fa-clock"></i></span>
+              <%= f.input_field :break_start_time, as: :time, html5: true, class: "form-control bg-transparent border-0 py-3 text-center" %>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <%= f.label :break_end_time, "FIN PAUSE", class: "form-label small fw-bold text-muted ls-1" %>
+            <div class="input-group bg-light rounded-pill overflow-hidden">
+              <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i class="fa-solid fa-arrow-right"></i></span>
+              <%= f.input_field :break_end_time, as: :time, html5: true, class: "form-control bg-transparent border-0 py-3 text-center" %>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5">
-      <div class="d-flex align-items-center mb-4">
-        <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
-          <i class="fa-solid fa-location-dot fs-4"></i>
+      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5">
+        <div class="d-flex align-items-center mb-4">
+          <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
+            <i class="fa-solid fa-location-dot fs-4"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold text-dark m-0">Localisation</h5>
+            <p class="text-muted small mb-0">Où se déroule la mission ?</p>
+          </div>
         </div>
-        <div>
-          <h5 class="fw-bold text-dark m-0">Localisation</h5>
-          <p class="text-muted small mb-0">Où se déroule la mission ?</p>
-        </div>
-      </div>
-      <div class="row g-3">
-        <div class="col-md-6"><%= f.input_field :company_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Client Final" %></div>
-        <div class="col-md-6"><%= f.input_field :store_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Enseigne" %></div>
-        <div class="col-12"><%= f.input_field :address, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Adresse" %></div>
-        <div class="col-md-4"><%= f.input_field :zipcode, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "CP" %></div>
-        <div class="col-md-8"><%= f.input_field :city, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Ville" %></div>
-      </div>
-    </div>
-  </div>
-
-  <%# ===== COLONNE DROITE (4) : FINANCE ===== %>
-  <div class="col-lg-4">
-    <div class="card shadow border-0 rounded-4 mb-4 sticky-top" style="top: 20px; z-index: 10;">
-
-      <div class="card-header bg-orange-light border-bottom-0 pt-4 px-4 pb-0 rounded-top-4">
-        <h5 class="fw-bold text-dark d-flex align-items-center mb-0">
-          <i class="fa-solid fa-coins me-2 text-orange"></i>Finances
-        </h5>
-      </div>
-
-      <div class="card-body p-4 bg-orange-light bg-opacity-10 rounded-bottom-4">
         <div class="row g-3">
-
-          <div class="col-12">
-            <%= f.label :hourly_rate, "TAUX HORAIRE BRUT", class: "form-label small fw-bold text-muted ls-1" %>
-            <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white">
-              <span class="input-group-text bg-transparent border-0 text-dark fw-bold ps-4">€</span>
-              <%= f.input_field :hourly_rate, class: "form-control bg-transparent border-0 py-3 text-end fw-bold fs-4", step: 0.01, min: 12.02 %>
-              <span class="input-group-text bg-transparent border-0 text-muted pe-4">/ h</span>
-            </div>
-          </div>
-
-          <div class="col-12 mt-2">
-            <div class="bg-white bg-opacity-60 rounded-4 p-3 border border-white shadow-sm">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <label class="small fw-bold text-muted mb-0">Précarité</label>
-                <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden" style="max-width: 100px;">
-                  <span class="input-group-text bg-white border-0 text-orange fw-bold ps-2">+</span>
-                  <%= f.input_field :ifm_rate, class: "form-control border-0 text-center fw-bold text-orange p-1 bg-white", placeholder: "10" %>
-                  <span class="input-group-text bg-white border-0 text-orange fw-bold pe-2">%</span>
-                </div>
-              </div>
-
-              <div class="d-flex align-items-center justify-content-between">
-                <label class="small fw-bold text-muted mb-0">Congés Payés</label>
-                <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden" style="max-width: 100px;">
-                  <span class="input-group-text bg-white border-0 text-orange fw-bold ps-2">+</span>
-                  <%= f.input_field :cp_rate, class: "form-control border-0 text-center fw-bold text-orange p-1 bg-white", placeholder: "10" %>
-                  <span class="input-group-text bg-white border-0 text-orange fw-bold pe-2">%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <hr class="text-muted opacity-25 my-3">
-
-          <h6 class="fw-bold text-dark small mb-2"><i class="fa-solid fa-car me-1 text-orange"></i> Défraiements</h6>
-
-          <div class="col-12">
-            <%= f.label :km_rate, "TAUX REMBOURSEMENT", class: "form-label small fw-bold text-muted ls-1" %>
-            <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white">
-              <%= f.input_field :km_rate, class: "form-control bg-transparent border-0 py-2 text-end fw-bold", step: 0.01, placeholder: "0.25" %>
-              <span class="input-group-text bg-transparent border-0 pe-4 text-muted">€/km</span>
-            </div>
-          </div>
-
-          <div class="col-12 mt-2">
-            <%= f.label :km_limit, "PLAFOND DISTANCE", class: "form-label small fw-bold text-muted ls-1" %>
-            <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white">
-              <%= f.input_field :km_limit, class: "form-control bg-transparent border-0 py-2 text-end", step: 1, placeholder: "50" %>
-              <span class="input-group-text bg-transparent border-0 pe-4 text-muted">km</span>
-            </div>
-          </div>
-
-          <div class="col-12">
-             <div class="form-check form-switch d-flex align-items-center justify-content-between px-0 ps-1 bg-white p-2 rounded-pill shadow-sm border border-white mt-2">
-               <label class="form-check-label small fw-bold text-muted ms-3" for="job_offer_km_unlimited">Illimité</label>
-               <%= f.check_box :km_unlimited, class: "form-check-input me-3" %>
-             </div>
-          </div>
-
-          <hr class="text-muted opacity-25 my-3">
-
-          <div class="col-12">
-            <div class="mb-2">
-              <%= f.input_field :contact_email, class: "form-control bg-white border-0 shadow-sm rounded-pill py-2 px-4 text-center small", placeholder: "Email contact" %>
-            </div>
-            <div class="mb-2">
-              <%= f.input_field :contact_phone, class: "form-control bg-white border-0 shadow-sm rounded-pill py-2 px-4 text-center small", placeholder: "Tél contact" %>
-            </div>
-          </div>
-
-          <div class="col-12 mt-4">
-            <%= f.button :submit, job_offer.new_record? ? "🚀 PUBLIER" : "💾 ENREGISTRER", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm text-uppercase ls-1 transition-hover" %>
-          </div>
-
+          <div class="col-md-6"><%= f.input_field :company_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Client Final" %></div>
+          <div class="col-md-6"><%= f.input_field :store_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Enseigne" %></div>
+          <div class="col-12"><%= f.input_field :address, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Adresse" %></div>
+          <div class="col-md-4"><%= f.input_field :zipcode, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "CP" %></div>
+          <div class="col-md-8"><%= f.input_field :city, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Ville" %></div>
         </div>
       </div>
     </div>
+
+    <%# ===== COLONNE DROITE (4) : FINANCE (AVEC STIMULUS) ===== %>
+    <div class="col-lg-4">
+      <div class="card shadow border-0 rounded-4 mb-4 sticky-top" style="top: 20px; z-index: 10;">
+
+        <div class="card-header bg-orange-light border-bottom-0 pt-4 px-4 pb-0 rounded-top-4">
+          <h5 class="fw-bold text-dark d-flex align-items-center mb-0">
+            <i class="fa-solid fa-coins me-2 text-orange"></i>Finances
+          </h5>
+        </div>
+
+        <div class="card-body p-4 bg-orange-light bg-opacity-10 rounded-bottom-4">
+          <div class="row g-3">
+
+            <%# --- TAUX HORAIRE --- %>
+            <div class="col-12">
+              <%= f.label :hourly_rate, "TAUX HORAIRE BRUT", class: "form-label small fw-bold text-muted ls-1" %>
+              <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white focus-ring">
+                <span class="input-group-text bg-transparent border-0 text-dark fw-bold ps-4">€</span>
+                <%= f.input_field :hourly_rate, class: "form-control bg-transparent border-0 py-3 text-end fw-bold fs-4", step: 0.01, min: 12.02 %>
+                <span class="input-group-text bg-transparent border-0 text-muted pe-4">/ h</span>
+              </div>
+            </div>
+
+            <%# --- PRIMES --- %>
+            <div class="col-12 mt-2">
+              <div class="bg-white bg-opacity-60 rounded-4 p-3 border border-white shadow-sm">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <label class="small fw-bold text-muted mb-0">Précarité</label>
+                  <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden" style="max-width: 100px;">
+                    <span class="input-group-text bg-white border-0 text-orange fw-bold ps-2">+</span>
+                    <%= f.input_field :ifm_rate, class: "form-control border-0 text-center fw-bold text-orange p-1 bg-white", placeholder: "10" %>
+                    <span class="input-group-text bg-white border-0 text-orange fw-bold pe-2">%</span>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between">
+                  <label class="small fw-bold text-muted mb-0">Congés Payés</label>
+                  <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden" style="max-width: 100px;">
+                    <span class="input-group-text bg-white border-0 text-orange fw-bold ps-2">+</span>
+                    <%= f.input_field :cp_rate, class: "form-control border-0 text-center fw-bold text-orange p-1 bg-white", placeholder: "10" %>
+                    <span class="input-group-text bg-white border-0 text-orange fw-bold pe-2">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="text-muted opacity-25 my-3">
+
+            <%# --- SECTION DÉFRAIEMENTS (STIMULUS) --- %>
+            <div class="col-12 p-0" data-controller="km-switch">
+              <h6 class="fw-bold text-dark small mb-2 px-2"><i class="fa-solid fa-car me-1 text-orange"></i> Défraiements</h6>
+
+              <div class="col-12 mb-2">
+                <%= f.label :km_rate, "TAUX REMBOURSEMENT", class: "form-label small fw-bold text-muted ls-1" %>
+                <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white focus-ring">
+                  <%= f.input_field :km_rate, class: "form-control bg-transparent border-0 py-2 text-end fw-bold", step: 0.01, placeholder: "0.29", value: f.object.km_rate || 0.29 %>
+                  <span class="input-group-text bg-transparent border-0 pe-4 text-muted">€/km</span>
+                </div>
+              </div>
+
+              <div class="col-12 mt-2">
+                 <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-white rounded-pill shadow-sm border border-white">
+                   <label class="form-check-label small fw-bold text-muted" for="km_unlimited_switch">Distance Illimitée</label>
+                   <div class="form-check form-switch m-0">
+                     <%= f.check_box :km_unlimited,
+                                     class: "form-check-input custom-orange-switch",
+                                     id: "km_unlimited_switch",
+                                     style: "width: 3em; height: 1.5em; cursor: pointer;",
+                                     data: {
+                                       km_switch_target: "checkbox",
+                                       action: "change->km-switch#toggle"
+                                     } %>
+                   </div>
+                 </div>
+              </div>
+
+              <div class="col-12 mt-2 transition-opacity" data-km-switch-target="container">
+                <%= f.label :km_limit, "PLAFOND DISTANCE", class: "form-label small fw-bold text-muted ls-1" %>
+                <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white focus-ring">
+                  <%= f.input_field :km_limit,
+                                    class: "form-control bg-transparent border-0 py-2 text-end",
+                                    step: 1,
+                                    placeholder: "Ex: 50",
+                                    data: { km_switch_target: "input" } %>
+                  <span class="input-group-text bg-transparent border-0 pe-4 text-muted">km</span>
+                </div>
+              </div>
+            </div>
+
+            <hr class="text-muted opacity-25 my-3">
+
+            <div class="col-12">
+              <div class="mb-2">
+                <%= f.input_field :contact_email, class: "form-control bg-white border-0 shadow-sm rounded-pill py-2 px-4 text-center small", placeholder: "Email contact" %>
+              </div>
+              <div class="mb-2">
+                <%= f.input_field :contact_phone, class: "form-control bg-white border-0 shadow-sm rounded-pill py-2 px-4 text-center small", placeholder: "Tél contact" %>
+              </div>
+            </div>
+
+            <div class="col-12 mt-4">
+              <%= f.button :submit, @job_offer.new_record? ? "🚀 PUBLIER" : "💾 ENREGISTRER", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm text-uppercase ls-1 transition-hover" %>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-<% end %>
+<% end %> <%# FIN DU FORMULAIRE %>
