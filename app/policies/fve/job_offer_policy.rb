@@ -1,3 +1,4 @@
+# app/policies/fve/job_offer_policy.rb
 module Fve
   class JobOfferPolicy < ApplicationPolicy
     def index?
@@ -5,7 +6,7 @@ module Fve
     end
 
     def show?
-      user.fve? && (record.user_id == user.id || user.admin?)
+      user.fve? && (record.fve_id == user.id || user.admin?)
     end
 
     def create?
@@ -20,7 +21,6 @@ module Fve
       show?
     end
 
-    # Cette action permettra d'appeler l'action de recrutement
     def accept_candidate?
       show?
     end
@@ -30,7 +30,7 @@ module Fve
         if user.admin?
           scope.all
         else
-          scope.where(user_id: user.id)
+          scope.where(fve_id: user.id)
         end
       end
     end
