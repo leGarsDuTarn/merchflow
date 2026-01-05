@@ -17,6 +17,15 @@
   .text-orange { color: #fd7e14; }
   .ls-1 { letter-spacing: 0.5px; }
 
+  .pulse-button {
+    animation: pulse-orange 2s infinite;
+  }
+  @keyframes pulse-orange {
+    0% { box-shadow: 0 0 0 0 rgba(253, 126, 20, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(253, 126, 20, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(253, 126, 20, 0); }
+  }
+
   /* Masquer les flèches sur les inputs de taux */
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {

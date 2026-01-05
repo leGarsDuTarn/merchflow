@@ -14,7 +14,7 @@ module ApplicationHelper
       content_tag(:span, "En attente", class: "badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small fw-normal")
     when 'accepted'
       content_tag(:span, "Acceptée", class: "badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-2 py-1 small fw-normal")
-    when 'rejected'
+    when 'rejected', 'archived'
       content_tag(:span, "Refusée", class: "badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-2 py-1 small fw-normal")
     else
       content_tag(:span, status.capitalize, class: "badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-2 py-1 small fw-normal")
