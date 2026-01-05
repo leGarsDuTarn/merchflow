@@ -14,11 +14,20 @@ class JobOffer < ApplicationRecord
   has_many :candidates, through: :job_applications, source: :merch
 
   # --- VALIDATIONS ---
+
+  # Infos Générales
   validates :title, presence: true, length: { minimum: 5, maximum: 100 }
   validates :description, presence: true, length: { minimum: 20 }
   validates :mission_type, inclusion: { in: MISSION_TYPES }
   validates :contract_type, inclusion: { in: CONTRACT_TYPES }
   validates :company_name, presence: true
+
+  # Contact
+  validates :contact_email, presence: { message: "est obligatoire pour valider l'offre" },
+                            format: { with: URI::MailTo::EMAIL_REGEXP, message: "ne semble pas être un email valide" }
+
+  validates :contact_phone, presence: { message: "est obligatoire pour valider l'offre" },
+                            format: { with: /\A0[1-9]\d{8}\z/, message: "doit contenir 10 chiffres (ex: 0612345678)" }
 
   # Géolocalisation
   validates :address, :city, :zipcode, presence: true
@@ -30,7 +39,7 @@ class JobOffer < ApplicationRecord
   validate :break_time_consistency
 
   # Financier
-  validates :hourly_rate, numericality: { greater_than_or_equal_to: 12.02, message: "ne peut pas être inférieur au SMIC (12.02 €)" }
+  validates :hourly_rate, numericality: { greater_than_or_equal_to: 12.02, message: "ne peut pas être inférieur au SMIC Brut (12.02 €)" }
   validates :night_rate, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 3.0 } # Max 300% de majoration, sécurité
   validates :headcount_required, numericality: { only_integer: true, greater_than: 0 }
 

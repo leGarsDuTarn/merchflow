@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_02_195032) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_05_080649) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,6 +100,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_195032) do
     t.datetime "break_start_time"
     t.string "city"
     t.string "company_name", null: false
+    t.string "contact_email"
+    t.string "contact_phone"
     t.string "contract_type", null: false
     t.datetime "created_at", null: false
     t.string "department_code"
@@ -120,6 +122,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_195032) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.string "zipcode"
+    t.index ["department_code", "start_date"], name: "index_job_offers_on_department_code_and_start_date"
+    t.index ["department_code"], name: "index_job_offers_on_department_code"
     t.index ["fve_id"], name: "index_job_offers_on_fve_id"
     t.index ["status", "department_code", "mission_type"], name: "index_job_offers_search"
   end
