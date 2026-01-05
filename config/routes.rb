@@ -113,7 +113,8 @@ Rails.application.routes.draw do
     resources :favorites, only: %i[create destroy]
     resources :job_offers do
       member do
-        post :accept_candidate # Génère fve_accept_candidate_job_offer_path(@job_offer)
+        post :accept_candidate 
+        post :reject_candidate
       end
     end
   end

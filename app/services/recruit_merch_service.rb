@@ -1,26 +1,27 @@
-# app/services/recruit_merch_service.rb
 class RecruitMerchService
   attr_reader :error_message
 
   def initialize(job_application)
     @application = job_application
     @offer       = job_application.job_offer
-    @merch       = job_application.merch # Le candidat (User)
-    @fve         = @offer.fve           # Le recruteur (User)
+
+    # CORRECTION : On s'assure d'appeler .merch (comme défini dans ton modèle JobApplication)
+    @merch       = job_application.merch
+    @fve         = @offer.fve
   end
 
   def call
-    # 1. Sécurité anti-doublon immédiate
+    # 1. Sécurité anti-doublon
     if @application.status == 'accepted'
       @error_message = "Ce candidat a déjà été recruté pour cette mission."
       return false
     end
 
     ActiveRecord::Base.transaction do
-      # 2. Gestion du Contrat (Le point critique avec ton Model)
+      # 2. Gestion du Contrat
       contract = find_or_create_contract
 
-      # 3. Création des sessions (Boucle temporelle)
+      # 3. Création des sessions de travail
       create_work_sessions_loop(contract)
 
       # 4. Validation finale de la candidature
@@ -29,7 +30,7 @@ class RecruitMerchService
 
     true
   rescue ActiveRecord::RecordInvalid => e
-    # Capture les erreurs de validation du modèle Contract (ex: Agence invalide)
+    # Capture les erreurs de validation (ex: Agence invalide, dates manquantes)
     @error_message = "Erreur de validation : #{e.record.errors.full_messages.join(', ')}"
     false
   rescue StandardError => e
@@ -40,56 +41,49 @@ class RecruitMerchService
   private
 
   def find_or_create_contract
-    # On cherche un contrat existant pour ce couple
+    # On cherche un contrat existant pour ce couple Merch/FVE
     existing = Contract.find_by(merch_id: @merch.id, fve_id: @fve.id)
     return existing if existing.present?
 
-    # --- Préparation des données pour le Modèle Contract ---
+    # --- Préparation des données ---
 
-    # A. Gestion de l'Agence (CRITIQUE pour validate :agency_must_exist_in_db)
-    # On récupère l'agence du FVE, sinon on prend la première agence valide en base
-    # pour éviter le crash.
+    # A. Gestion de l'Agence
     agency_code = @fve.respond_to?(:agency) ? @fve.agency : nil
 
     unless Agency.exists?(code: agency_code)
-      # Fallback : Si l'agence du FVE est vide ou invalide, on doit en assigner une valide
-      # Option 1 : On prend la première de la liste
-      # Option 2 : On lève une erreur explicite (choisi ici pour la sécurité)
       raise StandardError, "Le profil du FVE n'a pas d'agence valide associée. Impossible de créer le contrat."
     end
 
-    # B. Gestion du type de contrat (Enum)
-    # On s'assure que le type correspond bien aux clés :cdd, :cidd, :interim
+    # B. Type de contrat
     c_type = @offer.contract_type.to_s.downcase
     unless Contract.contract_types.keys.include?(c_type)
-      c_type = 'cdd' # Valeur par défaut si le type de l'offre est malformé
+      c_type = 'cdd' # Valeur par défaut safe
     end
 
     # C. Calcul des taux (IFM/CP)
-    # Ton controller divise par 100, ici on applique la logique métier directe
     is_precarious = %w[cdd cidd interim].include?(c_type)
     rate = is_precarious ? 0.10 : 0.0
 
     # --- Création ---
     Contract.create!(
-      name: "Contrat #{@offer.mission_type} - #{@offer.company_name}",
+      name: "Mission #{@offer.mission_type.capitalize} - #{@offer.company_name}",
 
-      # Relations (Tu as belongs_to :user ET belongs_to :merch)
-      user: @merch,        # Propriétaire du contrat
+      # Relations clés
+      user: @merch,        # Le propriétaire du contrat est le Merch
       merch: @merch,       # Relation explicite
-      fve: @fve,           # Responsable
+      fve: @fve,           # Le FVE responsable
 
-      # Données validées
+      # Données
       agency: agency_code,
       contract_type: c_type,
 
-      # Financier (valeurs brutes pour le modèle, ex: 0.1 pour 10%)
+      # Financier
       night_rate: @offer.night_rate || 0,
       ifm_rate: rate,
       cp_rate: rate,
 
       # Kilométrique
-      km_rate: @offer.km_rate || 0.25, # Valeur par défaut safe
+      km_rate: @offer.km_rate || 0.25,
       km_limit: @offer.km_unlimited ? 0 : (@offer.km_limit || 0),
       km_unlimited: @offer.km_unlimited || false
     )
@@ -100,7 +94,7 @@ class RecruitMerchService
     end_date   = @offer.end_date.to_date
 
     (start_date..end_date).each do |current_date|
-      # Construction robuste des heures avec .change
+      # Construction robuste des horaires
       daily_start = current_date.to_time.change(hour: @offer.start_date.hour, min: @offer.start_date.min)
       daily_end   = current_date.to_time.change(hour: @offer.end_date.hour, min: @offer.end_date.min)
 
@@ -114,7 +108,7 @@ class RecruitMerchService
       # Gestion Nuit (Si fin < début, c'est le lendemain)
       daily_end += 1.day if daily_end <= daily_start
 
-      # Gestion Nuit Pause (Si fin pause < début pause)
+      # Gestion Nuit Pause
       if daily_break_start && daily_break_end <= daily_break_start
         daily_break_end += 1.day
       end
@@ -130,6 +124,8 @@ class RecruitMerchService
         company: @offer.company_name,
         store: @offer.store_name,
         store_full_address: [@offer.address, @offer.zipcode, @offer.city].compact.join(', '),
+
+        # Le statut 'accepted' fait apparaitre la mission dans le planning du Merch
         status: 'accepted'
       )
     end

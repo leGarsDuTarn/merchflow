@@ -25,6 +25,10 @@ module Fve
       show?
     end
 
+    def reject_candidate?
+      update?
+    end
+
     class Scope < Scope
       def resolve
         if user.admin?

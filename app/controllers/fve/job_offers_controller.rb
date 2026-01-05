@@ -3,7 +3,7 @@ module Fve
   class JobOffersController < ApplicationController
     before_action :authenticate_user!
     before_action :verify_fve
-    before_action :set_job_offer, only: [:show, :edit, :update, :destroy, :accept_candidate]
+    before_action :set_job_offer, only: [:show, :edit, :update, :destroy, :accept_candidate, :reject_candidate]
 
     def index
       authorize [:fve, JobOffer]
@@ -72,6 +72,33 @@ module Fve
       @job_offer.destroy
       redirect_to fve_job_offers_path, notice: 'Annonce supprimée.'
     end
+
+    # app/controllers/fve/job_offers_controller.rb
+
+  def reject_candidate
+    authorize [:fve, @job_offer], :accept_candidate? # On réutilise la règle existante
+    @application = @job_offer.job_applications.find(params[:application_id])
+
+    if @application.update(status: 'rejected')
+
+      # Nettoyage : Si le candidat était déjà accepté, on cherche le contrat lié
+      # On cherche un contrat entre ce candidat et ce recruteur
+      contract = Contract.find_by(merch_id: @application.merch_id, fve_id: current_user.id)
+
+      if contract
+        # On supprime les sessions de travail liées à cette offre précise
+        # pour ne pas supprimer tout le planning du Merch (s'il a d'autres missions avec ce FVE)
+        WorkSession.where(contract: contract, store: @job_offer.store_name, date: @job_offer.start_date..@job_offer.end_date).destroy_all
+
+        # Optionnel : Tu peux décider de supprimer le contrat si c'était le seul
+        # contract.destroy if contract.work_sessions.empty?
+      end
+
+      redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée et planning nettoyé.'
+    else
+      redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut."
+    end
+  end
 
     private
 

@@ -19,8 +19,8 @@
 
     <div class="col-lg-5">
       <div class="card shadow border-0 rounded-4 mb-4 position-relative overflow-hidden">
-
         <div class="card-body p-4">
+
           <div class="d-flex align-items-center mb-4">
             <div class="bg-orange-light text-orange rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
               <i class="fa-solid fa-bullhorn fs-4"></i>
@@ -92,11 +92,22 @@
           <% if @job_applications.any? %>
             <div class="d-flex flex-column gap-3">
               <% @job_applications.each do |app| %>
-                <div class="p-3 rounded-4 border <%= app.status == 'accepted' ? 'border-success bg-success bg-opacity-10' : 'border-light bg-light' %>">
+
+                <%
+                   border_class = case app.status
+                                  when 'accepted' then 'border-success bg-success bg-opacity-10'
+                                  when 'rejected' then 'border-danger bg-danger bg-opacity-10' # Fond rouge très clair pour les refusés
+                                  else 'border-light bg-light'
+                                  end
+                %>
+
+                <div class="p-3 rounded-4 border <%= border_class %>">
                   <div class="d-flex justify-content-between align-items-center">
+
                     <div class="d-flex align-items-center">
                       <div class="bg-white rounded-circle d-flex align-items-center justify-content-center border shadow-sm me-3" style="width: 45px; height: 45px;">
-                        <i class="fa-solid fa-user text-muted"></i>
+                        <% icon_color = app.status == 'rejected' ? 'text-danger' : (app.status == 'accepted' ? 'text-success' : 'text-muted') %>
+                        <i class="fa-solid fa-user <%= icon_color %>"></i>
                       </div>
                       <div>
                         <h6 class="fw-bold mb-0 text-dark"><%= app.merch.displayable_name(current_user) %></h6>
@@ -108,15 +119,43 @@
 
                     <div>
                       <% if app.status == 'pending' %>
-                        <%= button_to accept_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
-                                      method: :post,
-                                      data: { turbo_confirm: "Confirmer le recrutement ? Cela générera le contrat et le planning." },
-                                      class: "btn btn-orange btn-sm rounded-pill px-3 fw-bold" do %>
-                          Recruter
-                        <% end %>
-                      <% else %>
-                        <span class="badge bg-success rounded-pill px-3">
-                          <i class="fa-solid fa-check me-1"></i> Recruté
+                        <div class="d-flex gap-2">
+
+                          <%= button_to accept_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                                        method: :post,
+                                        data: { turbo_confirm: "Valider ce recrutement ?" },
+                                        class: "btn btn-orange btn-sm rounded-pill px-3 fw-bold shadow-sm" do %>
+                            <i class="fa-solid fa-check me-1"></i> Recruter
+                          <% end %>
+
+                          <%= button_to reject_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                                        method: :post,
+                                        data: { turbo_confirm: "Refuser cette candidature ?" },
+                                        class: "btn btn-light text-danger btn-sm rounded-circle shadow-sm border d-flex align-items-center justify-content-center",
+                                        style: "width: 34px; height: 34px;",
+                                        title: "Refuser" do %>
+                            <i class="fa-solid fa-xmark"></i>
+                          <% end %>
+                        </div>
+
+                      <% elsif app.status == 'accepted' %>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success rounded-pill px-3">
+                              <i class="fa-solid fa-check me-1"></i> Recruté
+                            </span>
+
+                            <%= button_to reject_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                                        method: :post,
+                                        data: { turbo_confirm: "ATTENTION : Cela va annuler le contrat et supprimer les sessions. Continuer ?" },
+                                        class: "btn btn-outline-danger btn-sm rounded-circle border-0",
+                                        title: "Annuler le recrutement" do %>
+                              <i class="fa-solid fa-trash-can"></i>
+                            <% end %>
+                         </div>
+
+                      <% elsif app.status == 'rejected' %>
+                        <span class="badge bg-danger bg-opacity-75 rounded-pill px-3">
+                          <i class="fa-solid fa-ban me-1"></i> Refusé
                         </span>
                       <% end %>
                     </div>
