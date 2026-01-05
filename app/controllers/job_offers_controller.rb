@@ -22,7 +22,7 @@ class JobOffersController < ApplicationController
 
     # On vérifie si l'utilisateur est connecté ET s'il a déjà postulé
     # Utilisation de current_user.id pour la clarté
-    @already_applied = @job_offer.job_applications.exists?(user_id: current_user.id)
+    @already_applied = @job_offer.job_applications.exists?(merch_id: current_user.id)
   end
 
   private

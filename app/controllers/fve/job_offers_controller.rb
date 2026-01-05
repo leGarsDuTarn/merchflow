@@ -7,20 +7,18 @@ module Fve
 
     def index
       authorize [:fve, JobOffer]
-      # Utilisation du scope Pundit pour filtrer selon ta policy
       @job_offers = policy_scope([:fve, JobOffer]).order(created_at: :desc)
     end
 
     def show
       authorize [:fve, @job_offer]
-      # On récupère les candidatures pour les afficher au FVE
-      @job_applications = @job_offer.job_applications.includes(:user).order(created_at: :desc)
+      # Correction : on inclut :merch (et non :user) pour correspondre à ton modèle
+      @job_applications = @job_offer.job_applications.includes(:merch).order(created_at: :desc)
     end
 
     def new
       @job_offer = JobOffer.new
       authorize [:fve, @job_offer]
-
       @job_offer.hourly_rate = 12.02
       @job_offer.km_rate = 0.25
 
@@ -33,7 +31,6 @@ module Fve
     def create
       @job_offer = current_user.created_job_offers.build(job_offer_params)
       @job_offer.status = 'published'
-
       authorize [:fve, @job_offer]
 
       if @job_offer.save
@@ -43,10 +40,23 @@ module Fve
       end
     end
 
-    # Nouvelle action pour le recrutement
+    # AJOUT : Méthode edit nécessaire pour le callback et la vue edit
+    def edit
+      authorize [:fve, @job_offer]
+    end
+
+    # AJOUT : Méthode update nécessaire pour le callback et l'enregistrement
+    def update
+      authorize [:fve, @job_offer]
+      if @job_offer.update(job_offer_params)
+        redirect_to fve_job_offer_path(@job_offer), notice: 'Annonce mise à jour !'
+      else
+        render :edit, status: :unprocessable_entity
+      end
+    end
+
     def accept_candidate
       authorize [:fve, @job_offer], :accept_candidate?
-
       application = @job_offer.job_applications.find(params[:application_id])
       service = RecruitMerchService.new(application)
 
