@@ -13,9 +13,11 @@ Rails.application.routes.draw do
   # JOB OFFERS
   # ============================================================
 
-  resources :job_offers, only: [:index, :show] do
+  resources :job_offers, only: [:index, :show, :destroy] do
     resources :job_applications, only: [:create]
   end
+
+  resources :job_applications, only: [:destroy]
 
   # ============================================================
   # HOME + DASHBOARD
@@ -113,7 +115,7 @@ Rails.application.routes.draw do
     resources :favorites, only: %i[create destroy]
     resources :job_offers do
       member do
-        post :accept_candidate 
+        post :accept_candidate
         post :reject_candidate
       end
     end
