@@ -17,7 +17,7 @@ Rails.application.routes.draw do
     resources :job_applications, only: [:create]
   end
 
-  resources :job_applications, only: [:destroy]
+
 
   # ============================================================
   # HOME + DASHBOARD
@@ -119,6 +119,7 @@ Rails.application.routes.draw do
         post :reject_candidate
       end
     end
+    resources :job_applications, only: [:destroy]
   end
 
   # ============================================================

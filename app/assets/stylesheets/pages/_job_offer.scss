@@ -5,6 +5,24 @@
     transform: translateY(-3px);
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.08)!important;
   }
+
+  .form-control:focus, .form-select:focus, .form-check-input:focus {
+    border-color: #fd7e14 !important;
+    box-shadow: 0 0 0 0.25rem rgba(253, 126, 20, 0.15) !important;
+    background-color: #fff !important;
+  }
+
+  .btn-white { background-color: #fff; }
+  .bg-orange-light { background-color: #fff3e0; }
+  .text-orange { color: #fd7e14; }
+  .ls-1 { letter-spacing: 0.5px; }
+
+  /* Masquer les flèches sur les inputs de taux */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
   /* Pour gérer les bordures responsive */
   @media (min-width: 768px) {
     .border-end-md {
