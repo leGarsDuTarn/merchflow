@@ -5,7 +5,7 @@ class RecruitMerchService
   def initialize(job_application)
     @application = job_application
     @offer       = job_application.job_offer
-    @merch       = job_application.user # Le candidat (User)
+    @merch       = job_application.merch # Le candidat (User)
     @fve         = @offer.fve           # Le recruteur (User)
   end
 
