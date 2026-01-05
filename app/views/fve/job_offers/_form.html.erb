@@ -1,9 +1,11 @@
 <%= simple_form_for([:fve, job_offer], html: { class: "row g-4" }) do |f| %>
 
-  <%# ===== COLONNE GAUCHE (8) ===== %>
+  <%# ===== COLONNE GAUCHE (8) : INFOS & PLANNING ===== %>
   <div class="col-lg-8">
 
-    <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4 position-relative overflow-hidden">
+      <div class="position-absolute top-0 start-0 w-1 bg-orange h-100"></div>
+
       <div class="d-flex align-items-center mb-4">
         <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
           <i class="fa-solid fa-briefcase fs-4"></i>
@@ -13,23 +15,28 @@
           <p class="text-muted small mb-0">Définissez le cadre du poste.</p>
         </div>
       </div>
+
       <div class="row g-4">
         <div class="col-12">
           <%= f.label :title, "TITRE DE L'ANNONCE", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold", placeholder: "Ex: Merchandiser Expert" %>
+          <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold fs-6", placeholder: "Ex: Merchandiser Expert - Rayon Liquide" %>
         </div>
+
         <div class="col-12">
           <%= f.label :description, "DESCRIPTION", class: "form-label small fw-bold text-muted ls-1" %>
-          <%= f.input_field :description, as: :text, rows: 5, class: "form-control bg-light border-0 rounded-4 p-4" %>
+          <%= f.input_field :description, as: :text, rows: 6, class: "form-control bg-light border-0 rounded-4 p-4", placeholder: "Détaillez les tâches..." %>
         </div>
+
         <div class="col-md-4">
           <%= f.label :mission_type, "TYPE", class: "form-label small fw-bold text-muted ls-1" %>
           <%= f.input_field :mission_type, collection: JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
         </div>
+
         <div class="col-md-4">
           <%= f.label :contract_type, "CONTRAT", class: "form-label small fw-bold text-muted ls-1" %>
           <%= f.input_field :contract_type, collection: JobOffer::CONTRACT_TYPES.map { |c| [c.upcase, c] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
         </div>
+
         <div class="col-md-4">
           <%= f.label :headcount_required, "EFFECTIF", class: "form-label small fw-bold text-muted ls-1" %>
           <div class="input-group bg-light rounded-pill overflow-hidden">
@@ -40,31 +47,63 @@
       </div>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4">
       <div class="d-flex align-items-center mb-4">
         <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
           <i class="fa-regular fa-calendar-check fs-4"></i>
         </div>
-        <h5 class="fw-bold text-dark m-0">Planning</h5>
+        <div>
+          <h5 class="fw-bold text-dark m-0">Planning</h5>
+          <p class="text-muted small mb-0">Horaires et coupures.</p>
+        </div>
       </div>
+
       <div class="row g-4">
         <div class="col-md-6">
-          <%= f.label :start_date, "DÉBUT", class: "form-label small fw-bold text-muted ls-1" %>
+          <%= f.label :start_date, "DÉBUT MISSION", class: "form-label small fw-bold text-muted ls-1" %>
           <%= f.input_field :start_date, as: :datetime, html5: true, class: "form-control bg-light border-0 rounded-pill py-3 px-4" %>
         </div>
         <div class="col-md-6">
-          <%= f.label :end_date, "FIN", class: "form-label small fw-bold text-muted ls-1" %>
+          <%= f.label :end_date, "FIN MISSION", class: "form-label small fw-bold text-muted ls-1" %>
           <%= f.input_field :end_date, as: :datetime, html5: true, class: "form-control bg-light border-0 rounded-pill py-3 px-4" %>
+        </div>
+
+        <div class="col-12 my-2">
+          <div class="d-flex align-items-center">
+            <hr class="flex-grow-1 opacity-10">
+            <span class="px-3 text-muted small fw-bold text-uppercase ls-1">
+              <i class="fa-solid fa-mug-hot text-orange me-2"></i>Pause Déjeuner
+            </span>
+            <hr class="flex-grow-1 opacity-10">
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <%= f.label :break_start_time, "DÉBUT PAUSE", class: "form-label small fw-bold text-muted ls-1" %>
+          <div class="input-group bg-light rounded-pill overflow-hidden">
+            <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i class="fa-regular fa-clock"></i></span>
+            <%= f.input_field :break_start_time, as: :time, html5: true, class: "form-control bg-transparent border-0 py-3 text-center" %>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :break_end_time, "FIN PAUSE", class: "form-label small fw-bold text-muted ls-1" %>
+          <div class="input-group bg-light rounded-pill overflow-hidden">
+            <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i class="fa-solid fa-arrow-right"></i></span>
+            <%= f.input_field :break_end_time, as: :time, html5: true, class: "form-control bg-transparent border-0 py-3 text-center" %>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-4 p-4">
+    <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5">
       <div class="d-flex align-items-center mb-4">
         <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
           <i class="fa-solid fa-location-dot fs-4"></i>
         </div>
-        <h5 class="fw-bold text-dark m-0">Localisation</h5>
+        <div>
+          <h5 class="fw-bold text-dark m-0">Localisation</h5>
+          <p class="text-muted small mb-0">Où se déroule la mission ?</p>
+        </div>
       </div>
       <div class="row g-3">
         <div class="col-md-6"><%= f.input_field :company_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Client Final" %></div>
@@ -100,9 +139,8 @@
 
           <div class="col-12 mt-2">
             <div class="bg-white bg-opacity-60 rounded-4 p-3 border border-white shadow-sm">
-
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <label class="small fw-bold text-muted mb-0">Précarité (IFM)</label>
+                <label class="small fw-bold text-muted mb-0">Précarité</label>
                 <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden" style="max-width: 100px;">
                   <span class="input-group-text bg-white border-0 text-orange fw-bold ps-2">+</span>
                   <%= f.input_field :ifm_rate, class: "form-control border-0 text-center fw-bold text-orange p-1 bg-white", placeholder: "10" %>
@@ -111,14 +149,13 @@
               </div>
 
               <div class="d-flex align-items-center justify-content-between">
-                <label class="small fw-bold text-muted mb-0">Congés Payés (CP)</label>
+                <label class="small fw-bold text-muted mb-0">Congés Payés</label>
                 <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden" style="max-width: 100px;">
                   <span class="input-group-text bg-white border-0 text-orange fw-bold ps-2">+</span>
                   <%= f.input_field :cp_rate, class: "form-control border-0 text-center fw-bold text-orange p-1 bg-white", placeholder: "10" %>
                   <span class="input-group-text bg-white border-0 text-orange fw-bold pe-2">%</span>
                 </div>
               </div>
-
             </div>
           </div>
 
