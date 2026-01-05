@@ -31,6 +31,9 @@ class JobOffer < ApplicationRecord
   validates :hourly_rate, numericality: { greater_than_or_equal_to: 12.02, message: "ne peut pas être inférieur au SMIC Brut (12.02 €)" }
   validates :night_rate, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 3.0 }
   validates :headcount_required, numericality: { only_integer: true, greater_than: 0 }
+  validates :km_rate, presence: { message: "est obligatoire (mettez 0 si non pris en charge)" },
+                      numericality: { greater_than_or_equal_to: 0 }
+  validates :km_limit, numericality: { greater_than: 0, allow_nil: true }
 
   # --- CALLBACKS ---
   before_save :set_department_code

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_05_080649) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_05_143809) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,6 +103,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_05_080649) do
     t.string "contact_email"
     t.string "contact_phone"
     t.string "contract_type", null: false
+    t.decimal "cp_rate", precision: 5, scale: 2, default: "10.0"
     t.datetime "created_at", null: false
     t.string "department_code"
     t.text "description", null: false
@@ -111,6 +112,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_05_080649) do
     t.bigint "fve_id", null: false
     t.integer "headcount_required", default: 1, null: false
     t.decimal "hourly_rate", precision: 5, scale: 2, default: "12.02", null: false
+    t.decimal "ifm_rate", precision: 5, scale: 2, default: "10.0"
     t.decimal "km_limit", precision: 5, scale: 2
     t.decimal "km_rate", precision: 5, scale: 2
     t.boolean "km_unlimited", default: false

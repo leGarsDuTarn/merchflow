@@ -118,7 +118,7 @@ module Fve
         :start_date, :end_date, :break_start_time, :break_end_time,
         :company_name, :store_name, :address, :zipcode, :city, :department_code,
         :hourly_rate, :night_rate, :km_rate, :km_limit, :km_unlimited,
-        :headcount_required,
+        :headcount_required, :ifm_rate, :cp_rate,
         :contact_email, :contact_phone
       )
     end
