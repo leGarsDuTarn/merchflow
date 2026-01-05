@@ -93,6 +93,14 @@ class DashboardController < ApplicationController
     end || []
 
     # ==========================================================
+    # 5. CANDIDATURES
+    # ==========================================================
+
+    @job_applications = current_user.job_applications
+                                    .includes(:job_offer)
+                                    .order(created_at: :desc)
+
+    # ==========================================================
     # 5. NOTIFICATIONS
     # ==========================================================
     @pending_proposals_count = @user.received_mission_proposals.where(status: :pending).count

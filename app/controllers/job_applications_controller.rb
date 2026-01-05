@@ -2,6 +2,14 @@ class JobApplicationsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_job_offer
 
+  def index
+    # On récupère toutes les candidatures du Merch
+    # On inclut l'offre et l'utilisateur FVE pour afficher le nom de l'agence/client
+    @job_applications = current_user.job_applications
+                                    .includes(job_offer: :fve)
+                                    .order(created_at: :desc)
+  end
+
   def create
     # 1. Construit la candidature
     @job_application = @job_offer.job_applications.build(job_application_params)
