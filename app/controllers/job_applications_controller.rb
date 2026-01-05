@@ -1,6 +1,6 @@
 class JobApplicationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_job_offer
+  before_action :set_job_offe, only: [:create]
 
   def index
     # On récupère toutes les candidatures du Merch
