@@ -9,6 +9,13 @@ Rails.application.routes.draw do
   get 'cgu', to: 'static_pages#terms', as: :terms
   get 'contact', to: 'static_pages#contact', as: :contact
 
+  # ============================================================
+  # JOB OFFERS
+  # ============================================================
+
+  resources :job_offers, only: [:index, :show] do
+    resources :job_applications, only: [:create]
+  end
 
   # ============================================================
   # HOME + DASHBOARD
@@ -103,6 +110,11 @@ Rails.application.routes.draw do
 
     resources :mission_proposals, only: %i[create index destroy show]
     resources :favorites, only: %i[create destroy]
+    resources :job_offers do
+      member do
+        post :accept_candidate # Génère fve_accept_candidate_job_offer_path(@job_offer)
+      end
+    end
   end
 
   # ============================================================
