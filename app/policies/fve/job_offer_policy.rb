@@ -34,7 +34,8 @@ module Fve
         if user.admin?
           scope.all
         else
-          scope.where(fve_id: user.id)
+          # Garanti qu'aucun recruteur ne verra ses anciennes annonces supprimées
+          scope.where(fve_id: user.id).where.not(status: 'archived')
         end
       end
     end

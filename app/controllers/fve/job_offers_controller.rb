@@ -12,7 +12,6 @@ module Fve
 
     def show
       authorize [:fve, @job_offer]
-      # Correction : on inclut :merch (et non :user) pour correspondre à ton modèle
       @job_applications = @job_offer.job_applications
                                 .includes(:merch)
                                 .where.not(status: 'archived')
@@ -41,12 +40,12 @@ module Fve
       end
     end
 
-    # AJOUT : Méthode edit nécessaire pour le callback et la vue edit
+    # Méthode edit nécessaire pour le callback et la vue edit
     def edit
       authorize [:fve, @job_offer]
     end
 
-    # AJOUT : Méthode update nécessaire pour le callback et l'enregistrement
+    # Méthode update nécessaire pour le callback et l'enregistrement
     def update
       authorize [:fve, @job_offer]
       if @job_offer.update(job_offer_params)
@@ -68,36 +67,39 @@ module Fve
       end
     end
 
-    def destroy
-      authorize [:fve, @job_offer]
-      @job_offer.destroy
-      redirect_to fve_job_offers_path, notice: 'Annonce supprimée.'
+  def destroy
+    authorize [:fve, @job_offer]
+
+    if @job_offer.update(status: 'archived')
+      redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
+    else
+      redirect_to fve_job_offers_path, alert: 'Erreur lors de la suppression.', status: :see_other
     end
+  end
 
     # app/controllers/fve/job_offers_controller.rb
 
   def reject_candidate
-    authorize [:fve, @job_offer], :accept_candidate? # On réutilise la règle existante
+    authorize [:fve, @job_offer], :reject_candidate?
     @application = @job_offer.job_applications.find(params[:application_id])
 
     if @application.update(status: 'rejected')
-
       # Nettoyage : Si le candidat était déjà accepté, on cherche le contrat lié
-      # On cherche un contrat entre ce candidat et ce recruteur
       contract = Contract.find_by(merch_id: @application.merch_id, fve_id: current_user.id)
 
       if contract
-        # On supprime les sessions de travail liées à cette offre précise
-        # pour ne pas supprimer tout le planning du Merch (s'il a d'autres missions avec ce FVE)
-        WorkSession.where(contract: contract, store: @job_offer.store_name, date: @job_offer.start_date..@job_offer.end_date).destroy_all
-
-        # Optionnel : Tu peux décider de supprimer le contrat si c'était le seul
-        # contract.destroy if contract.work_sessions.empty?
+        # Supprime les sessions de travail liées à cette offre précise
+        WorkSession.where(
+          contract: contract,
+          store: @job_offer.store_name,
+          date: @job_offer.start_date..@job_offer.end_date
+        ).destroy_all
       end
 
-      redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée et planning nettoyé.'
+      # AJOUT du status: :see_other pour Turbo
+      redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée et planning nettoyé.', status: :see_other
     else
-      redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut."
+      redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut.", status: :see_other
     end
   end
 
