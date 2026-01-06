@@ -59,3 +59,51 @@
     transition: transform 0.2s ease-in-out;
   }
 }
+
+/* Effet de levée au survol de la ligne */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0,0,0,0.05) !important;
+  }
+}
+
+/* Police monospaced pour que "11:11" prenne la même largeur que "00:00" */
+.font-monospace {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: -0.5px;
+}
+
+/* Background gris très léger pour la mission */
+.bg-gray-100 {
+  background-color: #f8f9fa;
+}
+
+/* Focus : Quand on clique dans l'input, tout le bloc change de bordure */
+.focus-within-orange:focus-within {
+  border-color: #fd7e14 !important; /* Orange */
+  background-color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(253, 126, 20, 0.1);
+}
+
+.focus-within-dark:focus-within {
+  border-color: #343a40 !important; /* Dark Gray */
+  background-color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Bouton suppression */
+.hover-text-danger:hover {
+  color: #dc3545 !important;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 50%;
+}
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

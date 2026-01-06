@@ -1,29 +1,43 @@
 <div class="bg-light min-vh-100 py-5">
   <div class="container">
 
-    <div class="d-flex justify-content-between align-items-start mb-5">
+    <%# --- EN-TÊTE --- %>
+    <div class="d-flex justify-content-between align-items-center mb-5">
       <div class="d-flex align-items-center">
-        <%= link_to fve_job_offers_path, class: "btn btn-white bg-white rounded-circle shadow-sm me-4 d-flex align-items-center justify-content-center transition-hover text-decoration-none", style: "width: 55px; height: 55px; border: 1px solid #eee;" do %>
-          <i class="fa-solid fa-arrow-left text-orange fs-4"></i>
+        <%= link_to fve_job_offers_path, class: "btn btn-white bg-white rounded-circle shadow-sm me-4 d-flex align-items-center justify-content-center transition-hover text-decoration-none", style: "width: 50px; height: 50px;" do %>
+          <i class="fa-solid fa-arrow-left text-orange fs-5"></i>
         <% end %>
         <div>
-          <h2 class="fw-bold text-dark m-0 mt-1"><%= @job_offer.title %></h2>
-          <div class="d-flex align-items-center gap-2">
-            <p class="text-muted small mb-0 fw-bold text-uppercase ls-1">Réf: #OFFRE-<%= @job_offer.id %></p>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <% if @job_offer.status == 'published' %>
+              <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-25">Publiée</span>
+            <% else %>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 border border-secondary border-opacity-25">Brouillon</span>
+            <% end %>
+            <span class="text-muted small fw-bold text-uppercase ls-1">Réf: #<%= @job_offer.id %></span>
           </div>
+          <h2 class="fw-bold text-dark m-0"><%= @job_offer.title %></h2>
         </div>
       </div>
 
-      <%= link_to edit_fve_job_offer_path(@job_offer), class: "btn btn-orange rounded-pill px-4 py-2 fw-bold shadow-sm transition-hover" do %>
-        <i class="fa-solid fa-pen-to-square me-2"></i> Modifier l'offre
-      <% end %>
+      <div class="d-flex gap-2">
+        <%= link_to fve_job_offers_path, class: "btn btn-white fw-bold rounded-pill px-4 shadow-sm text-muted" do %>
+          <i class="fa-solid fa-box-archive me-2"></i>Archiver
+        <% end %>
+        <%= link_to edit_fve_job_offer_path(@job_offer), class: "btn btn-orange rounded-pill px-4 py-2 fw-bold shadow-sm transition-hover" do %>
+          <i class="fa-solid fa-pen-to-square me-2"></i> Modifier
+        <% end %>
+      </div>
     </div>
 
     <div class="row g-4">
 
+      <%# ===== COLONNE GAUCHE (CONTEXTE & PLANNING) ===== %>
       <div class="col-lg-5">
-        <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden h-100">
-          <div class="card-body p-4 p-md-5">
+
+        <%# --- CARTE LIEU & INFO --- %>
+        <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+          <div class="card-body p-4">
 
             <div class="d-flex align-items-center mb-4">
               <div class="bg-orange-light text-orange rounded-4 d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 55px; height: 55px;">
@@ -31,47 +45,110 @@
               </div>
               <div>
                 <h5 class="fw-bold mb-0 text-dark"><%= @job_offer.store_name %></h5>
-                <small class="text-muted fw-bold text-uppercase ls-1" style="font-size: 0.65rem;"><%= @job_offer.company_name %></small>
+                <small class="text-muted fw-bold text-uppercase ls-1"><%= @job_offer.company_name %></small>
               </div>
             </div>
 
-            <div class="d-flex align-items-start mb-4 bg-light p-3 rounded-3 border border-white">
-              <i class="fa-solid fa-location-dot text-orange mt-1 me-2"></i>
-              <span class="text-muted small fw-bold"><%= @job_offer.address %>, <%= @job_offer.zipcode %> <%= @job_offer.city %></span>
+            <div class="d-flex align-items-start mb-3 bg-light p-3 rounded-4 border border-light">
+              <i class="fa-solid fa-location-dot text-orange mt-1 me-3"></i>
+              <div>
+                <span class="d-block fw-bold text-dark"><%= @job_offer.address %></span>
+                <span class="text-muted small"><%= @job_offer.zipcode %> <%= @job_offer.city %></span>
+              </div>
             </div>
 
-            <div class="row g-3 text-center">
-              <div class="col-12">
-                <div class="bg-dark text-white rounded-pill p-3 shadow-sm d-flex align-items-center justify-content-center">
-                   <i class="fa-solid fa-users me-2 small opacity-75"></i>
-                   <small class="fw-bold text-uppercase ls-1" style="font-size: 0.7rem;">Effectif requis : <%= @job_offer.headcount_required %> Merchs</small>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="border border-orange-subtle bg-orange-light rounded-4 p-3 shadow-sm">
-                  <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.6rem;">Base Brut</small>
-                  <div class="fw-bold text-dark"><%= @job_offer.hourly_rate %> €/h</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="border border-orange-subtle bg-orange-light rounded-4 p-3 shadow-sm">
-                  <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.6rem;">Cumul Primes</small>
-                  <div class="fw-bold text-orange">+ <%= (@job_offer.ifm_rate + @job_offer.cp_rate).to_i %>%</div>
-                </div>
-              </div>
+            <div class="bg-light p-3 rounded-4 border border-light">
+               <h6 class="small fw-bold text-muted text-uppercase ls-1 mb-2">Description</h6>
+               <p class="small text-muted mb-0" style="line-height: 1.6;"><%= @job_offer.description %></p>
             </div>
           </div>
         </div>
+
+        <%# --- CARTE PLANNING DÉTAILLÉ (LE COEUR DU SYSTÈME) --- %>
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+          <div class="card-header bg-white border-0 pt-2 px-4">
+            <h6 class="fw-bold text-dark my-2"><i class="fa-regular fa-calendar-days text-orange me-2"></i>Planning Détaillé</h6>
+          </div>
+          <div class="card-body p-4">
+            <% if @job_offer.job_offer_slots.any? %>
+              <div class="d-flex flex-column gap-2">
+                <% @job_offer.job_offer_slots.order(:date).each do |slot| %>
+                  <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border border-light bg-white shadow-sm transition-hover">
+
+                    <%# Date %>
+                    <div class="d-flex align-items-center">
+                      <div class="bg-orange-light text-orange rounded-3 d-flex flex-column align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                        <span class="fw-bold lh-1" style="font-size: 1.1rem;"><%= slot.date.day %></span>
+                        <span class="small fw-bold text-uppercase lh-1" style="font-size: 0.6rem;"><%= l(slot.date, format: "%b") %></span>
+                      </div>
+                      <div>
+                        <span class="d-block fw-bold text-dark small"><%= l(slot.date, format: "%A").capitalize %></span>
+                      </div>
+                    </div>
+
+                    <%# Horaires %>
+                    <div class="text-end">
+                      <div class="badge bg-gray-100 text-dark border border-secondary border-opacity-10 rounded-pill px-3 py-2 mb-1">
+                        <%= slot.start_time.strftime("%H:%M") %> <i class="fa-solid fa-arrow-right-long mx-1 opacity-50"></i> <%= slot.end_time.strftime("%H:%M") %>
+                      </div>
+                      <% if slot.break_start_time %>
+                        <div class="small text-muted" style="font-size: 0.7rem;">
+                          <i class="fa-solid fa-mug-hot text-orange me-1"></i>Pause: <%= slot.break_start_time.strftime("%H:%M") %>-<%= slot.break_end_time.strftime("%H:%M") %>
+                        </div>
+                      <% end %>
+                    </div>
+
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-3 text-muted small">Aucun créneau défini</div>
+            <% end %>
+          </div>
+        </div>
+
+        <%# --- CARTE FINANCE --- %>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+          <div class="card-body p-0">
+             <div class="row g-0">
+               <div class="col-6 border-end border-light p-4 text-center">
+                 <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Taux Horaire</small>
+                 <div class="fw-bold text-dark fs-5"><%= number_to_currency(@job_offer.hourly_rate) %></div>
+               </div>
+               <div class="col-6 p-4 text-center bg-orange-light bg-opacity-10">
+                 <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Primes (IFM/CP)</small>
+                 <div class="fw-bold text-orange fs-5">+ <%= (@job_offer.ifm_rate + @job_offer.cp_rate).to_i %>%</div>
+               </div>
+             </div>
+             <div class="bg-light p-3 text-center border-top border-light">
+               <% if @job_offer.km_rate > 0 %>
+                 <span class="badge bg-white text-dark border shadow-sm rounded-pill py-2 px-3">
+                   <i class="fa-solid fa-car text-orange me-2"></i>
+                   <%= @job_offer.km_rate %>€/km
+                   <% if @job_offer.km_unlimited %>
+                     <span class="text-success fw-bold">(Illimité)</span>
+                   <% elsif @job_offer.km_limit %>
+                     <span class="text-muted">(Max <%= @job_offer.km_limit.to_i %>km)</span>
+                   <% end %>
+                 </span>
+               <% else %>
+                 <span class="text-muted small">Pas de défraiement kilométrique</span>
+               <% end %>
+             </div>
+          </div>
+        </div>
+
       </div>
 
+      <%# ===== COLONNE DROITE (CANDIDATS) ===== %>
       <div class="col-lg-7">
         <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
           <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold text-dark m-0">
-              <i class="fa-solid fa-user-group me-2 text-orange"></i>Candidats postulants
+              <i class="fa-solid fa-users-viewfinder me-2 text-orange"></i>Candidatures
             </h5>
-            <span class="badge bg-orange text-white rounded-pill px-3 py-2 fw-bold">
-              <%= @job_applications.count %>
+            <span class="badge bg-orange text-white rounded-pill px-3 py-2 fw-bold shadow-sm">
+              <%= @job_applications.where.not(status: ['archived', 'rejected']).count %> en attente
             </span>
           </div>
 
@@ -80,54 +157,73 @@
               <div class="d-flex flex-column gap-3">
                 <% @job_applications.each do |app| %>
 
-                  <div class="p-3 rounded-4 border transition-hover <%= job_status_card_class(app.status) %>">
-                    <div class="d-flex justify-content-between align-items-center">
+                  <div class="p-3 rounded-4 border border-light bg-white shadow-sm transition-hover position-relative overflow-hidden">
+                    <%# Bandeau de statut vertical %>
+                    <div class="position-absolute top-0 start-0 h-100" style="width: 4px; background-color: <%= job_status_color(app.status) %>;"></div>
+
+                    <div class="d-flex justify-content-between align-items-center ps-2">
 
                       <div class="d-flex align-items-center">
-                        <div class="bg-white rounded-circle d-flex align-items-center justify-content-center border shadow-sm me-3" style="width: 48px; height: 48px;">
-                          <i class="fa-solid fa-user" style="color: <%= job_status_color(app.status) %>;"></i>
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border border-white shadow-sm me-3" style="width: 50px; height: 50px;">
+                          <i class="fa-solid fa-user fs-5 text-muted"></i>
                         </div>
                         <div>
                           <h6 class="fw-bold mb-0 text-dark"><%= app.merch.displayable_name(current_user) %></h6>
-                          <small class="text-muted opacity-75" style="font-size: 0.75rem;">
-                            Postulé <%= time_ago_in_words(app.created_at) %>
-                          </small>
+                          <div class="d-flex align-items-center gap-2">
+                             <span class="badge bg-light text-muted border border-light rounded-pill px-2 py-0 small fw-normal">
+                               <i class="fa-regular fa-clock me-1"></i><%= time_ago_in_words(app.created_at) %>
+                             </span>
+                             <% if app.merch.auto_entrepreneur? %>
+                               <span class="badge bg-blue-light text-primary border border-primary-subtle rounded-pill px-2 py-0 small">Auto-Ent.</span>
+                             <% end %>
+                          </div>
                         </div>
                       </div>
 
                       <div class="d-flex gap-2 align-items-center">
                         <% if app.status == 'pending' %>
-                          <%= button_to accept_candidate_fve_job_offer_path(@job_offer, application_id: app.id), method: :post, class: "btn btn-orange btn-sm rounded-pill px-3 fw-bold shadow-sm" do %>
-                            Recruter
+                          <%= button_to accept_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                              method: :post,
+                              class: "btn btn-orange btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm transition-transform" do %>
+                            <i class="fa-solid fa-check me-1"></i>Recruter
                           <% end %>
-                          <%= button_to reject_candidate_fve_job_offer_path(@job_offer, application_id: app.id), method: :post, data: { turbo_confirm: "Écarter ce candidat ?" }, class: "btn btn-outline-danger btn-sm rounded-circle border-0" do %>
+
+                          <%= button_to reject_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                              method: :post,
+                              data: { turbo_confirm: "Êtes-vous sûr de vouloir refuser ce candidat ?" },
+                              class: "btn btn-white text-danger btn-sm rounded-circle border border-danger border-opacity-25 shadow-sm p-0",
+                              style: "width: 34px; height: 34px;" do %>
                             <i class="fa-solid fa-xmark"></i>
                           <% end %>
+
                         <% else %>
-                          <%= job_status_badge(app.status) %>
+                          <%# Badge de statut (Accepté / Refusé) %>
+                          <span class="badge rounded-pill px-3 py-2 <%= app.status == 'accepted' ? 'bg-success' : 'bg-danger' %>">
+                            <%= app.status == 'accepted' ? 'Recruté' : 'Refusé' %>
+                          </span>
 
                           <% if app.status == 'rejected' %>
-                            <%= link_to fve_job_application_path(app), data: { turbo_method: :delete, turbo_confirm: "Supprimer définitivement ce candidat de la liste ?" }, class: "btn btn-link text-danger p-0 ms-2" do %>
-                              <i class="fa-solid fa-trash-can opacity-50"></i>
-                            <% end %>
+                             <%# Petit bouton poubelle discret %>
                           <% end %>
                         <% end %>
                       </div>
                     </div>
 
                     <% if app.message.present? %>
-                      <div class="mt-3 bg-white bg-opacity-50 p-3 rounded-3 border-start border-orange border-3 small italic text-muted">
-                        "<%= app.message %>"
+                      <div class="mt-3 ms-5 bg-light p-3 rounded-3 border-start border-3 border-orange small italic text-muted">
+                        <i class="fa-solid fa-quote-left text-orange me-2 opacity-50"></i><%= app.message %>
                       </div>
                     <% end %>
                   </div>
                 <% end %>
               </div>
             <% else %>
-              <div class="text-center py-5 opacity-50">
-                <i class="fa-solid fa-user-slash fa-3x mb-3 text-muted"></i>
-                <p class="fw-bold">Aucune candidature</p>
-                <p class="small text-muted">Diffusez votre offre pour recevoir des profils.</p>
+              <div class="text-center py-5">
+                <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                   <i class="fa-solid fa-user-clock fa-2x text-muted opacity-50"></i>
+                </div>
+                <p class="fw-bold text-dark mb-1">Aucune candidature pour le moment</p>
+                <p class="small text-muted">Dès qu'un Merch postule, il apparaîtra ici.</p>
               </div>
             <% end %>
           </div>
@@ -136,11 +232,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .ls-1 { letter-spacing: 0.5px; }
-  .transition-hover { transition: all 0.2s ease-in-out; }
-  .transition-hover:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,0.05)!important; }
-  .bg-orange-light { background-color: #fff3e0; }
-  .text-orange { color: #fd7e14; }
-</style>

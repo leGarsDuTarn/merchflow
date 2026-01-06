@@ -6,8 +6,7 @@
       <p class="text-muted mb-0 text-center text-md-start">Gérez vos recrutements et suivez les candidatures.</p>
     </div>
 
-    <%= link_to new_fve_job_offer_path,
-                class: "btn btn-orange rounded-pill px-4 py-2 fw-bold shadow-sm" do %>
+    <%= link_to new_fve_job_offer_path, class: "btn btn-orange rounded-pill px-4 py-2 fw-bold shadow-sm transition-hover" do %>
       <i class="fa-solid fa-plus me-2"></i>Nouvelle annonce
     <% end %>
   </div>
@@ -29,55 +28,70 @@
       <% @job_offers.each do |offer| %>
         <div class="col-12 col-md-6 col-lg-4">
 
-          <div class="card shadow border-0 rounded-4 p-3 h-100 d-flex flex-column position-relative overflow-hidden">
+          <div class="card shadow border-0 rounded-4 p-3 h-100 d-flex flex-column position-relative overflow-hidden transition-hover">
 
-            <div class="position-absolute top-0 end-0 m-3">
+            <%# --- BADGE STATUT --- %>
+            <div class="position-absolute top-0 end-0 m-3 z-1">
               <% if offer.status == 'published' %>
-                <span class="badge bg-success text-white rounded-pill px-2 py-1 shadow-sm small fw-normal">
-                  <i class="fa-solid fa-check-circle me-1"></i>Publiée
+                <span class="badge bg-white text-success border border-success border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-normal">
+                  <i class="fa-solid fa-circle-check me-1"></i>Publiée
                 </span>
               <% else %>
-                <span class="badge bg-secondary text-white rounded-pill px-2 py-1 shadow-sm small fw-normal">
+                <span class="badge bg-white text-secondary border border-secondary border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-normal">
                   <i class="fa-solid fa-pen-ruler me-1"></i>Brouillon
                 </span>
               <% end %>
             </div>
 
-            <div class="mb-3">
-              <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small">
+            <%# --- TAGS --- %>
+            <div class="mb-3 d-flex gap-2">
+              <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small fw-normal">
                 <%= offer.mission_type.capitalize %>
+              </span>
+              <span class="badge bg-light text-muted border border-light rounded-pill px-2 py-1 small fw-normal">
+                <%= offer.contract_type.upcase %>
               </span>
             </div>
 
+            <%# --- TITRE & LIEU --- %>
             <h5 class="fw-bold text-dark mb-1 text-truncate" title="<%= offer.title %>">
-              <%= offer.title %>
+              <%= link_to offer.title, fve_job_offer_path(offer), class: "text-decoration-none text-dark stretched-link" %>
             </h5>
             <div class="d-flex align-items-center text-muted small mb-3">
-              <i class="fa-solid fa-store me-2 text-orange"></i>
-              <span class="text-truncate"><%= offer.store_name %> • <%= offer.company_name %></span>
+              <i class="fa-solid fa-store me-2 text-orange opacity-75"></i>
+              <span class="text-truncate"><%= offer.store_name %> • <%= offer.city %></span>
             </div>
 
-            <div class="bg-light p-3 rounded-3 small mb-3">
+            <%# --- DATES & DURÉE (UPDATE FLEXIBLE) --- %>
+            <div class="bg-light p-3 rounded-4 small mb-3 border border-light">
               <div class="d-flex align-items-center mb-2">
                 <i class="fa-regular fa-calendar text-orange me-2"></i>
                 <span class="fw-bold text-dark">
-                  <%= l(offer.start_date.to_date, format: :long).capitalize %>
+                  <% if offer.start_date.to_date == offer.end_date.to_date %>
+                     Le <%= l(offer.start_date.to_date, format: "%d %b") %>
+                  <% else %>
+                     Du <%= l(offer.start_date.to_date, format: "%d %b") %> au <%= l(offer.end_date.to_date, format: "%d %b") %>
+                  <% end %>
                 </span>
               </div>
-              <div class="d-flex align-items-center">
-                <i class="fa-regular fa-clock text-orange me-2"></i>
-                <span class="text-muted fw-semibold">
-                  <%= offer.start_date.strftime("%H:%M") %> à <%= offer.end_date.strftime("%H:%M") %>
-                </span>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <i class="fa-regular fa-clock text-orange me-2"></i>
+                  <span class="text-muted fw-semibold">
+                    <%# On compte les slots pour dire "3 jours" %>
+                    <%= offer.job_offer_slots.count %> jour(s) de mission
+                  </span>
+                </div>
               </div>
             </div>
 
             <div class="d-flex align-items-center justify-content-between mb-4 mt-auto">
-              <div class="d-flex align-items-center">
+              <div class="d-flex align-items-center position-relative z-2">
                 <div class="bg-orange-light text-orange rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
                   <i class="fa-solid fa-users"></i>
                 </div>
                 <div>
+                  <%# COMPTEUR FILTRÉ %>
                   <span class="fw-bold text-dark fs-5">
                     <%= offer.job_applications.where.not(status: ['rejected', 'archived', 'cancelled']).count %>
                   </span>
@@ -91,26 +105,27 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-between gap-2">
+            <%# --- ACTIONS (BOUTONS) --- %>
+            <div class="d-flex justify-content-between gap-2 position-relative z-2">
               <%= link_to fve_job_offer_path(offer),
-                  class: "btn btn-orange w-100 fw-bold rounded-3",
+                  class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm",
                   title: "Gérer les candidats" do %>
                 <i class="fa-solid fa-eye me-1"></i> Gérer
               <% end %>
 
               <%= link_to edit_fve_job_offer_path(offer),
-                  class: "btn btn-gray fw-bold rounded-3 shadow-sm",
-                  style: "width: 50px; display: flex; align-items: center; justify-content: center;",
+                  class: "btn btn-white border fw-bold rounded-3 shadow-sm",
+                  style: "width: 45px; display: flex; align-items: center; justify-content: center;",
                   title: "Modifier l'annonce" do %>
-                <i class="fa-solid fa-pen-to-square"></i>
+                <i class="fa-solid fa-pen text-muted"></i>
               <% end %>
 
               <%= link_to fve_job_offer_path(offer),
-                  data: { turbo_method: :delete, turbo_confirm: "Supprimer cette annonce ?" },
-                  class: "btn btn-red fw-bold rounded-3 border shadow-sm",
-                  style: "width: 50px; display: flex; align-items: center; justify-content: center;",
-                  title: "Supprimer" do %>
-                <i class="fa-solid fa-trash-can"></i>
+                  data: { turbo_method: :delete, turbo_confirm: "Voulez-vous vraiment archiver cette annonce ?" },
+                  class: "btn btn-white border fw-bold rounded-3 shadow-sm",
+                  style: "width: 45px; display: flex; align-items: center; justify-content: center;",
+                  title: "Archiver" do %>
+                <i class="fa-solid fa-trash-can text-danger opacity-75"></i>
               <% end %>
             </div>
 
