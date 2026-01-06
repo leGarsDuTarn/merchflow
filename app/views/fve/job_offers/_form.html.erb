@@ -1,6 +1,5 @@
 <%# app/views/fve/job_offers/_form.html.erb %>
 
-<%# ON DÉCLARE LE FORMULAIRE ICI DIRECTEMENT %>
 <%= simple_form_for([:fve, @job_offer]) do |f| %>
 
   <div class="row g-4">
@@ -24,7 +23,7 @@
         <div class="row g-4">
           <div class="col-12">
             <%= f.label :title, "TITRE DE L'ANNONCE", class: "form-label small fw-bold text-muted ls-1" %>
-            <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold fs-6", placeholder: "Ex: Merchandiser Expert - Rayon Liquide" %>
+            <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold fs-6", placeholder: "Ex: Anti-rupture - Rayon Liquide" %>
           </div>
 
           <div class="col-12">
@@ -175,7 +174,8 @@
               <div class="col-12 mb-2">
                 <%= f.label :km_rate, "TAUX REMBOURSEMENT", class: "form-label small fw-bold text-muted ls-1" %>
                 <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border border-white focus-ring">
-                  <%= f.input_field :km_rate, class: "form-control bg-transparent border-0 py-2 text-end fw-bold", step: 0.01, placeholder: "0.29", value: f.object.km_rate || 0.29 %>
+                  <%# On laisse Rails lire la valeur par défaut (0.29) depuis l'objet grâce à la DB %>
+                  <%= f.input_field :km_rate, class: "form-control bg-transparent border-0 py-2 text-end fw-bold", step: 0.01, placeholder: "0.29" %>
                   <span class="input-group-text bg-transparent border-0 pe-4 text-muted">€/km</span>
                 </div>
               </div>
@@ -221,7 +221,7 @@
             </div>
 
             <div class="col-12 mt-4">
-              <%= f.button :submit, @job_offer.new_record? ? "🚀 PUBLIER" : "💾 ENREGISTRER", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm text-uppercase ls-1 transition-hover" %>
+              <%= f.button :submit, @job_offer.new_record? ? "PUBLIER" : "ENREGISTRER", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm text-uppercase ls-1 transition-hover" %>
             </div>
 
           </div>
@@ -231,4 +231,4 @@
 
   </div>
 
-<% end %> <%# FIN DU FORMULAIRE %>
+<% end %>

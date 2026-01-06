@@ -22,8 +22,6 @@ module Fve
     def new
       @job_offer = JobOffer.new
       authorize [:fve, @job_offer]
-      @job_offer.hourly_rate = 12.02
-      @job_offer.km_rate = 0.25
 
       if current_user
         @job_offer.contact_email = current_user.email

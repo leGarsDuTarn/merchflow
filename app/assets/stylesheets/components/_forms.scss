@@ -21,19 +21,41 @@
 }
 
 /* Switch Orange MerchFlow */
-.custom-orange-switch:checked {
-  background-color: #fd7e14 !important;
-  border-color: #fd7e14 !important;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
-}
+.custom-orange-switch {
+  /* Style quand le switch est OFF (Gris clair par défaut) */
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  transition: all 0.2s ease-in-out;
 
-/* Effet Focus Ring Orange */
-.focus-ring:focus-within {
-  box-shadow: 0 0 0 0.25rem rgba(253, 126, 20, 0.15) !important;
-  border-color: #fd7e14 !important;
-}
+  /* Style quand le switch est ON (Orange Vif) */
+  &:checked {
+    background-color: #fd7e14 !important;
+    border-color: #fd7e14 !important;
+    opacity: 1 !important;
+    filter: brightness(1) !important;
 
-/* Transition fluide */
-.transition-opacity {
-  transition: opacity 0.3s ease;
+    /* Image SVG du cercle blanc à l'intérieur */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+  }
+
+  /* Le focus en orange (mais pas blanc !) */
+  &:focus {
+    border-color: #fd7e14;
+    box-shadow: 0 0 0 0.25rem rgba(253, 126, 20, 0.25) !important;
+    outline: none;
+    filter: brightness(1) !important; /* ← IMPORTANT : Force aussi ici */
+  }
+
+  /* Quand c'est coché ET en focus : reste orange ! */
+  &:checked:focus {
+    background-color: #fd7e14 !important;
+    border-color: #fd7e14 !important;
+    filter: brightness(1) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+  }
+
+  /* Animation du cercle blanc à l'intérieur du switch */
+  &::after {
+    transition: transform 0.2s ease-in-out;
+  }
 }
