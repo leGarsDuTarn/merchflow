@@ -40,12 +40,10 @@ module Fve
       end
     end
 
-    # Méthode edit nécessaire pour le callback et la vue edit
     def edit
       authorize [:fve, @job_offer]
     end
 
-    # Méthode update nécessaire pour le callback et l'enregistrement
     def update
       authorize [:fve, @job_offer]
       if @job_offer.update(job_offer_params)
@@ -67,41 +65,38 @@ module Fve
       end
     end
 
-  def destroy
-    authorize [:fve, @job_offer]
+    def destroy
+      authorize [:fve, @job_offer]
 
-    if @job_offer.update(status: 'archived')
-      redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
-    else
-      redirect_to fve_job_offers_path, alert: 'Erreur lors de la suppression.', status: :see_other
-    end
-  end
-
-    # app/controllers/fve/job_offers_controller.rb
-
-  def reject_candidate
-    authorize [:fve, @job_offer], :reject_candidate?
-    @application = @job_offer.job_applications.find(params[:application_id])
-
-    if @application.update(status: 'rejected')
-      # Nettoyage : Si le candidat était déjà accepté, on cherche le contrat lié
-      contract = Contract.find_by(merch_id: @application.merch_id, fve_id: current_user.id)
-
-      if contract
-        # Supprime les sessions de travail liées à cette offre précise
-        WorkSession.where(
-          contract: contract,
-          store: @job_offer.store_name,
-          date: @job_offer.start_date..@job_offer.end_date
-        ).destroy_all
+      if @job_offer.update(status: 'archived')
+        redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
+      else
+        redirect_to fve_job_offers_path, alert: 'Erreur lors de la suppression.', status: :see_other
       end
-
-      # AJOUT du status: :see_other pour Turbo
-      redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée et planning nettoyé.', status: :see_other
-    else
-      redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut.", status: :see_other
     end
-  end
+
+    def reject_candidate
+      authorize [:fve, @job_offer], :reject_candidate?
+      @application = @job_offer.job_applications.find(params[:application_id])
+
+      if @application.update(status: 'rejected')
+        # Nettoyage : Si le candidat était déjà accepté, on cherche le contrat lié
+        contract = Contract.find_by(merch_id: @application.merch_id, fve_id: current_user.id)
+
+        if contract
+          # Supprime les sessions de travail liées à cette offre précise
+          WorkSession.where(
+            contract: contract,
+            store: @job_offer.store_name,
+            date: @job_offer.start_date..@job_offer.end_date
+          ).destroy_all
+        end
+
+        redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée et planning nettoyé.', status: :see_other
+      else
+        redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut.", status: :see_other
+      end
+    end
 
     private
 
@@ -122,7 +117,16 @@ module Fve
         :company_name, :store_name, :address, :zipcode, :city, :department_code,
         :hourly_rate, :night_rate, :km_rate, :km_limit, :km_unlimited,
         :headcount_required, :ifm_rate, :cp_rate,
-        :contact_email, :contact_phone
+        :contact_email, :contact_phone,
+        job_offer_slots_attributes: [
+          :id,
+          :date,
+          :start_time,
+          :end_time,
+          :break_start_time,
+          :break_end_time,
+          :_destroy
+        ]
       )
     end
   end

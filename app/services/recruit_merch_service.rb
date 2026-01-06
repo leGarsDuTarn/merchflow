@@ -4,8 +4,6 @@ class RecruitMerchService
   def initialize(job_application)
     @application = job_application
     @offer       = job_application.job_offer
-
-    # CORRECTION : On s'assure d'appeler .merch (comme défini dans ton modèle JobApplication)
     @merch       = job_application.merch
     @fve         = @offer.fve
   end
@@ -21,7 +19,7 @@ class RecruitMerchService
       # 2. Gestion du Contrat
       contract = find_or_create_contract
 
-      # 3. Création des sessions de travail
+      # 3. Création des sessions de travail (Version Flexible)
       create_work_sessions_loop(contract)
 
       # 4. Validation finale de la candidature
@@ -30,7 +28,6 @@ class RecruitMerchService
 
     true
   rescue ActiveRecord::RecordInvalid => e
-    # Capture les erreurs de validation (ex: Agence invalide, dates manquantes)
     @error_message = "Erreur de validation : #{e.record.errors.full_messages.join(', ')}"
     false
   rescue StandardError => e
@@ -41,48 +38,33 @@ class RecruitMerchService
   private
 
   def find_or_create_contract
-    # On cherche un contrat existant pour ce couple Merch/FVE
     existing = Contract.find_by(merch_id: @merch.id, fve_id: @fve.id)
     return existing if existing.present?
 
-    # --- Préparation des données ---
-
     # A. Gestion de l'Agence
     agency_code = @fve.respond_to?(:agency) ? @fve.agency : nil
-
     unless Agency.exists?(code: agency_code)
-      raise StandardError, "Le profil du FVE n'a pas d'agence valide associée. Impossible de créer le contrat."
+      raise StandardError, "Le profil du FVE n'a pas d'agence valide associée."
     end
 
     # B. Type de contrat
     c_type = @offer.contract_type.to_s.downcase
-    unless Contract.contract_types.keys.include?(c_type)
-      c_type = 'cdd' # Valeur par défaut safe
-    end
+    c_type = 'cdd' unless Contract.contract_types.keys.include?(c_type)
 
-    # C. Calcul des taux (IFM/CP)
+    # C. Calcul des taux
     is_precarious = %w[cdd cidd interim].include?(c_type)
     rate = is_precarious ? 0.10 : 0.0
 
-    # --- Création ---
     Contract.create!(
       name: "Mission #{@offer.mission_type.capitalize} - #{@offer.company_name}",
-
-      # Relations clés
-      user: @merch,        # Le propriétaire du contrat est le Merch
-      merch: @merch,       # Relation explicite
-      fve: @fve,           # Le FVE responsable
-
-      # Données
+      user: @merch,
+      merch: @merch,
+      fve: @fve,
       agency: agency_code,
       contract_type: c_type,
-
-      # Financier
       night_rate: @offer.night_rate || 0,
       ifm_rate: rate,
       cp_rate: rate,
-
-      # Kilométrique
       km_rate: @offer.km_rate || 0.25,
       km_limit: @offer.km_unlimited ? 0 : (@offer.km_limit || 0),
       km_unlimited: @offer.km_unlimited || false
@@ -90,32 +72,35 @@ class RecruitMerchService
   end
 
   def create_work_sessions_loop(contract)
-    start_date = @offer.start_date.to_date
-    end_date   = @offer.end_date.to_date
+    # NOUVEAU : On itère sur les créneaux enregistrés (JobOfferSlots)
+    # au lieu de faire une boucle aveugle entre start_date et end_date
 
-    (start_date..end_date).each do |current_date|
-      # Construction robuste des horaires
-      daily_start = current_date.to_time.change(hour: @offer.start_date.hour, min: @offer.start_date.min)
-      daily_end   = current_date.to_time.change(hour: @offer.end_date.hour, min: @offer.end_date.min)
+    @offer.job_offer_slots.each do |slot|
 
-      # Gestion des pauses
-      daily_break_start, daily_break_end = nil, nil
-      if @offer.break_start_time && @offer.break_end_time
-        daily_break_start = current_date.to_time.change(hour: @offer.break_start_time.hour, min: @offer.break_start_time.min)
-        daily_break_end   = current_date.to_time.change(hour: @offer.break_end_time.hour, min: @offer.break_end_time.min)
-      end
+      # 1. Construction des timestamps précis avec TimeZone (Paris)
+      # On combine la Date du slot avec l'Heure du slot
 
-      # Gestion Nuit (Si fin < début, c'est le lendemain)
+      daily_start = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
+      daily_end   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
+
+      # 2. Gestion de la Nuit (Si fin < début, c'est le lendemain)
       daily_end += 1.day if daily_end <= daily_start
 
-      # Gestion Nuit Pause
-      if daily_break_start && daily_break_end <= daily_break_start
-        daily_break_end += 1.day
+      # 3. Gestion des Pauses
+      daily_break_start, daily_break_end = nil, nil
+
+      if slot.break_start_time.present? && slot.break_end_time.present?
+        daily_break_start = Time.zone.parse("#{slot.date} #{slot.break_start_time.strftime('%H:%M')}")
+        daily_break_end   = Time.zone.parse("#{slot.date} #{slot.break_end_time.strftime('%H:%M')}")
+
+        # Cas rare : pause qui traverse minuit
+        daily_break_end += 1.day if daily_break_end < daily_break_start
       end
 
+      # 4. Création de la session
       WorkSession.create!(
         contract: contract,
-        date: current_date,
+        date: slot.date,
         start_time: daily_start,
         end_time: daily_end,
         break_start_time: daily_break_start,
@@ -124,8 +109,6 @@ class RecruitMerchService
         company: @offer.company_name,
         store: @offer.store_name,
         store_full_address: [@offer.address, @offer.zipcode, @offer.city].compact.join(', '),
-
-        # Le statut 'accepted' fait apparaitre la mission dans le planning du Merch
         status: 'accepted'
       )
     end

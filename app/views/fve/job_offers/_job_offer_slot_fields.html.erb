@@ -1,0 +1,23 @@
+<div class="nested-form-wrapper row g-2 align-items-center mb-2 bg-white p-2 rounded-3 shadow-sm border border-light" data-new-record="<%= f.object.new_record? %>">
+  <div class="col-md-3">
+    <%= f.input_field :date, as: :date, html5: true, class: "form-control form-control-sm bg-light border-0 fw-bold" %>
+  </div>
+  <div class="col-md-2">
+    <%= f.input_field :start_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center" %>
+  </div>
+  <div class="col-md-2">
+    <%= f.input_field :end_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center" %>
+  </div>
+  <div class="col-md-2">
+    <%= f.input_field :break_start_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center text-muted", placeholder: "Pause In" %>
+  </div>
+  <div class="col-md-2">
+    <%= f.input_field :break_end_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center text-muted", placeholder: "Pause Out" %>
+  </div>
+  <div class="col-md-1 text-end">
+    <%= f.hidden_field :_destroy %>
+    <button type="button" class="btn btn-link text-danger p-0" data-action="nested-form#remove">
+      <i class="fa-solid fa-trash-can"></i>
+    </button>
+  </div>
+</div>

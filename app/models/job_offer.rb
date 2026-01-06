@@ -13,6 +13,10 @@ class JobOffer < ApplicationRecord
   has_many :job_applications, dependent: :destroy
   has_many :candidates, through: :job_applications, source: :merch
 
+  # Relation pour le planning flexible
+  has_many :job_offer_slots, dependent: :destroy
+  accepts_nested_attributes_for :job_offer_slots, allow_destroy: true, reject_if: :all_blank
+
   # --- VALIDATIONS ---
   validates :title, presence: true, length: { minimum: 5, maximum: 100 }
   validates :description, presence: true, length: { minimum: 20 }
@@ -36,6 +40,9 @@ class JobOffer < ApplicationRecord
   validates :km_limit, numericality: { greater_than: 0, allow_nil: true }
 
   # --- CALLBACKS ---
+  # [NOUVEAU] Calcul des dates globales AVANT la validation (pour satisfaire validates presence)
+  before_validation :sync_dates_from_slots
+
   before_save :set_department_code
   before_save :compute_duration_minutes
   before_save :normalize_status
@@ -103,6 +110,28 @@ class JobOffer < ApplicationRecord
   end
 
   private
+
+  # [NOUVEAU] Méthode pour déduire start_date/end_date des slots
+  def sync_dates_from_slots
+    # On ne fait rien si aucun slot n'est présent ou s'ils sont tous marqués pour suppression
+    return if job_offer_slots.blank? || job_offer_slots.all?(&:marked_for_destruction?)
+
+    # On récupère les slots valides
+    valid_slots = job_offer_slots.reject(&:marked_for_destruction?)
+    return if valid_slots.empty?
+
+    # On trouve le premier créneau (date + heure début)
+    first_slot = valid_slots.min_by { |s| [s.date, s.start_time] }
+    # On trouve le dernier créneau (date + heure fin)
+    last_slot  = valid_slots.max_by { |s| [s.date, s.end_time] }
+
+    if first_slot && last_slot
+      # On reconstitue les DateTime complets pour l'offre globale
+      # Cela permet aux tris et recherches de continuer à fonctionner
+      self.start_date = Time.zone.parse("#{first_slot.date} #{first_slot.start_time.strftime('%H:%M')}")
+      self.end_date   = Time.zone.parse("#{last_slot.date} #{last_slot.end_time.strftime('%H:%M')}")
+    end
+  end
 
   def set_department_code
     self.department_code = zipcode[0..1] if zipcode.present?

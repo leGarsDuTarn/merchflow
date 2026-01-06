@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_06_083202) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_06_094415) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -92,6 +92,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_06_083202) do
     t.index ["job_offer_id", "merch_id"], name: "index_job_applications_on_job_offer_id_and_merch_id", unique: true
     t.index ["job_offer_id"], name: "index_job_applications_on_job_offer_id"
     t.index ["merch_id"], name: "index_job_applications_on_merch_id"
+  end
+
+  create_table "job_offer_slots", force: :cascade do |t|
+    t.time "break_end_time"
+    t.time "break_start_time"
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.time "end_time", null: false
+    t.bigint "job_offer_id", null: false
+    t.time "start_time", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_offer_id"], name: "index_job_offer_slots_on_job_offer_id"
   end
 
   create_table "job_offers", force: :cascade do |t|
@@ -250,6 +262,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_06_083202) do
   add_foreign_key "favorites", "users", column: "merch_id"
   add_foreign_key "job_applications", "job_offers"
   add_foreign_key "job_applications", "users", column: "merch_id"
+  add_foreign_key "job_offer_slots", "job_offers"
   add_foreign_key "job_offers", "users", column: "fve_id"
   add_foreign_key "kilometer_logs", "work_sessions"
   add_foreign_key "merch_settings", "users"
