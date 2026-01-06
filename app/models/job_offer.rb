@@ -4,7 +4,7 @@ class JobOffer < ApplicationRecord
   CONTRACT_TYPES = %w[CDD CIDD Interim].freeze
   STATUSES = %w[draft published filled suspended].freeze
 
-  # Heures définissant la nuit (Modifiable ici si besoin globalement)
+  # Heures définissant la nuit
   NIGHT_START = 21
   NIGHT_END   = 6
 
@@ -40,19 +40,15 @@ class JobOffer < ApplicationRecord
   validates :km_limit, numericality: { greater_than: 0, allow_nil: true }
 
   # --- CALLBACKS ---
-  # [NOUVEAU] Calcul des dates globales AVANT la validation (pour satisfaire validates presence)
   before_validation :sync_dates_from_slots
-
   before_save :set_department_code
   before_save :compute_duration_minutes
   before_save :normalize_status
 
   # --- SCOPES ---
-  # Filtres de base
   scope :published, -> { where(status: 'published') }
   scope :upcoming,  -> { where("start_date >= ?", Date.today) }
 
-  # Filtrage par Localisation (Texte libre : Ville ou CP)
   scope :by_location, ->(query) {
     if query.present?
       q = "%#{query}%"
@@ -60,22 +56,12 @@ class JobOffer < ApplicationRecord
     end
   }
 
-  # Filtre par Département (Code strict ex: "81")
   scope :by_department, ->(dept_code) { where(department_code: dept_code) if dept_code.present? }
-
-  # Filtre par Type de mission (merchandising / animation)
   scope :by_type, ->(type) { where(mission_type: type) if type.present? }
-
-  # Filtre par Type de contrat (CDD, Interim...)
   scope :by_contract, ->(contract) { where(contract_type: contract) if contract.present? }
-
-  # Filtre par Rémunération minimum
   scope :min_rate, ->(rate) { where("hourly_rate >= ?", rate.to_f) if rate.present? }
-
-  # Filtre par Date de début (Missions commençant après X)
   scope :starting_after, ->(date) { where("start_date >= ?", date.to_date) if date.present? }
 
-  # Ton scope intelligent pour le dashboard Merch (ne pas toucher)
   scope :relevant_for, ->(user) {
     wanted_types = []
     wanted_types << 'merchandising' if user.merch_setting.role_merch
@@ -88,7 +74,7 @@ class JobOffer < ApplicationRecord
       .order(start_date: :asc)
   }
 
-  # --- MÉTHODES INTELLIGENTES ---
+  # --- MÉTHODES PUBLIQUES ---
 
   def agency_label
     return "Non spécifié" if fve.nil? || fve.agency.blank?
@@ -109,25 +95,41 @@ class JobOffer < ApplicationRecord
     (pay_day + pay_night).round(2)
   end
 
+  # --- AJOUT : Méthodes de calcul pour la Show ---
+
+  def real_total_hours
+    return (duration_minutes / 60.0).round(2) if job_offer_slots.empty?
+
+    total = 0.0
+    job_offer_slots.each do |slot|
+      duration = (slot.end_time - slot.start_time) / 1.hour
+      duration += 24 if duration < 0
+
+      if slot.break_start_time.present? && slot.break_end_time.present?
+        break_dur = (slot.break_end_time - slot.break_start_time) / 1.hour
+        break_dur += 24 if break_dur < 0
+        duration -= break_dur
+      end
+      total += duration
+    end
+    total.round(2)
+  end
+
+  def publisher_name
+    fve.agency_label.presence || "#{fve.first_name} #{fve.last_name}"
+  end
+
   private
 
-  # [NOUVEAU] Méthode pour déduire start_date/end_date des slots
   def sync_dates_from_slots
-    # On ne fait rien si aucun slot n'est présent ou s'ils sont tous marqués pour suppression
     return if job_offer_slots.blank? || job_offer_slots.all?(&:marked_for_destruction?)
-
-    # On récupère les slots valides
     valid_slots = job_offer_slots.reject(&:marked_for_destruction?)
     return if valid_slots.empty?
 
-    # On trouve le premier créneau (date + heure début)
     first_slot = valid_slots.min_by { |s| [s.date, s.start_time] }
-    # On trouve le dernier créneau (date + heure fin)
     last_slot  = valid_slots.max_by { |s| [s.date, s.end_time] }
 
     if first_slot && last_slot
-      # On reconstitue les DateTime complets pour l'offre globale
-      # Cela permet aux tris et recherches de continuer à fonctionner
       self.start_date = Time.zone.parse("#{first_slot.date} #{first_slot.start_time.strftime('%H:%M')}")
       self.end_date   = Time.zone.parse("#{last_slot.date} #{last_slot.end_time.strftime('%H:%M')}")
     end

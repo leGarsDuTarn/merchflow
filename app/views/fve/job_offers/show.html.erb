@@ -152,7 +152,7 @@
             </span>
           </div>
 
-          <div class="card-body p-4 pt-0">
+          <div class="card-body p-4 pt-4">
             <% if @job_applications.any? %>
               <div class="d-flex flex-column gap-3">
                 <% @job_applications.each do |app| %>
@@ -173,9 +173,6 @@
                              <span class="badge bg-light text-muted border border-light rounded-pill px-2 py-0 small fw-normal">
                                <i class="fa-regular fa-clock me-1"></i><%= time_ago_in_words(app.created_at) %>
                              </span>
-                             <% if app.merch.auto_entrepreneur? %>
-                               <span class="badge bg-blue-light text-primary border border-primary-subtle rounded-pill px-2 py-0 small">Auto-Ent.</span>
-                             <% end %>
                           </div>
                         </div>
                       </div>
