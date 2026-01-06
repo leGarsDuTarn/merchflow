@@ -3,11 +3,22 @@ module Fve
   class JobOffersController < ApplicationController
     before_action :authenticate_user!
     before_action :verify_fve
-    before_action :set_job_offer, only: [:show, :edit, :update, :destroy, :accept_candidate, :reject_candidate]
+    before_action :set_job_offer, only: [:show, :edit, :update, :destroy, :toggle_status, :accept_candidate, :cancel_candidate, :reject_candidate]
 
     def index
       authorize [:fve, JobOffer]
-      @job_offers = policy_scope([:fve, JobOffer]).order(created_at: :desc)
+
+      # Utilisation des scopes définis dans le modèle pour le moteur de recherche
+      @job_offers = policy_scope([:fve, JobOffer])
+                      .by_location(params[:query])
+                      .by_type(params[:mission_type])
+
+      # Filtrage par statut (car filter_by_status n'est pas dans ton modèle)
+      if params[:status].present?
+        @job_offers = @job_offers.where(status: params[:status])
+      end
+
+      @job_offers = @job_offers.order(created_at: :desc)
     end
 
     def show
@@ -30,6 +41,7 @@ module Fve
 
     def create
       @job_offer = current_user.created_job_offers.build(job_offer_params)
+      # Par défaut publié, mais on pourra le changer via toggle_status
       @job_offer.status = 'published'
       authorize [:fve, @job_offer]
 
@@ -53,26 +65,60 @@ module Fve
       end
     end
 
+    # --- ACTIONS DE GESTION STATUT ---
+
+    def toggle_status
+      authorize [:fve, @job_offer], :update?
+
+      new_status = @job_offer.status == 'published' ? 'draft' : 'published'
+
+      if @job_offer.update(status: new_status)
+        msg = new_status == 'published' ? 'Votre annonce est maintenant en ligne !' : 'Votre annonce est repassée en brouillon.'
+        redirect_to fve_job_offer_path(@job_offer), notice: msg
+      else
+        redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de changer le statut."
+      end
+    end
+
+    # --- ACTIONS CANDIDATS ---
+
     def accept_candidate
       authorize [:fve, @job_offer], :accept_candidate?
       application = @job_offer.job_applications.find(params[:application_id])
+
+      # Appel du Service pour créer le contrat et les sessions
       service = RecruitMerchService.new(application)
 
       if service.call
-        redirect_to fve_job_offer_path(@job_offer), notice: 'Candidat recruté, contrat et planning générés.'
+        redirect_to fve_job_offer_path(@job_offer), notice: "Candidat recruté avec succès ! Contrat et planning générés."
       else
         redirect_to fve_job_offer_path(@job_offer), alert: service.error_message
       end
     end
 
-    def destroy
-      authorize [:fve, @job_offer]
+    def cancel_candidate
+      authorize [:fve, @job_offer], :accept_candidate? # On utilise la même perm que pour accepter
+      application = @job_offer.job_applications.find(params[:application_id])
 
-      if @job_offer.update(status: 'archived')
-        redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
-      else
-        redirect_to fve_job_offers_path, alert: 'Erreur lors de la suppression.', status: :see_other
+      # 1. On cherche le contrat lié
+      contract = Contract.find_by(merch_id: application.merch_id, fve_id: current_user.id)
+
+      ActiveRecord::Base.transaction do
+        # 2. On supprime les sessions de travail liées à CETTE offre
+        if contract
+          WorkSession.where(
+            contract: contract,
+            start_time: @job_offer.start_date.beginning_of_day..@job_offer.end_date.end_of_day
+          ).destroy_all
+        end
+
+        # 3. On remet le candidat en attente (Pending) pour pouvoir le recruter à nouveau ou le rejeter
+        application.update!(status: 'pending')
       end
+
+      redirect_to fve_job_offer_path(@job_offer), notice: "Recrutement annulé. Le candidat est repassé en attente."
+    rescue StandardError => e
+      redirect_to fve_job_offer_path(@job_offer), alert: "Erreur lors de l'annulation : #{e.message}"
     end
 
     def reject_candidate
@@ -80,21 +126,20 @@ module Fve
       @application = @job_offer.job_applications.find(params[:application_id])
 
       if @application.update(status: 'rejected')
-        # Nettoyage : Si le candidat était déjà accepté, on cherche le contrat lié
-        contract = Contract.find_by(merch_id: @application.merch_id, fve_id: current_user.id)
-
-        if contract
-          # Supprime les sessions de travail liées à cette offre précise
-          WorkSession.where(
-            contract: contract,
-            store: @job_offer.store_name,
-            date: @job_offer.start_date..@job_offer.end_date
-          ).destroy_all
-        end
-
-        redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée et planning nettoyé.', status: :see_other
+        redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée.', status: :see_other
       else
         redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut.", status: :see_other
+      end
+    end
+
+    def destroy
+      authorize [:fve, @job_offer]
+
+      # On archive plutôt que de détruire physiquement pour garder l'historique
+      if @job_offer.update(status: 'archived')
+        redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
+      else
+        redirect_to fve_job_offers_path, alert: 'Erreur lors de la suppression.', status: :see_other
       end
     end
 
@@ -106,7 +151,7 @@ module Fve
 
     def verify_fve
       unless current_user&.fve?
-        redirect_to root_path, alert: 'Accès réservé.'
+        redirect_to root_path, alert: 'Accès réservé aux recruteurs.'
       end
     end
 
