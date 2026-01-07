@@ -1,4 +1,3 @@
-# app/controllers/fve/job_offers_controller.rb
 module Fve
   class JobOffersController < ApplicationController
     before_action :authenticate_user!
@@ -8,28 +7,24 @@ module Fve
     def index
       authorize [:fve, JobOffer]
 
-      # Base query : on récupère TOUTES les annonces (y compris archivées)
+      # 1. On récupère les offres de base
       @job_offers = policy_scope([:fve, JobOffer])
 
-      # Si aucun filtre de statut OU si on veut seulement les actives
+      # 2. On applique les filtres en utilisant les NOMS EXACTS de ton modèle
+      @job_offers = @job_offers
+                      .by_query(params[:query])        # Correspond au scope :by_query (Titre, Ville, CP, Enseigne)
+                      .by_type(params[:mission_type])  # Correspond au scope :by_type
+                      .by_contract(params[:contract_type]) # Correspond au scope :by_contract
+                      .min_rate(params[:min_rate])     # Correspond au scope :min_rate
+                      .starting_after(params[:start_date]) # Correspond au scope :starting_after
+                      .by_status(params[:status])      # Correspond au scope :by_status
+                      .order(created_at: :desc)
+
+      # 3. Logique d'archivage :
+      # Si aucun statut n'est sélectionné dans le filtre, on cache les archives via le scope :active
       if params[:status].blank?
         @job_offers = @job_offers.active
-      elsif params[:status] == 'all'
-        # On ne filtre rien, on montre TOUT (y compris archivées)
-        # params[:status] devient nil pour ne pas filtrer
-        params[:status] = nil
       end
-
-      # Application des autres filtres
-      @job_offers = @job_offers
-                      .by_query(params[:query])
-                      .by_store(params[:store_name])
-                      .by_type(params[:mission_type])
-                      .by_contract(params[:contract_type])
-                      .min_rate(params[:min_rate])
-                      .starting_after(params[:start_date])
-                      .by_status(params[:status])
-                      .order(created_at: :desc)
     end
 
     def show
@@ -52,6 +47,7 @@ module Fve
 
     def create
       @job_offer = current_user.created_job_offers.build(job_offer_params)
+      # Par défaut publié
       @job_offer.status = 'published'
       authorize [:fve, @job_offer]
 
@@ -75,30 +71,25 @@ module Fve
       end
     end
 
+    # --- ACTIONS DE GESTION STATUT ---
+
     def toggle_status
       authorize [:fve, @job_offer], :update?
 
-      # Si archivée -> brouillon (pour vérifier avant de republier)
-      # Si publiée -> brouillon
-      # Si brouillon -> publiée
-      case @job_offer.status
-      when 'archived'
-        new_status = 'draft'
-        msg = 'Annonce désarchivée ! Vérifiez-la avant de la republier.'
-      when 'published'
-        new_status = 'draft'
-        msg = 'Annonce déplacée vers les brouillons.'
-      else
-        new_status = 'published'
-        msg = 'Annonce publiée !'
-      end
+      # Si archivée ou brouillon -> Publier
+      # Si publiée -> Brouillon
+      # Si suspendue -> Publier
+      new_status = (@job_offer.status == 'published') ? 'draft' : 'published'
 
       if @job_offer.update(status: new_status)
+        msg = new_status == 'published' ? 'Annonce remise en ligne !' : 'Annonce retirée de la liste publique.'
         redirect_to fve_job_offer_path(@job_offer), notice: msg
       else
         redirect_to fve_job_offer_path(@job_offer), alert: "Action impossible."
       end
     end
+
+    # --- ACTIONS CANDIDATS ---
 
     def accept_candidate
       authorize [:fve, @job_offer], :accept_candidate?
@@ -107,7 +98,7 @@ module Fve
       service = RecruitMerchService.new(application)
 
       if service.call
-        redirect_to fve_job_offer_path(@job_offer), notice: "Candidat recruté avec succès ! Contrat et planning générés."
+        redirect_to fve_job_offer_path(@job_offer), notice: "Candidat recruté ! Contrat généré."
       else
         redirect_to fve_job_offer_path(@job_offer), alert: service.error_message
       end
@@ -126,13 +117,12 @@ module Fve
             start_time: @job_offer.start_date.beginning_of_day..@job_offer.end_date.end_of_day
           ).destroy_all
         end
-
         application.update!(status: 'pending')
       end
 
-      redirect_to fve_job_offer_path(@job_offer), notice: "Recrutement annulé. Le candidat est repassé en attente."
+      redirect_to fve_job_offer_path(@job_offer), notice: "Recrutement annulé."
     rescue StandardError => e
-      redirect_to fve_job_offer_path(@job_offer), alert: "Erreur lors de l'annulation : #{e.message}"
+      redirect_to fve_job_offer_path(@job_offer), alert: "Erreur : #{e.message}"
     end
 
     def reject_candidate
@@ -149,10 +139,11 @@ module Fve
     def destroy
       authorize [:fve, @job_offer]
 
+      # On utilise l'update vers 'archived' car c'est défini dans ton modèle
       if @job_offer.update(status: 'archived')
-        redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
+        redirect_to fve_job_offers_path, notice: 'Annonce archivée. (Retrouvez-la via le filtre Statut)', status: :see_other
       else
-        redirect_to fve_job_offers_path, alert: 'Erreur lors de la suppression.', status: :see_other
+        redirect_to fve_job_offers_path, alert: "Erreur lors de l'archivage.", status: :see_other
       end
     end
 

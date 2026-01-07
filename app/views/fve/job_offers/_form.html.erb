@@ -2,13 +2,14 @@
 
 <%= simple_form_for([:fve, @job_offer]) do |f| %>
 
-  <div class="row g-4">
+  <%# Utilisation de g-3 sur mobile pour gagner de la place, g-lg-4 sur desktop pour aérer %>
+  <div class="row g-3 g-lg-4">
 
     <%# ===== COLONNE GAUCHE (8) : INFOS & PLANNING ===== %>
     <div class="col-lg-8">
 
       <%# --- CARTE 1 : INFOS GÉNÉRALES --- %>
-      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4 position-relative overflow-hidden">
+      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-3 mb-lg-4 position-relative overflow-hidden">
         <div class="position-absolute top-0 start-0 w-1 bg-orange h-100"></div>
 
         <div class="d-flex align-items-center mb-4">
@@ -21,7 +22,7 @@
           </div>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-3 g-md-4">
           <div class="col-12">
             <%= f.label :title, "TITRE DE L'ANNONCE", class: "form-label small fw-bold text-muted ls-1" %>
             <%= f.input_field :title, class: "form-control bg-light border-0 rounded-pill py-3 px-4 fw-bold fs-6", placeholder: "Ex: Anti-rupture - Rayon Liquide" %>
@@ -32,17 +33,17 @@
             <%= f.input_field :description, as: :text, rows: 6, class: "form-control bg-light border-0 rounded-4 p-4", placeholder: "Détaillez les tâches..." %>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <%= f.label :mission_type, "TYPE", class: "form-label small fw-bold text-muted ls-1" %>
             <%= f.input_field :mission_type, collection: JobOffer::MISSION_TYPES.map { |m| [m.capitalize, m] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <%= f.label :contract_type, "CONTRAT", class: "form-label small fw-bold text-muted ls-1" %>
             <%= f.input_field :contract_type, collection: JobOffer::CONTRACT_TYPES.map { |c| [c.upcase, c] }, class: "form-select bg-light border-0 rounded-pill py-3 px-4" %>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <%= f.label :headcount_required, "EFFECTIF", class: "form-label small fw-bold text-muted ls-1" %>
             <div class="input-group bg-light rounded-pill overflow-hidden">
                <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="fa-solid fa-users"></i></span>
@@ -52,8 +53,8 @@
         </div>
       </div>
 
-      <%# --- CARTE 2 : PLANNING FLEXIBLE (NOUVEAU) --- %>
-      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-4" data-controller="nested-form">
+      <%# --- CARTE 2 : PLANNING FLEXIBLE --- %>
+      <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 mb-3 mb-lg-4" data-controller="nested-form">
         <div class="d-flex align-items-center mb-3">
           <div class="bg-orange-light text-orange rounded-3 p-3 me-3">
             <i class="fa-regular fa-calendar-days fs-4"></i>
@@ -64,17 +65,17 @@
           </div>
         </div>
 
-        <%# En-têtes des colonnes %>
-        <div class="row g-2 px-2 mb-2 small fw-bold text-muted text-uppercase ls-1">
-          <div class="col-md-3">Date</div>
+        <%# En-têtes des colonnes (CACHÉS SUR MOBILE d-none d-md-flex) %>
+        <div class="row g-2 px-2 mb-2 small fw-bold text-muted text-uppercase ls-1 d-none d-md-flex align-items-center">
+          <div class="col-md-3"><i class="fa-regular fa-calendar me-1"></i> Date</div>
           <div class="col-md-2 text-center">Début</div>
           <div class="col-md-2 text-center">Fin</div>
-          <div class="col-md-2 text-center">Pause Début</div>
-          <div class="col-md-2 text-center">Pause Fin</div>
+          <div class="col-md-2 text-center"><i class="fa-solid fa-mug-hot me-1 opacity-50"></i> Début</div>
+          <div class="col-md-2 text-center"><i class="fa-solid fa-mug-hot me-1 opacity-50"></i> Fin</div>
           <div class="col-md-1"></div>
         </div>
 
-        <%# Liste des slots existants %>
+        <%# Liste des slots %>
         <div data-nested-form-target="target">
           <%= f.simple_fields_for :job_offer_slots do |slot_form| %>
             <%= render "job_offer_slot_fields", f: slot_form %>
@@ -82,13 +83,13 @@
         </div>
 
         <%# Bouton Ajout %>
-        <div class="mt-3">
-          <button type="button" class="btn btn-sm btn-orange-light text-orange fw-bold rounded-pill px-3" data-action="nested-form#add">
+        <div class="mt-3 text-center text-md-start">
+          <button type="button" class="btn btn-orange-light text-orange fw-bold rounded-pill px-4 py-2" data-action="nested-form#add">
             <i class="fa-solid fa-plus me-1"></i> Ajouter une date
           </button>
         </div>
 
-        <%# Template caché pour Stimulus %>
+        <%# Template caché %>
         <template data-nested-form-target="template">
           <%= f.simple_fields_for :job_offer_slots, JobOfferSlot.new, child_index: 'NEW_RECORD' do |slot_form| %>
             <%= render "job_offer_slot_fields", f: slot_form %>
@@ -108,18 +109,19 @@
           </div>
         </div>
         <div class="row g-3">
-          <div class="col-md-6"><%= f.input_field :company_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Client Final" %></div>
-          <div class="col-md-6"><%= f.input_field :store_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Enseigne" %></div>
+          <div class="col-12 col-md-6"><%= f.input_field :company_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Client Final" %></div>
+          <div class="col-12 col-md-6"><%= f.input_field :store_name, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Enseigne" %></div>
           <div class="col-12"><%= f.input_field :address, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Adresse" %></div>
-          <div class="col-md-4"><%= f.input_field :zipcode, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "CP" %></div>
-          <div class="col-md-8"><%= f.input_field :city, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Ville" %></div>
+          <div class="col-6 col-md-4"><%= f.input_field :zipcode, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "CP" %></div>
+          <div class="col-6 col-md-8"><%= f.input_field :city, class: "form-control bg-light border-0 rounded-pill py-3 px-4", placeholder: "Ville" %></div>
         </div>
       </div>
     </div>
 
-    <%# ===== COLONNE DROITE (4) : FINANCE (AVEC STIMULUS) ===== %>
+    <%# ===== COLONNE DROITE (4) : FINANCE ===== %>
     <div class="col-lg-4">
-      <div class="card shadow border-0 rounded-4 mb-4 sticky-top" style="top: 20px; z-index: 10;">
+      <%# Sticky uniquement sur Desktop (d-lg-block) pour éviter de couvrir l'écran sur mobile %>
+      <div class="card shadow border-0 rounded-4 mb-4 sticky-lg-top" style="top: 20px; z-index: 10;">
 
         <div class="card-header bg-orange-light border-bottom-0 pt-4 px-4 pb-0 rounded-top-4">
           <h5 class="fw-bold text-dark d-flex align-items-center mb-0">

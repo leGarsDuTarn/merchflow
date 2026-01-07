@@ -1,23 +1,58 @@
-<div class="nested-form-wrapper row g-2 align-items-center mb-2 bg-white p-2 rounded-3 shadow-sm border border-light" data-new-record="<%= f.object.new_record? %>">
-  <div class="col-md-3">
-    <%= f.input_field :date, as: :date, html5: true, class: "form-control form-control-sm bg-light border-0 fw-bold" %>
-  </div>
-  <div class="col-md-2">
-    <%= f.input_field :start_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center" %>
-  </div>
-  <div class="col-md-2">
-    <%= f.input_field :end_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center" %>
-  </div>
-  <div class="col-md-2">
-    <%= f.input_field :break_start_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center text-muted", placeholder: "Pause In" %>
-  </div>
-  <div class="col-md-2">
-    <%= f.input_field :break_end_time, as: :time, html5: true, class: "form-control form-control-sm bg-light border-0 text-center text-muted", placeholder: "Pause Out" %>
-  </div>
-  <div class="col-md-1 text-end">
-    <%= f.hidden_field :_destroy %>
-    <button type="button" class="btn btn-link text-danger p-0" data-action="nested-form#remove">
-      <i class="fa-solid fa-trash-can"></i>
-    </button>
+<div class="nested-form-wrapper mb-2" data-new-record="<%= f.object.new_record? %>">
+  <div class="row g-2 align-items-center p-2 border border-light rounded-3 bg-white shadow-sm transition-hover position-relative">
+
+    <%# --- 1. DATE (Pleine largeur sur mobile / Col-3 sur Desktop) --- %>
+    <div class="col-12 col-md-3">
+      <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden border border-light">
+         <span class="input-group-text bg-light border-0 ps-3 pe-0 text-orange">
+         </span>
+         <%# Utilisation de px-2 pour resserrer le texte et small pour la taille %>
+         <%= f.input_field :date,
+             as: :string,
+             type: :date,
+             class: "form-control bg-light border-0 small fw-bold text-dark px-2",
+             style: "font-size: 0.8rem; min-height: 38px;",
+             placeholder: "Date" %>
+      </div>
+    </div>
+
+    <%# --- 2. HORAIRES MISSION (Côte à côte sur mobile col-6 / Col-2 sur Desktop) --- %>
+    <div class="col-6 col-md-2">
+       <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden" title="Début Mission">
+         <span class="input-group-text bg-light border-0 text-muted ps-2"><i class="fa-regular fa-clock"></i></span>
+         <%= f.input_field :start_time, value: f.object.start_time&.strftime("%H:%M"), as: :string, type: :time, class: "form-control bg-light border-0 text-center p-1", placeholder: "Début" %>
+       </div>
+    </div>
+
+    <div class="col-6 col-md-2">
+       <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden" title="Fin Mission">
+         <span class="input-group-text bg-light border-0 text-muted ps-2"><i class="fa-solid fa-arrow-right small"></i></span>
+         <%= f.input_field :end_time, value: f.object.end_time&.strftime("%H:%M"), as: :string, type: :time, class: "form-control bg-light border-0 text-center p-1", placeholder: "Fin" %>
+       </div>
+    </div>
+
+    <%# --- 3. HORAIRES PAUSE (Côte à côte sur mobile col-6 / Col-2 sur Desktop) --- %>
+    <%# J'ajoute un style visuel ORANGE pour la pause afin de bien la distinguer %>
+    <div class="col-6 col-md-2">
+       <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden border border-orange-subtle" title="Début Pause">
+         <span class="input-group-text bg-orange-light border-0 text-orange ps-2"><i class="fa-solid fa-mug-hot"></i></span>
+         <%= f.input_field :break_start_time, value: f.object.break_start_time&.strftime("%H:%M"), as: :string, type: :time, class: "form-control bg-orange-light bg-opacity-10 border-0 text-center p-1 text-dark fw-bold", placeholder: "P. Déb" %>
+       </div>
+    </div>
+
+    <div class="col-6 col-md-2">
+       <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden border border-orange-subtle" title="Fin Pause">
+         <span class="input-group-text bg-orange-light border-0 text-orange ps-2"><i class="fa-solid fa-arrow-right small"></i></span>
+         <%= f.input_field :break_end_time, value: f.object.break_end_time&.strftime("%H:%M"), as: :string, type: :time, class: "form-control bg-orange-light bg-opacity-10 border-0 text-center p-1 text-dark fw-bold", placeholder: "P. Fin" %>
+       </div>
+    </div>
+
+    <%# --- 4. BOUTON SUPPRIMER --- %>
+    <div class="col-12 col-md-1 text-end text-md-center">
+       <button type="button" class="btn btn-sm btn-white text-danger border-danger rounded-pill px-2 shadow-sm" data-action="nested-form#remove">
+         <i class="fa-solid fa-trash-can"></i>
+       </button>
+    </div>
+
   </div>
 </div>
