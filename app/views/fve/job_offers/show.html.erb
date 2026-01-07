@@ -170,14 +170,14 @@
                 <%= button_to toggle_status_fve_job_offer_path(@job_offer),
                     method: :patch,
                     form_class: "d-inline",
-                    class: "btn btn-success btn-sm text-white fw-bold rounded-pill px-3 shadow-sm" do %>
+                    class: "btn btn-green btn-sm text-white fw-bold rounded-pill px-3 shadow-sm" do %>
                     <i class="fa-solid fa-rocket me-2"></i>Publier
                 <% end %>
                 <% else %>
                   <%= button_to toggle_status_fve_job_offer_path(@job_offer),
                     method: :patch,
                     form_class: "d-inline",
-                    class: "btn btn-outline-secondary btn-sm fw-bold rounded-pill px-3" do %>
+                    class: "btn btn-gray btn-sm fw-bold rounded-pill px-3" do %>
                     <i class="fa-solid fa-pause me-2"></i>Suspendre
                 <% end %>
               <% end %>
@@ -295,7 +295,7 @@
                           <%= button_to reject_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
                               method: :post,
                               data: { turbo_confirm: "Êtes-vous sûr de vouloir rejeter cette candidature ?" },
-                              class: "btn btn-white text-danger btn-sm rounded-pill px-3 fw-bold border border-danger border-opacity-25 shadow-sm" do %>
+                              class: "btn btn-red btn-sm rounded-pill px-3 fw-bold border border-danger border-opacity-25 shadow-sm" do %>
                             Rejeter
                           <% end %>
 
