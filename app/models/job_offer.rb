@@ -2,6 +2,7 @@ class JobOffer < ApplicationRecord
   # --- CONSTANTES ---
   MISSION_TYPES = %w[merchandising animation].freeze
   CONTRACT_TYPES = %w[CDD CIDD Interim].freeze
+  # On garde 'archived' ici, c'est très important
   STATUSES = %w[draft published filled suspended archived].freeze
 
   # Heures définissant la nuit
@@ -40,7 +41,7 @@ class JobOffer < ApplicationRecord
   validates :km_limit, numericality: { greater_than: 0, allow_nil: true }
 
   # --- CALLBACKS ---
-  before_validation :normalize_attributes # NOUVEAU : Nettoyage des données
+  before_validation :normalize_attributes
   before_validation :sync_dates_from_slots
   before_save :set_department_code
   before_save :compute_duration_minutes
@@ -49,6 +50,13 @@ class JobOffer < ApplicationRecord
   # --- SCOPES ---
   scope :published, -> { where(status: 'published') }
   scope :upcoming,  -> { where("start_date >= ?", Date.today) }
+
+  # --- NOUVEAUX SCOPES POUR L'ARCHIVAGE ---
+  # Récupère tout sauf les archivées (utile pour l'affichage par défaut)
+  scope :active, -> { where.not(status: 'archived') }
+
+  # Récupère uniquement les archivées
+  scope :archived, -> { where(status: 'archived') }
 
   # Scopes de recherche
   scope :by_query, ->(query) {
@@ -62,7 +70,7 @@ class JobOffer < ApplicationRecord
   scope :by_contract, ->(contract) { where(contract_type: contract) if contract.present? }
   scope :min_rate, ->(rate) { where("hourly_rate >= ?", rate.to_f) if rate.present? }
   scope :starting_after, ->(date) { where("start_date >= ?", date.to_date) if date.present? }
-  scope :by_store, ->(store) { where(store_name: store) if store.present? } # NOUVEAU
+  scope :by_store, ->(store) { where(store_name: store) if store.present? }
   scope :by_status, ->(status) { where(status: status) if status.present? }
 
   scope :relevant_for, ->(user) {
@@ -74,6 +82,7 @@ class JobOffer < ApplicationRecord
       .upcoming
       .where(mission_type: wanted_types)
       .where(department_code: user.merch_setting.preferred_departments)
+      .active # On s'assure de ne jamais montrer d'archives aux candidats
       .order(start_date: :asc)
   }
 
@@ -88,7 +97,7 @@ class JobOffer < ApplicationRecord
     (duration_minutes / 60.0).round(2)
   end
 
-  # --- NOUVELLES MÉTHODES (Counters & Finance) ---
+  # --- COUNTERS & FINANCE ---
 
   def recruited_count
     job_applications.where(status: 'accepted').count
@@ -118,7 +127,7 @@ class JobOffer < ApplicationRecord
     (grand_total_brut * 0.78).round(2)
   end
 
-  # --- AJOUT : Méthodes de calcul pour la Show ---
+  # --- CALCULS SHOW ---
 
   def real_total_hours
     return (duration_minutes / 60.0).round(2) if job_offer_slots.empty?
@@ -144,7 +153,6 @@ class JobOffer < ApplicationRecord
 
   private
 
-  # NOUVEAU : Normalisation des données
   def normalize_attributes
     self.title = title&.strip&.capitalize
     self.city = city&.strip&.upcase

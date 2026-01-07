@@ -69,13 +69,15 @@ module Fve
     def toggle_status
       authorize [:fve, @job_offer], :update?
 
-      new_status = @job_offer.status == 'published' ? 'draft' : 'published'
+      # Si l'annonce est archivée ou en brouillon -> on publie
+      # Si elle est publiée -> on passe en brouillon
+      new_status = (@job_offer.status == 'published') ? 'draft' : 'published'
 
       if @job_offer.update(status: new_status)
-        msg = new_status == 'published' ? 'Votre annonce est maintenant en ligne !' : 'Votre annonce est repassée en brouillon.'
-        redirect_to fve_job_offer_path(@job_offer), notice: msg
+        msg = new_status == 'published' ? 'Annonce remise en ligne !' : 'Annonce déplacée vers les brouillons.'
+      redirect_to fve_job_offer_path(@job_offer), notice: msg
       else
-        redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de changer le statut."
+        redirect_to fve_job_offer_path(@job_offer), alert: "Action impossible."
       end
     end
 

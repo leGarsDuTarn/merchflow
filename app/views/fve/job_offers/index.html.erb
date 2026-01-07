@@ -243,34 +243,41 @@
                 </div>
 
                 <div class="d-flex gap-2 position-relative z-2 pt-2 border-top border-light">
-                  <%# BOUTON GERER %>
-                  <%= link_to fve_job_offer_path(offer),
-                    class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm",
-                    title: "Gérer l'annonce" do %>
-                    Gérer
-                  <% end %>
+  <%# BOUTON GERER %>
+  <%= link_to fve_job_offer_path(offer),
+      class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm" do %>
+    Gérer
+  <% end %>
 
-                  <%# BOUTON MODIFIER %>
-                  <%= link_to edit_fve_job_offer_path(offer),
-                    class: "btn btn-gray fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-                    style: "width: 40px; height: 40px;",
-                    title: "Modifier" do %>
-                    <i class="fa-solid fa-pen"></i>
-                  <% end %>
+  <% if offer.status == 'archived' %>
+    <%# BOUTON RESTAURER (apparaît uniquement si archivé) %>
+    <%= button_to toggle_status_fve_job_offer_path(offer),
+        method: :patch,
+        form_class: "d-inline-block",
+        class: "btn btn-success fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+        style: "width: 40px; height: 40px;",
+        title: "Désarchiver" do %>
+      <i class="fa-solid fa-trash-arrow-up"></i>
+    <% end %>
+  <% else %>
+    <%# BOUTON MODIFIER %>
+    <%= link_to edit_fve_job_offer_path(offer),
+        class: "btn btn-gray fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+        style: "width: 40px; height: 40px;" do %>
+      <i class="fa-solid fa-pen"></i>
+    <% end %>
 
-                  <%# BOUTON ARCHIVER %>
-                  <% unless offer.status == 'archived' %>
-                    <%= button_to fve_job_offer_path(offer),
-                      method: :delete,
-                      data: { turbo_confirm: "Êtes-vous sûr de vouloir archiver cette annonce ?" },
-                      form_class: "d-inline-block",
-                      class: "btn btn-red fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-                      style: "width: 40px; height: 40px;",
-                      title: "Archiver" do %>
-                      <i class="fa-solid fa-trash-can"></i>
-                    <% end %>
-                  <% end %>
-                </div>
+    <%# BOUTON ARCHIVER %>
+    <%= button_to fve_job_offer_path(offer),
+        method: :delete,
+        data: { turbo_confirm: "Archiver cette annonce ?" },
+        form_class: "d-inline-block",
+        class: "btn btn-red fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+        style: "width: 40px; height: 40px;" do %>
+      <i class="fa-solid fa-trash-can"></i>
+    <% end %>
+  <% end %>
+</div>
 
               </div>
             </div>
