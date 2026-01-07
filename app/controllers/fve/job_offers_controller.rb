@@ -11,9 +11,13 @@ module Fve
       # Base query : on récupère TOUTES les annonces (y compris archivées)
       @job_offers = policy_scope([:fve, JobOffer])
 
-      # Si aucun filtre de statut n'est appliqué, on cache les archivées par défaut
+      # Si aucun filtre de statut OU si on veut seulement les actives
       if params[:status].blank?
         @job_offers = @job_offers.active
+      elsif params[:status] == 'all'
+        # On ne filtre rien, on montre TOUT (y compris archivées)
+        # params[:status] devient nil pour ne pas filtrer
+        params[:status] = nil
       end
 
       # Application des autres filtres
@@ -74,13 +78,13 @@ module Fve
     def toggle_status
       authorize [:fve, @job_offer], :update?
 
-      # Si archivée -> on publie
+      # Si archivée -> brouillon (pour vérifier avant de republier)
       # Si publiée -> brouillon
       # Si brouillon -> publiée
       case @job_offer.status
       when 'archived'
-        new_status = 'published'
-        msg = 'Annonce désarchivée et remise en ligne !'
+        new_status = 'draft'
+        msg = 'Annonce désarchivée ! Vérifiez-la avant de la republier.'
       when 'published'
         new_status = 'draft'
         msg = 'Annonce déplacée vers les brouillons.'
