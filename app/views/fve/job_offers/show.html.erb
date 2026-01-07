@@ -12,7 +12,7 @@
 
         <div>
           <h1 class="fw-bold text-dark m-0 text-break"><%= @job_offer.title %></h1>
-          <div class="text-muted small fw-bold text-uppercase ls-1 mt-1">Réf: OFFRE#<%= @job_offer.id %></div>
+          <div class="text-muted fw-bold text-uppercase ls-1 mt-1">Réf: #<%= @job_offer.id %></div>
         </div>
       </div>
 
@@ -139,8 +139,8 @@
                    <%= @job_offer.km_rate %>€/km
                    <% if @job_offer.km_unlimited %>
                      <span class="text-success fw-bold">(Illimité)</span>
-                   <% elsif @job_offer.km_limit %>
-                     <span class="text-muted">(Max <%= @job_offer.km_limit.to_i %>km)</span>
+                   <% else %>
+                     - <span class="text-muted"> (Limite AR : <%= @job_offer.km_limit.to_i %> km)</span>
                    <% end %>
                  </span>
                <% else %>
@@ -155,7 +155,7 @@
       <%# ===== COLONNE DROITE (ACTIONS & CANDIDATS) ===== %>
       <div class="col-lg-7">
 
-        <%# --- CARD STATUT (Statut intégré ici) --- %>
+        <%# --- CARD STATUT --- %>
         <div class="card shadow-sm border-0 rounded-4 mb-3 mb-lg-4">
            <div class="card-body p-3 d-flex align-items-center justify-content-between">
               <div>
@@ -284,7 +284,7 @@
                           <% if @job_offer.remaining_spots > 0 %>
                             <%= button_to accept_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
                                 method: :post,
-                                class: "btn btn-green btn-sm rounded-pill px-3 px-md-4 py-2 fw-bold shadow-sm transition-transform" do %>
+                                class: "btn btn-orange btn-sm rounded-pill px-3 px-md-4 py-2 fw-bold shadow-sm transition-transform" do %>
                               Recruter
                             <% end %>
                           <% else %>
