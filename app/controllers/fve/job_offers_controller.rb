@@ -8,16 +8,24 @@ module Fve
     def index
       authorize [:fve, JobOffer]
 
-      # Utilisation des scopes définis dans le modèle pour le moteur de recherche
+      # Base query : on récupère TOUTES les annonces (y compris archivées)
       @job_offers = policy_scope([:fve, JobOffer])
-                  .by_query(params[:query])
-                  .by_store(params[:store_name])
-                  .by_type(params[:mission_type])
-                  .by_contract(params[:contract_type])
-                  .min_rate(params[:min_rate])
-                  .starting_after(params[:start_date])
-                  .by_status(params[:status])
-                  .order(created_at: :desc)
+
+      # Si aucun filtre de statut n'est appliqué, on cache les archivées par défaut
+      if params[:status].blank?
+        @job_offers = @job_offers.active
+      end
+
+      # Application des autres filtres
+      @job_offers = @job_offers
+                      .by_query(params[:query])
+                      .by_store(params[:store_name])
+                      .by_type(params[:mission_type])
+                      .by_contract(params[:contract_type])
+                      .min_rate(params[:min_rate])
+                      .starting_after(params[:start_date])
+                      .by_status(params[:status])
+                      .order(created_at: :desc)
     end
 
     def show
@@ -40,7 +48,6 @@ module Fve
 
     def create
       @job_offer = current_user.created_job_offers.build(job_offer_params)
-      # Par défaut publié, mais on pourra le changer via toggle_status
       @job_offer.status = 'published'
       authorize [:fve, @job_offer]
 
@@ -64,30 +71,35 @@ module Fve
       end
     end
 
-    # --- ACTIONS DE GESTION STATUT ---
-
     def toggle_status
       authorize [:fve, @job_offer], :update?
 
-      # Si l'annonce est archivée ou en brouillon -> on publie
-      # Si elle est publiée -> on passe en brouillon
-      new_status = (@job_offer.status == 'published') ? 'draft' : 'published'
+      # Si archivée -> on publie
+      # Si publiée -> brouillon
+      # Si brouillon -> publiée
+      case @job_offer.status
+      when 'archived'
+        new_status = 'published'
+        msg = 'Annonce désarchivée et remise en ligne !'
+      when 'published'
+        new_status = 'draft'
+        msg = 'Annonce déplacée vers les brouillons.'
+      else
+        new_status = 'published'
+        msg = 'Annonce publiée !'
+      end
 
       if @job_offer.update(status: new_status)
-        msg = new_status == 'published' ? 'Annonce remise en ligne !' : 'Annonce déplacée vers les brouillons.'
-      redirect_to fve_job_offer_path(@job_offer), notice: msg
+        redirect_to fve_job_offer_path(@job_offer), notice: msg
       else
         redirect_to fve_job_offer_path(@job_offer), alert: "Action impossible."
       end
     end
 
-    # --- ACTIONS CANDIDATS ---
-
     def accept_candidate
       authorize [:fve, @job_offer], :accept_candidate?
       application = @job_offer.job_applications.find(params[:application_id])
 
-      # Appel du Service pour créer le contrat et les sessions
       service = RecruitMerchService.new(application)
 
       if service.call
@@ -98,14 +110,12 @@ module Fve
     end
 
     def cancel_candidate
-      authorize [:fve, @job_offer], :accept_candidate? # On utilise la même perm que pour accepter
+      authorize [:fve, @job_offer], :accept_candidate?
       application = @job_offer.job_applications.find(params[:application_id])
 
-      # 1. On cherche le contrat lié
       contract = Contract.find_by(merch_id: application.merch_id, fve_id: current_user.id)
 
       ActiveRecord::Base.transaction do
-        # 2. On supprime les sessions de travail liées à CETTE offre
         if contract
           WorkSession.where(
             contract: contract,
@@ -113,7 +123,6 @@ module Fve
           ).destroy_all
         end
 
-        # 3. On remet le candidat en attente (Pending) pour pouvoir le recruter à nouveau ou le rejeter
         application.update!(status: 'pending')
       end
 
@@ -136,7 +145,6 @@ module Fve
     def destroy
       authorize [:fve, @job_offer]
 
-      # On archive plutôt que de détruire physiquement pour garder l'historique
       if @job_offer.update(status: 'archived')
         redirect_to fve_job_offers_path, notice: 'Annonce archivée.', status: :see_other
       else
