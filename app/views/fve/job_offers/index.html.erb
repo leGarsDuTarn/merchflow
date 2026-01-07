@@ -28,19 +28,18 @@
       <div class="card-body p-4 bg-white">
         <%= form_with url: fve_job_offers_path, method: :get, local: true, class: "row g-3" do |f| %>
 
-          <%# Champ 1 : Mot-clé (Inclus désormais la recherche Enseigne) %>
+          <%# Champ 1 : Mot-clé %>
           <div class="col-12 col-md-4">
             <label class="form-label fw-bold small text-muted text-uppercase ls-1">Mot-clé</label>
             <div class="input-group shadow-sm rounded-3 overflow-hidden">
               <span class="input-group-text bg-light border-0 ps-3 text-orange">
                 <i class="fa-solid fa-font"></i>
               </span>
-              <%# Placeholder mis à jour pour indiquer la recherche par enseigne %>
               <%= f.text_field :query, value: params[:query], class: "form-control bg-light border-0 py-2", placeholder: "Enseigne, Ville, Titre..." %>
             </div>
           </div>
 
-          <%# Champ 2 : Type de Mission (Remplace Enseigne) %>
+          <%# Champ 2 : Type de Mission %>
           <div class="col-12 col-md-4">
             <label class="form-label fw-bold small text-muted text-uppercase ls-1">Type de Mission</label>
             <div class="input-group shadow-sm rounded-3 overflow-hidden">
@@ -54,15 +53,16 @@
             </div>
           </div>
 
-          <%# Champ 3 : Statut %>
+          <%# Champ 3 : Statut (AVEC ARCHIVÉE) %>
           <div class="col-12 col-md-4">
             <label class="form-label fw-bold small text-muted text-uppercase ls-1">Statut</label>
             <div class="input-group shadow-sm rounded-3 overflow-hidden">
               <span class="input-group-text bg-light border-0 ps-3 text-orange">
                 <i class="fa-solid fa-toggle-on"></i>
               </span>
+              <%# ICI : Ajout de l'option 'Archivée' %>
               <%= f.select :status,
-                           [['Brouillon', 'draft'], ['Publiée', 'published'], ['Suspendue', 'suspended']],
+                           [['Brouillon', 'draft'], ['Publiée', 'published'], ['Suspendue', 'suspended'], ['Archivée', 'archived']],
                            { include_blank: "Tous les statuts", selected: params[:status] },
                            { class: "form-select bg-light border-0 py-2" } %>
             </div>
@@ -88,7 +88,7 @@
             </a>
           </div>
 
-          <%# Filtres Avancés (Collapse) %>
+          <%# Filtres Avancés %>
           <div class="collapse col-12" id="advancedFilters">
             <div class="p-4 bg-light rounded-4 mt-2 border border-light position-relative overflow-hidden">
               <i class="fa-regular fa-calendar-check position-absolute text-orange opacity-10" style="right: -20px; bottom: -20px; font-size: 8rem;"></i>
@@ -106,7 +106,6 @@
                 <div class="col-12 col-md-8 ps-md-4">
                   <h6 class="fw-bold text-orange mb-3 small text-uppercase"><i class="fa-solid fa-file-signature me-2"></i>Détails Contractuels</h6>
                   <div class="row g-3">
-                    <%# Plus de Mission Type ici car remonté en haut %>
                     <div class="col-md-6">
                       <%= f.label :contract_type, "Type de contrat", class: "form-label small text-muted fw-bold" %>
                       <%= f.select :contract_type,
@@ -132,9 +131,8 @@
       </div>
     </div>
 
-    <%# --- RÉSULTATS (HEADER) --- %>
+    <%# --- RÉSULTATS --- %>
     <%
-       # store_name retiré car géré par query, mission_type ajouté
        search_keys = %w[query mission_type status start_date contract_type min_rate]
        has_search = search_keys.any? { |key| params[key].present? }
     %>
@@ -151,7 +149,6 @@
       <span class="badge bg-orange rounded-pill px-3 py-2 shadow-sm"><%= @job_offers.count %> Annonces</span>
     </div>
 
-    <%# --- LISTE DES CARDS (INCHANGÉES) --- %>
     <% if @job_offers.empty? %>
 
       <div class="text-center text-muted mt-5 py-5 bg-white rounded-4 shadow-sm border border-dashed">
@@ -172,20 +169,24 @@
              target = offer.headcount_required
              pending = offer.pending_count
              progress = (recruited.to_f / target.to_f) * 100
+             # Couleur opacifiée si archivée pour bien le visualiser
+             is_archived = offer.status == 'archived'
+             card_opacity = is_archived ? "opacity-75" : ""
           %>
 
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card shadow-sm border-0 rounded-4 h-100 position-relative overflow-hidden transition-hover bg-white">
+            <div class="card shadow-sm border-0 rounded-4 h-100 position-relative overflow-hidden transition-hover bg-white <%= card_opacity %>">
 
               <div class="position-absolute top-0 end-0 m-3 z-2">
-                <% if offer.status == 'published' %>
-                  <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-bold">
-                    En ligne
-                  </span>
-                <% else %>
-                  <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-bold">
-                    Brouillon
-                  </span>
+                <% case offer.status %>
+                <% when 'published' %>
+                  <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-bold">En ligne</span>
+                <% when 'draft' %>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-bold">Brouillon</span>
+                <% when 'archived' %>
+                  <span class="badge bg-dark bg-opacity-10 text-dark border border-dark border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-bold">Archivée</span>
+                <% when 'suspended' %>
+                  <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1 shadow-sm small fw-bold">Suspendue</span>
                 <% end %>
               </div>
 
@@ -242,17 +243,32 @@
                 </div>
 
                 <div class="d-flex gap-2 position-relative z-2 pt-2 border-top border-light">
+                  <%# BOUTON GERER %>
                   <%= link_to fve_job_offer_path(offer),
-                      class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm",
-                      title: "Gérer l'annonce" do %>
+                    class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm",
+                    title: "Gérer l'annonce" do %>
                     Gérer
                   <% end %>
 
+                  <%# BOUTON MODIFIER %>
                   <%= link_to edit_fve_job_offer_path(offer),
-                      class: "btn btn-gray fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-                      style: "width: 40px;",
-                      title: "Modifier" do %>
+                    class: "btn btn-gray fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                    style: "width: 40px; height: 40px;",
+                    title: "Modifier" do %>
                     <i class="fa-solid fa-pen"></i>
+                  <% end %>
+
+                  <%# BOUTON ARCHIVER %>
+                  <% unless offer.status == 'archived' %>
+                    <%= button_to fve_job_offer_path(offer),
+                      method: :delete,
+                      data: { turbo_confirm: "Êtes-vous sûr de vouloir archiver cette annonce ?" },
+                      form_class: "d-inline-block",
+                      class: "btn btn-red fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                      style: "width: 40px; height: 40px;",
+                      title: "Archiver" do %>
+                      <i class="fa-solid fa-trash-can"></i>
+                    <% end %>
                   <% end %>
                 </div>
 

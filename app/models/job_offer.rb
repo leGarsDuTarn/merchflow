@@ -2,7 +2,7 @@ class JobOffer < ApplicationRecord
   # --- CONSTANTES ---
   MISSION_TYPES = %w[merchandising animation].freeze
   CONTRACT_TYPES = %w[CDD CIDD Interim].freeze
-  STATUSES = %w[draft published filled suspended].freeze
+  STATUSES = %w[draft published filled suspended archived].freeze
 
   # Heures définissant la nuit
   NIGHT_START = 21

@@ -18,13 +18,6 @@ module Fve
                   .starting_after(params[:start_date])
                   .by_status(params[:status])
                   .order(created_at: :desc)
-
-      # Filtrage par statut (car filter_by_status n'est pas dans ton modèle)
-      if params[:status].present?
-        @job_offers = @job_offers.where(status: params[:status])
-      end
-
-      @job_offers = @job_offers.order(created_at: :desc)
     end
 
     def show
