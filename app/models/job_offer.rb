@@ -95,6 +95,36 @@ class JobOffer < ApplicationRecord
     (pay_day + pay_night).round(2)
   end
 
+  # --- NOUVELLES MÉTHODES (Counters & Finance) ---
+
+  def recruited_count
+    job_applications.where(status: 'accepted').count
+  end
+
+  def remaining_spots
+    [headcount_required - recruited_count, 0].max
+  end
+
+  def pending_count
+    job_applications.where(status: 'pending').count
+  end
+
+  def total_base_brut
+    (real_total_hours * hourly_rate).round(2)
+  end
+
+  def total_primes_amount
+    (total_base_brut * ((ifm_rate + cp_rate) / 100.0)).round(2)
+  end
+
+  def grand_total_brut
+    (total_base_brut + total_primes_amount).round(2)
+  end
+
+  def estimated_net_salary
+    (grand_total_brut * 0.78).round(2)
+  end
+
   # --- AJOUT : Méthodes de calcul pour la Show ---
 
   def real_total_hours
