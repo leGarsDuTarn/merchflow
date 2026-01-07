@@ -12,15 +12,8 @@
 
         <div>
           <h1 class="fw-bold text-dark m-0 text-break"><%= @job_offer.title %></h1>
-          <div class="text-muted fw-bold text-uppercase ls-1 mt-1">Réf: #<%= @job_offer.id %></div>
+          <div class="text-muted small fw-bold text-uppercase ls-1 mt-1">Réf: #<%= @job_offer.id %></div>
         </div>
-      </div>
-
-      <%# Partie Droite : Bouton Modifier %>
-      <div class="d-grid d-lg-block">
-        <%= link_to edit_fve_job_offer_path(@job_offer), class: "btn btn-orange rounded-pill px-4 fw-bold shadow-sm transition-hover" do %>
-          <i class="fa-solid fa-pen-to-square me-2"></i> Modifier l'annonce
-        <% end %>
       </div>
     </div>
 
@@ -140,7 +133,7 @@
                    <% if @job_offer.km_unlimited %>
                      <span class="text-success fw-bold">(Illimité)</span>
                    <% else %>
-                     - <span class="text-muted"> (Limite AR : <%= @job_offer.km_limit.to_i %> km)</span>
+                     <span class="text-muted">(Limite : <%= @job_offer.km_limit.to_i %> km)</span>
                    <% end %>
                  </span>
                <% else %>
@@ -155,32 +148,40 @@
       <%# ===== COLONNE DROITE (ACTIONS & CANDIDATS) ===== %>
       <div class="col-lg-7">
 
-        <%# --- CARD STATUT --- %>
+        <%# --- CARD STATUT (Boutons Modifier + Action intégrés) --- %>
         <div class="card shadow-sm border-0 rounded-4 mb-3 mb-lg-4">
-           <div class="card-body p-3 d-flex align-items-center justify-content-between">
+           <div class="card-body p-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3">
               <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
-                  <h6 class="fw-bold text-dark mb-0">Statut de l'annonce</h6>
+                  <h6 class="fw-bold text-dark mb-0">Gestion de l'annonce</h6>
                   <% if @job_offer.status == 'published' %>
                     <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 border border-success border-opacity-25 small">En ligne</span>
                   <% else %>
                     <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 border border-secondary border-opacity-25 small">Brouillon</span>
                   <% end %>
                 </div>
-                <small class="text-muted">Gérez la visibilité auprès des candidats</small>
+                <small class="text-muted">Modifiez ou changez la visibilité</small>
               </div>
 
-              <div>
-                <% if @job_offer.status == 'draft' %>
-                  <%= button_to toggle_status_fve_job_offer_path(@job_offer), method: :patch, class: "btn btn-success text-white fw-bold rounded-pill px-4 shadow-sm" do %>
+            <div class="d-flex align-items-center gap-2"> <%# Ajout de align-items-center %>
+              <%= link_to "Modifier", edit_fve_job_offer_path(@job_offer), class: "btn btn-orange btn-sm rounded-pill" %>
+              <% if @job_offer.status == 'draft' %>
+                <%# Ajout de form_class: "d-inline" pour annuler le retour à la ligne du formulaire %>
+                <%= button_to toggle_status_fve_job_offer_path(@job_offer),
+                    method: :patch,
+                    form_class: "d-inline",
+                    class: "btn btn-success btn-sm text-white fw-bold rounded-pill px-3 shadow-sm" do %>
                     <i class="fa-solid fa-rocket me-2"></i>Publier
-                  <% end %>
-                <% else %>
-                  <%= button_to toggle_status_fve_job_offer_path(@job_offer), method: :patch, class: "btn btn-outline-secondary fw-bold rounded-pill px-4" do %>
-                    <i class="fa-solid fa-pause me-2"></i>Suspendre
-                  <% end %>
                 <% end %>
-              </div>
+                <% else %>
+                  <%= button_to toggle_status_fve_job_offer_path(@job_offer),
+                    method: :patch,
+                    form_class: "d-inline",
+                    class: "btn btn-outline-secondary btn-sm fw-bold rounded-pill px-3" do %>
+                    <i class="fa-solid fa-pause me-2"></i>Suspendre
+                <% end %>
+              <% end %>
+            </div>
            </div>
         </div>
 
