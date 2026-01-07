@@ -10,8 +10,14 @@ module Fve
 
       # Utilisation des scopes définis dans le modèle pour le moteur de recherche
       @job_offers = policy_scope([:fve, JobOffer])
-                      .by_location(params[:query])
-                      .by_type(params[:mission_type])
+                  .by_query(params[:query])
+                  .by_store(params[:store_name])
+                  .by_type(params[:mission_type])
+                  .by_contract(params[:contract_type])
+                  .min_rate(params[:min_rate])
+                  .starting_after(params[:start_date])
+                  .by_status(params[:status])
+                  .order(created_at: :desc)
 
       # Filtrage par statut (car filter_by_status n'est pas dans ton modèle)
       if params[:status].present?

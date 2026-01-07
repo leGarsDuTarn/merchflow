@@ -40,6 +40,7 @@ class JobOffer < ApplicationRecord
   validates :km_limit, numericality: { greater_than: 0, allow_nil: true }
 
   # --- CALLBACKS ---
+  before_validation :normalize_attributes # NOUVEAU : Nettoyage des données
   before_validation :sync_dates_from_slots
   before_save :set_department_code
   before_save :compute_duration_minutes
@@ -49,18 +50,20 @@ class JobOffer < ApplicationRecord
   scope :published, -> { where(status: 'published') }
   scope :upcoming,  -> { where("start_date >= ?", Date.today) }
 
-  scope :by_location, ->(query) {
+  # Scopes de recherche
+  scope :by_query, ->(query) {
     if query.present?
       q = "%#{query}%"
-      where("city ILIKE ? OR zipcode ILIKE ?", q, q)
+      where("title ILIKE ? OR city ILIKE ? OR zipcode ILIKE ? OR store_name ILIKE ?", q, q, q, q)
     end
   }
-
   scope :by_department, ->(dept_code) { where(department_code: dept_code) if dept_code.present? }
   scope :by_type, ->(type) { where(mission_type: type) if type.present? }
   scope :by_contract, ->(contract) { where(contract_type: contract) if contract.present? }
   scope :min_rate, ->(rate) { where("hourly_rate >= ?", rate.to_f) if rate.present? }
   scope :starting_after, ->(date) { where("start_date >= ?", date.to_date) if date.present? }
+  scope :by_store, ->(store) { where(store_name: store) if store.present? } # NOUVEAU
+  scope :by_status, ->(status) { where(status: status) if status.present? }
 
   scope :relevant_for, ->(user) {
     wanted_types = []
@@ -83,16 +86,6 @@ class JobOffer < ApplicationRecord
 
   def duration_hours
     (duration_minutes / 60.0).round(2)
-  end
-
-  def estimated_total_brut
-    night_mins = compute_night_minutes_estimation
-    day_mins = duration_minutes - night_mins
-    h_day = day_mins / 60.0
-    h_night = night_mins / 60.0
-    pay_day = h_day * hourly_rate
-    pay_night = h_night * (hourly_rate * (1 + night_rate))
-    (pay_day + pay_night).round(2)
   end
 
   # --- NOUVELLES MÉTHODES (Counters & Finance) ---
@@ -150,6 +143,17 @@ class JobOffer < ApplicationRecord
   end
 
   private
+
+  # NOUVEAU : Normalisation des données
+  def normalize_attributes
+    self.title = title&.strip&.capitalize
+    self.city = city&.strip&.upcase
+    self.zipcode = zipcode&.strip
+    self.address = address&.strip
+    self.company_name = company_name&.strip
+    self.store_name = store_name&.strip
+    self.contact_email = contact_email&.strip&.downcase
+  end
 
   def sync_dates_from_slots
     return if job_offer_slots.blank? || job_offer_slots.all?(&:marked_for_destruction?)
