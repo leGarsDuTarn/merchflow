@@ -111,12 +111,24 @@ class JobOffer < ApplicationRecord
     job_applications.where(status: 'pending').count
   end
 
+  # Calcul du Brut de base (Séparation Jour / Nuit)
   def total_base_brut
-    (real_total_hours * hourly_rate).round(2)
+    hours_total = real_total_hours
+    hours_night = total_night_hours
+    hours_day   = hours_total - hours_night
+
+    pay_day   = hours_day * hourly_rate
+    pay_night = hours_night * (hourly_rate * (1 + (night_rate || 0)))
+
+    (pay_day + pay_night).round(2)
   end
 
+  # Calcul des Primes (Cumulatif : CP sur Base + IFM)
   def total_primes_amount
-    (total_base_brut * ((ifm_rate + cp_rate) / 100.0)).round(2)
+    base = total_base_brut
+    ifm  = base * (ifm_rate / 100.0)
+    cp   = (base + ifm) * (cp_rate / 100.0)
+    (ifm + cp).round(2)
   end
 
   def grand_total_brut
@@ -127,24 +139,63 @@ class JobOffer < ApplicationRecord
     (grand_total_brut * 0.78).round(2)
   end
 
-  # --- CALCULS SHOW ---
+  # --- CALCULS SHOW & HELPERS ---
 
+  # Calcul précis des heures totales (basé sur les slots)
   def real_total_hours
     return (duration_minutes / 60.0).round(2) if job_offer_slots.empty?
 
-    total = 0.0
-    job_offer_slots.each do |slot|
-      duration = (slot.end_time - slot.start_time) / 1.hour
-      duration += 24 if duration < 0
+    total_minutes = 0
+    job_offer_slots.reject(&:marked_for_destruction?).each do |slot|
+      # Calcul durée brute
+      duration = ((slot.end_time - slot.start_time) / 60).to_i
+      duration += 1440 if duration < 0 # Gestion minuit
 
+      # Soustraction pause
       if slot.break_start_time.present? && slot.break_end_time.present?
-        break_dur = (slot.break_end_time - slot.break_start_time) / 1.hour
-        break_dur += 24 if break_dur < 0
+        break_dur = ((slot.break_end_time - slot.break_start_time) / 60).to_i
+        break_dur += 1440 if break_dur < 0
         duration -= break_dur
       end
-      total += duration
+      total_minutes += duration
     end
-    total.round(2)
+    (total_minutes / 60.0).round(2)
+  end
+
+  # Calcul précis des heures de nuit (21h-06h)
+  def total_night_hours
+    return 0.0 if job_offer_slots.empty?
+
+    night_minutes = 0
+    job_offer_slots.reject(&:marked_for_destruction?).each do |slot|
+      current = slot.start_time
+      end_t   = slot.end_time
+      end_t   += 1.day if end_t <= current
+
+      while current < end_t
+        # Vérification si on est en pause
+        in_break = false
+        if slot.break_start_time.present? && slot.break_end_time.present?
+           break_start = slot.break_start_time
+           break_end   = slot.break_end_time
+           break_end   += 1.day if break_end <= break_start
+
+           # Comparaison basique HH:MM pour la pause dans la boucle
+           if current.strftime("%H:%M") >= break_start.strftime("%H:%M") && current < break_end
+             in_break = true
+           end
+        end
+
+        unless in_break
+          h = current.hour
+          if h >= NIGHT_START || h < NIGHT_END
+            night_minutes += 1
+          end
+        end
+        current += 1.minute
+      end
+    end
+    (night_minutes / 60.0).round(2)
   end
 
   def publisher_name
