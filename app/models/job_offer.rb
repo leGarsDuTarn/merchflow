@@ -246,6 +246,24 @@ class JobOffer < ApplicationRecord
     fve.agency_label.presence || "#{fve.first_name} #{fve.last_name}"
   end
 
+  # --- HELPERS DÉTAILS FINANCES ---
+  # Ces méthodes isolent les montants pour l'affichage détaillé
+
+  def ifm_amount
+    (total_base_brut * (ifm_rate / 100.0)).round(2)
+  end
+
+  def cp_amount
+    # Calcul légal : 10% sur le cumul (Base + IFM)
+    ((total_base_brut + ifm_amount) * (cp_rate / 100.0)).round(2)
+  end
+
+  def night_bonus_amount
+    # Isole uniquement le surplus gagné grâce à la nuit
+    # (Total avec nuit) - (Total si tout était au taux normal)
+    (total_base_brut - (real_total_hours * hourly_rate)).round(2)
+  end
+
   private
 
   # Méthode issue de WorkSession pour gérer les virgules

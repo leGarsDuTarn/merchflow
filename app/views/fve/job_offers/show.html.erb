@@ -115,26 +115,40 @@
                </div>
 
                <%# Partie Détails %>
-               <div class="col-6 p-3 p-lg-4 d-flex align-items-center justify-content-center bg-orange-light bg-opacity-10">
-                 <div class="text-start w-100">
-                   <small class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.65rem;">Détails Tarifs</small>
+               <%# Partie Détails (Colonne droite de la carte finance) %>
+              <div class="col-6 p-3 p-lg-4 d-flex align-items-center justify-content-center bg-orange-light bg-opacity-10">
+                <div class="text-start w-100">
+                  <small class="text-muted text-uppercase fw-bold d-block mb-3" style="font-size: 0.65rem;">Décomposition du Brut</small>
 
-                   <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
-                     <span class="small text-muted">Taux :</span>
-                     <span class="fw-bold text-dark"><%= number_to_currency(@job_offer.hourly_rate) %>/h</span>
-                   </div>
+                <%# Majoration Nuit (Uniquement si présente) %>
+                <% if @job_offer.total_night_hours > 0 %>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted"> Nuit <%= (@job_offer.night_rate) %> % :</span>
+                    <span class="small fw-bold text-dark">+ <%= number_to_currency(@job_offer.night_bonus_amount) %></span>
+                  </div>
+                <% end %>
 
-                   <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
-                     <span class="small text-muted">Précarité :</span>
-                     <span class="small fw-bold text-orange"><%= @job_offer.ifm_rate.to_i %>%</span>
-                   </div>
+                  <%# IFM / Précarité %>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted">IFM (<%= @job_offer.ifm_rate.to_i %>%) :</span>
+                    <span class="small fw-bold text-orange">+ <%= number_to_currency(@job_offer.ifm_amount) %></span>
+                  </div>
 
-                   <div class="d-flex justify-content-between align-items-center gap-2">
-                     <span class="small text-muted">Congés Payés :</span>
-                     <span class="small fw-bold text-orange"><%= @job_offer.cp_rate.to_i %>%</span>
-                   </div>
-                 </div>
-               </div>
+                  <%# Congés Payés %>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="small text-muted">CP (<%= @job_offer.cp_rate.to_i %>%) :</span>
+                    <span class="small fw-bold text-orange">+ <%= number_to_currency(@job_offer.cp_amount) %></span>
+                  </div>
+
+                  <%# Rappel du Taux Horaire en footer de carte %>
+                  <div class="pt-2 border-top border-orange border-opacity-10">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="text-muted" style="font-size: 0.7rem;">Taux horaire</span>
+                      <span class="fw-bold text-dark small"><%= number_to_currency(@job_offer.hourly_rate) %>/h</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
              </div>
 
              <div class="bg-light p-3 text-center border-top border-light">
