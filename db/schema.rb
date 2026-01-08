@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_08_082513) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_08_091806) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -34,7 +34,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_082513) do
     t.boolean "km_unlimited", default: false, null: false
     t.integer "merch_id"
     t.string "name", default: "", null: false
-    t.decimal "night_rate", precision: 4, scale: 2, default: "0.5", null: false
+    t.integer "night_end", default: 6
+    t.decimal "night_rate", precision: 4, scale: 2, default: "50.0", null: false
+    t.integer "night_start", default: 21
     t.text "notes"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false

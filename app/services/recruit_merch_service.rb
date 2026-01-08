@@ -51,9 +51,9 @@ class RecruitMerchService
     c_type = @offer.contract_type.to_s.downcase
     c_type = 'cdd' unless Contract.contract_types.keys.include?(c_type)
 
-    # C. Calcul des taux
+    # C. Calcul des taux (Harmonisation format 10.0 pour 10%)
     is_precarious = %w[cdd cidd interim].include?(c_type)
-    rate = is_precarious ? 0.10 : 0.0
+    standard_rate = is_precarious ? 10.0 : 0.0
 
     Contract.create!(
       name: "Mission #{@offer.mission_type.capitalize} - #{@offer.company_name}",
@@ -62,24 +62,25 @@ class RecruitMerchService
       fve: @fve,
       agency: agency_code,
       contract_type: c_type,
-      night_rate: @offer.night_rate || 0,
-      ifm_rate: rate,
-      cp_rate: rate,
-      km_rate: @offer.km_rate || 0.25,
+
+      # --- GESTION NUIT DYNAMIQUE ---
+      night_rate: @offer.night_rate || 50.0, # Transfère le taux (ex: 50.0)
+      night_start: @offer.night_start,       # Transfère l'heure de début (ex: 21)
+      night_end: @offer.night_end,           # Transfère l'heure de fin (ex: 6)
+      # ------------------------------
+
+      ifm_rate: standard_rate,
+      cp_rate: standard_rate,
+      km_rate: @offer.km_rate || 0.29,
       km_limit: @offer.km_unlimited ? 0 : (@offer.km_limit || 0),
       km_unlimited: @offer.km_unlimited || false
     )
   end
 
   def create_work_sessions_loop(contract)
-    # NOUVEAU : On itère sur les créneaux enregistrés (JobOfferSlots)
-    # au lieu de faire une boucle aveugle entre start_date et end_date
-
     @offer.job_offer_slots.each do |slot|
 
       # 1. Construction des timestamps précis avec TimeZone (Paris)
-      # On combine la Date du slot avec l'Heure du slot
-
       daily_start = Time.zone.parse("#{slot.date} #{slot.start_time.strftime('%H:%M')}")
       daily_end   = Time.zone.parse("#{slot.date} #{slot.end_time.strftime('%H:%M')}")
 
