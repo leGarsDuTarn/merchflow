@@ -17,7 +17,7 @@
         <%# Espace réservé si besoin de badges globaux %>
       </div>
       <h1 class="fw-bold text-dark m-0"><%= @job_offer.title %></h1>
-      <span class="text-muted small fw-bold text-uppercase ls-1">Réf: #<%= @job_offer.id %></span>
+      <span class="text-muted small fw-bold text-uppercase fs-4 ls-1">Réf: #<%= @job_offer.id %></span>
       <p class="text-muted small mt-1 mb-0">
         Publié par <strong class="text-dark"><%= @job_offer.publisher_name %></strong>
         le <%= @job_offer.created_at.strftime("%d %b %Y") %>
@@ -294,8 +294,8 @@
                               input_html: { rows: 3, class: "rounded-4 border-light bg-light small p-3 w-100 focus-within-orange" } %>
                 </div>
                 <%= f.button :submit, "Postuler maintenant", class: "btn btn-orange w-100 rounded-pill fw-bold py-3 shadow-sm pulse-button" %>
-                  <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.65rem; line-height: 1.4;">
-                  En postulant, vous acceptez de partager votre profil MerchFlow avec <strong><%= @job_offer.publisher_name %></strong>.
+                  <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.75rem; line-height: 1.4;">
+                  En postulant, vous acceptez de partager votre nom, prenom et donnée de contact avec <strong><%= @job_offer.publisher_name %></strong>.
                   </p>
               <% end %>
             <% end %>
