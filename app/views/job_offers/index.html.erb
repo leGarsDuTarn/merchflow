@@ -5,8 +5,8 @@
     <p class="text-muted small">Recherchez, filtrez et postulez aux missions qui vous correspondent.</p>
   </div>
 
+  <%# --- SECTION RECHERCHE (STRICTEMENT INTACTE) --- %>
   <div class="card shadow rounded-4 border-0 mb-5 overflow-hidden">
-
     <div class="card-header bg-white border-bottom-0 p-4 pb-0">
       <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
         <span class="bg-orange-light text-orange rounded-3 p-2 me-3 d-inline-flex">
@@ -18,7 +18,6 @@
 
     <div class="card-body p-4 bg-white">
       <%= form_with url: job_offers_path, method: :get, local: true, class: "row g-3" do |f| %>
-
         <div class="col-12 col-md-4">
           <label class="form-label fw-bold small text-muted text-uppercase ls-1">Localisation</label>
           <div class="input-group shadow-sm rounded-3 overflow-hidden">
@@ -60,7 +59,6 @@
           <button type="submit" class="btn btn-orange fw-bold rounded-pill shadow-sm px-5 py-2">
             <i class="fa-solid fa-search me-2"></i>Rechercher
           </button>
-
           <%= link_to job_offers_path, class: "btn btn-light text-muted border rounded-pill px-3 py-2 fw-semibold" do %>
             <i class="fa-solid fa-arrow-rotate-left me-1"></i> Effacer
           <% end %>
@@ -77,9 +75,7 @@
         <div class="collapse col-12" id="advancedFilters">
           <div class="p-4 bg-light rounded-4 mt-2 border border-light position-relative overflow-hidden">
             <i class="fa-regular fa-calendar-check position-absolute text-orange opacity-10" style="right: -20px; bottom: -20px; font-size: 8rem;"></i>
-
             <div class="row g-4 position-relative">
-
               <div class="col-12 col-md-4 border-end-md">
                 <h6 class="fw-bold text-orange mb-3 small text-uppercase"><i class="fa-regular fa-clock me-2"></i>Disponibilité</h6>
                 <div class="mb-2">
@@ -87,7 +83,6 @@
                   <%= f.date_field :start_date, value: params[:start_date], class: "form-control shadow-sm border-0" %>
                 </div>
               </div>
-
               <div class="col-12 col-md-8 ps-md-4">
                 <h6 class="fw-bold text-orange mb-3 small text-uppercase"><i class="fa-solid fa-file-signature me-2"></i>Détails de l'offre</h6>
                 <div class="row g-3">
@@ -107,17 +102,15 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
-
       <% end %>
     </div>
   </div>
 
+  <%# --- RÉSULTATS --- %>
   <%
-     # Détection des filtres actifs pour l'affichage
      search_keys = %w[city department type start_date contract_type min_rate]
      has_search = search_keys.any? { |key| params[key].present? }
   %>
@@ -137,69 +130,104 @@
   <% if @job_offers.any? %>
     <div class="row g-4">
       <% @job_offers.each do |offer| %>
-        <div class="col-md-6 col-lg-6"> <div class="card shadow border-0 rounded-4 p-4 h-100 d-flex flex-column position-relative overflow-hidden transition-hover">
-            <% application = current_user.job_applications.find_by(job_offer: offer) if user_signed_in? %>
+        <div class="col-md-6 col-lg-6">
+          <div class="card shadow border-0 rounded-4 h-100 d-flex flex-column position-relative overflow-hidden transition-hover bg-white">
 
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <div class="d-flex flex-column gap-1">
-                <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small align-self-start" style="font-size: 0.65rem;">
-                  <i class="fa-solid fa-tag me-1"></i> <%= offer.mission_type.capitalize %>
+            <% application = user_signed_in? ? current_user.job_applications.find_by(job_offer: offer) : nil %>
+            <% is_full = offer.remaining_spots == 0 %>
+
+            <div class="card-body p-4 d-flex flex-column h-100">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-2 py-1 small fw-normal">
+                  <%= offer.mission_type.capitalize %>
                 </span>
-                <h5 class="fw-bold text-dark mb-0 mt-1"><%= offer.title %></h5>
-              </div>
-              <div class="text-end min-w-80">
-                <span class="fw-bold text-dark fs-5"><%= number_to_currency(offer.hourly_rate) %></span>
-                <small class="text-muted d-block" style="font-size: 0.65rem;">BRUT / H</small>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-center text-muted small mb-3">
-              <i class="fa-solid fa-store me-2 text-orange"></i>
-              <span><%= offer.store_name %> • <%= offer.city %> (<%= offer.department_code %>)</span>
-            </div>
-
-            <div class="bg-light p-3 rounded-4 small mb-4">
-              <div class="d-flex align-items-center mb-2">
-                <i class="fa-regular fa-calendar text-orange me-2"></i>
-                <span class="fw-bold text-dark"><%= l(offer.start_date.to_date, format: :long).capitalize %></span>
-              </div>
-              <div class="d-flex align-items-center">
-                <i class="fa-regular fa-clock text-orange me-2"></i>
-                <span class="text-muted"><%= offer.start_date.strftime("%H:%M") %> à <%= offer.end_date.strftime("%H:%M") %></span>
-              </div>
-            </div>
-
-            <div class="mt-auto">
-              <% if application %>
-                <div class="d-flex align-items-center justify-content-between bg-orange-light bg-opacity-50 p-2 rounded-3 border border-orange-subtle mb-3">
-                  <small class="fw-bold text-orange px-2"><i class="fa-solid fa-circle-check me-1"></i> Déjà postulé</small>
-                  <%= job_status_badge(application.status) %>
+                <div class="text-end lh-1">
+                  <span class="fw-bold text-dark fs-5"><%= number_to_currency(offer.hourly_rate) %></span>
+                  <small class="text-muted d-block" style="font-size: 0.60rem; letter-spacing: 0.5px;">BRUT / H</small>
                 </div>
-                <%= link_to job_offer_path(offer), class: "btn btn-light border text-muted w-100 fw-bold rounded-3 shadow-sm" do %>Voir le détail<% end %>
-              <% else %>
-                <%= link_to job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm py-2" do %><i class="fa-solid fa-eye me-1"></i> Voir l'offre<% end %>
-              <% end %>
+              </div>
 
-              <div class="text-center mt-3">
-                <small class="text-muted italic" style="font-size: 0.7rem;">Publié il y a <%= time_ago_in_words(offer.created_at) %></small>
+              <div class="mb-3">
+                <h5 class="fw-bold text-dark mb-1 text-truncate" title="<%= offer.title %>"><%= offer.title %></h5>
+
+                <%# AGENCY LABEL (AGENCE) %>
+                <div class="d-flex align-items-center mb-1">
+                  <small class="fw-bold text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                    <%= offer.agency_label %> - <%= offer.company_name %>
+                  </small>
+                </div>
+
+                <%# STORE + VILLE + DEPT %>
+                <div class="d-flex align-items-center text-muted small text-truncate">
+                  <i class="fa-solid fa-store me-2 text-orange opacity-75"></i>
+                  <span>
+                    <%= offer.store_name %> • <%= offer.city %>
+                    <span class="badge bg-light text-orange border border-orange-subtle ms-1 rounded-pill fw-bold" style="font-size: 0.65rem;">
+                      Dept.(<%= offer.department_code %>)
+                    </span>
+                  </span>
+                </div>
+              </div>
+
+              <div class="bg-light p-3 rounded-4 small mb-4 border border-light">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fa-regular fa-calendar text-orange me-2"></i>
+                  <span class="fw-bold text-dark">
+                    <% if offer.start_date.to_date == offer.end_date.to_date %>
+                        Le <%= l(offer.start_date.to_date, format: "%d %b") %>
+                    <% else %>
+                        Du <%= l(offer.start_date.to_date, format: "%d %b") %> au <%= l(offer.end_date.to_date, format: "%d %b") %>
+                    <% end %>
+                  </span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-clock text-orange me-2"></i>
+                    <span class="text-muted"><%= offer.real_total_hours %>h total</span>
+                  </div>
+                  <% if offer.total_night_hours > 0 %>
+                    <span class="badge bg-dark text-warning border border-secondary border-opacity-25 rounded-pill px-2 py-1 small fw-normal shadow-sm" style="font-size: 0.65rem;">
+                      <i class="fa-solid fa-moon me-1"></i>Nuit
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="mt-auto">
+                <% if application %>
+                  <div class="d-flex align-items-center justify-content-between bg-orange-light bg-opacity-50 p-2 rounded-3 border border-orange-subtle mb-3">
+                    <small class="fw-bold text-orange px-2"><i class="fa-solid fa-circle-check me-1"></i> Déjà postulé</small>
+                    <%# STATUS BADGE (HELPER) %>
+                    <%= job_status_badge(application.status) %>
+                  </div>
+                  <%= link_to job_offer_path(offer), class: "btn btn-light border text-muted w-100 fw-bold rounded-3 shadow-sm" do %>
+                    Voir ma candidature
+                  <% end %>
+                <% elsif is_full %>
+                  <div class="alert alert-light border border-secondary border-opacity-25 p-2 rounded-3 text-center mb-3">
+                    <small class="text-muted fw-bold"><i class="fa-solid fa-lock me-1"></i> Victime de son succès</small>
+                  </div>
+                  <button class="btn btn-light text-muted border w-100 fw-bold rounded-3" disabled>Complet</button>
+                <% else %>
+                  <%= link_to "Voir l'offre", job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm py-2 d-flex align-items-center justify-content-center"%>
+                <% end %>
+
+                <div class="text-center mt-3">
+                  <small class="text-muted italic" style="font-size: 0.7rem;">Publié il y a <%= time_ago_in_words(offer.created_at) %></small>
+                </div>
               </div>
             </div>
           </div>
-
         </div>
       <% end %>
     </div>
   <% else %>
     <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
-      <div class="mb-3 text-muted opacity-25">
-        <i class="fa-solid fa-magnifying-glass fa-4x"></i>
-      </div>
+      <div class="mb-3 text-muted opacity-25"><i class="fa-solid fa-magnifying-glass fa-4x"></i></div>
       <h4 class="fw-bold text-dark">Aucune mission trouvée</h4>
-      <p class="text-muted small">
-        Essayez d'élargir vos critères (dates, tarif) ou de changer de zone géographique.
-      </p>
+      <p class="text-muted small">Essayez d'élargir vos critères ou de changer de zone géographique.</p>
       <%= link_to "Effacer tous les filtres", job_offers_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-bold btn-sm mt-2" %>
     </div>
   <% end %>
-
 </div>
