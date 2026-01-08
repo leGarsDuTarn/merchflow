@@ -61,7 +61,7 @@
                 <i class="fa-solid fa-toggle-on"></i>
               </span>
               <%= f.select :status,
-                           [['Brouillon', 'draft'], ['Publiée', 'published'], ['Suspendue', 'suspended'], ['Archivée', 'archived']],
+                           [['Brouillon', 'draft'], ['Publiée', 'published'], ['Archivée', 'archived']],
                            { include_blank: "Tous les statuts", selected: params[:status] },
                            { class: "form-select bg-light border-0 py-2" } %>
             </div>

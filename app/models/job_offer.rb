@@ -2,7 +2,7 @@ class JobOffer < ApplicationRecord
   # --- CONSTANTES ---
   MISSION_TYPES = %w[merchandising animation].freeze
   CONTRACT_TYPES = %w[CDD CIDD Interim].freeze
-  STATUSES = %w[draft published filled suspended archived].freeze
+  STATUSES = %w[draft published filled archived].freeze
 
   # --- ASSOCIATIONS ---
   belongs_to :fve, class_name: 'User', foreign_key: 'fve_id'
@@ -282,12 +282,13 @@ class JobOffer < ApplicationRecord
   end
 
   def normalize_attributes
-    self.title = title&.strip&.capitalize
-    self.city = city&.strip&.upcase
-    self.zipcode = zipcode&.strip
-    self.address = address&.strip
-    self.company_name = company_name&.strip
-    self.store_name = store_name&.strip
+    self.title         = title&.strip&.capitalize
+    self.city          = city&.strip&.capitalize
+    self.zipcode       = zipcode&.strip
+    self.address       = address&.strip&.capitalize
+    self.company_name  = company_name&.strip&.capitalize
+    # Utilisation de .titleize pour mettre une majuscule à CHAQUE mot
+    self.store_name    = store_name&.strip&.titleize
     self.contact_email = contact_email&.strip&.downcase
   end
 
