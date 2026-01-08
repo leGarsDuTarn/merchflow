@@ -19,14 +19,14 @@
     <%# --- 2. HORAIRES MISSION (Côte à côte sur mobile col-6 / Col-2 sur Desktop) --- %>
     <div class="col-6 col-md-2">
        <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden" title="Début Mission">
-         <span class="input-group-text bg-light border-0 text-muted ps-2"><i class="fa-regular fa-clock"></i></span>
+         <span class="input-group-text bg-light border-0 text-muted ps-2"></span>
          <%= f.input_field :start_time, value: f.object.start_time&.strftime("%H:%M"), as: :string, type: :time, class: "form-control bg-light border-0 text-center p-1", placeholder: "Début" %>
        </div>
     </div>
 
     <div class="col-6 col-md-2">
        <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden" title="Fin Mission">
-         <span class="input-group-text bg-light border-0 text-muted ps-2"><i class="fa-solid fa-arrow-right small"></i></span>
+         <span class="input-group-text bg-light border-0 text-muted ps-2"></span>
          <%= f.input_field :end_time, value: f.object.end_time&.strftime("%H:%M"), as: :string, type: :time, class: "form-control bg-light border-0 text-center p-1", placeholder: "Fin" %>
        </div>
     </div>
