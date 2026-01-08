@@ -157,7 +157,7 @@ RSpec.describe WorkSession, type: :model do
     end
 
     it 'calcule day + night' do
-      contract = build(:contract, night_rate: 0.20)
+      contract = build(:contract, night_rate: 20)
       ws = build(:work_session,
                  contract: contract,
                  duration_minutes: 120,
