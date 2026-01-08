@@ -26,6 +26,15 @@ class JobApplicationsController < ApplicationController
     end
   end
 
+  def destroy
+    @application = current_user.job_applications.find(params[:id])
+    @application.destroy
+
+    redirect_to job_offer_path(@application.job_offer),
+              notice: "Votre candidature a été annulée.",
+              status: :see_other
+  end
+
   private
 
   def set_job_offer
