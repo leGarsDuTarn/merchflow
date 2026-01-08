@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_06_094415) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_08_074440) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -129,7 +129,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_06_094415) do
     t.decimal "km_rate", precision: 5, scale: 2, default: "0.29"
     t.boolean "km_unlimited", default: false
     t.string "mission_type", null: false
+    t.integer "night_end", default: 6, null: false
     t.decimal "night_rate", precision: 4, scale: 2, default: "0.5", null: false
+    t.integer "night_start", default: 21, null: false
     t.datetime "start_date", null: false
     t.string "status", default: "draft", null: false
     t.string "store_name"
