@@ -13,32 +13,64 @@ class JobOffer < ApplicationRecord
   has_many :job_offer_slots, dependent: :destroy
   accepts_nested_attributes_for :job_offer_slots, allow_destroy: true, reject_if: :all_blank
 
-  # --- VALIDATIONS ---
-  validates :title, presence: true, length: { minimum: 5, maximum: 100 }
-  validates :description, presence: true, length: { minimum: 20 }
-  validates :mission_type, inclusion: { in: MISSION_TYPES }
-  validates :contract_type, inclusion: { in: CONTRACT_TYPES }
-  validates :company_name, presence: true
-  validates :contact_email, presence: { message: "est obligatoire pour valider l'offre" },
-                            format: { with: URI::MailTo::EMAIL_REGEXP, message: "ne semble pas être un email valide" }
-  validates :contact_phone, presence: { message: "est obligatoire pour valider l'offre" },
-                            format: { with: /\A0[1-9]\d{8}\z/, message: "doit contenir 10 chiffres (ex: 0612345678)" }
-  validates :address, :city, :zipcode, presence: true
-  validates :zipcode, format: { with: /\A\d{5}\z/, message: "doit contenir 5 chiffres" }
-  validates :start_date, :end_date, presence: true
+# --- VALIDATIONS ---
+  validates :title, presence: { message: "Donnez un titre à votre mission" },
+                    length: { minimum: 5, maximum: 100, message: "Le titre doit faire entre 5 et 100 caractères" }
+
+  validates :description, presence: { message: "La description est indispensable pour les candidats" },
+                          length: { minimum: 20, message: "Soyez plus précis dans votre description (20 caractères min.)" }
+
+  validates :mission_type, inclusion: { in: MISSION_TYPES, message: "Sélectionnez un type de mission valide" }
+  validates :contract_type, inclusion: { in: CONTRACT_TYPES, message: "Sélectionnez un type de contrat" }
+  validates :company_name, presence: { message: "Le nom de l'entreprise est requis" }
+
+  validates :contact_email, presence: { message: "L'email de contact est obligatoire" },
+                            format: { with: URI::MailTo::EMAIL_REGEXP, message: "Format d'email invalide" }
+
+  validates :contact_phone, presence: { message: "Le numéro de téléphone est obligatoire" },
+                            format: { with: /\A0[1-9]\d{8}\z/, message: "Le téléphone doit contenir 10 chiffres (ex: 0612345678)" }
+
+  validates :address, presence: { message: "L'adresse précise est nécessaire pour le candidat" }
+  validates :city, presence: { message: "La ville est obligatoire" }
+  validates :zipcode, presence: { message: "Le code postal est requis" },
+                      format: { with: /\A\d{5}\z/, message: "Le code postal doit contenir 5 chiffres" }
+
+  validates :start_date, :end_date, presence: { message: "Les dates de mission sont obligatoires" }
+
+  validates :hourly_rate, numericality: {
+    greater_than_or_equal_to: 12.02,
+    message: "Le taux ne peut pas être inférieur au SMIC (12.02 €)"
+  }
+
+  # --- VALIDATIONS PARAMÈTRES NUIT (DYNAMIQUE) ---
+  validates :night_rate, numericality: {
+    greater_than_or_equal_to: 0,
+    message: "Le taux de majoration de nuit ne peut pas être négatif"
+  }
+  validates :night_start, presence: { message: "Indiquez l'heure de début de nuit" },
+                          numericality: { only_integer: true, in: 0..23, message: "L'heure de début doit être comprise entre 0 et 23h" }
+  validates :night_end, presence: { message: "Indiquez l'heure de fin de nuit" },
+                        numericality: { only_integer: true, in: 0..23, message: "L'heure de fin doit être comprise entre 0 et 23h" }
+
+  # --- AUTRES PARAMÈTRES ---
+  validates :headcount_required, numericality: {
+    only_integer: true, greater_than: 0,
+    message: "Il faut au moins 1 intervenant pour cette mission"
+  }
+
+  validates :km_rate, presence: { message: "Le taux kilométrique est obligatoire (mettez 0 si non pris en charge)" },
+                      numericality: { greater_than_or_equal_to: 0, message: "Le taux KM ne peut pas être négatif" }
+
+  validates :km_limit, numericality: {
+    greater_than: 0,
+    allow_nil: true,
+    message: "La limite kilométrique doit être supérieure à 0"
+  }
+
+  # --- VALIDATIONS PERSONNALISÉES ---
   validate :end_date_after_start_date
   validate :break_time_consistency
-  validates :hourly_rate, numericality: { greater_than_or_equal_to: 12.02, message: "ne peut pas être inférieur au SMIC Brut (12.02 €)" }
-
-  # Validations mises à jour pour le système dynamique
-  validates :night_rate, numericality: { greater_than_or_equal_to: 0 }
-  validates :night_start, presence: true, numericality: { only_integer: true, in: 0..23 }
-  validates :night_end, presence: true, numericality: { only_integer: true, in: 0..23 }
-
-  validates :headcount_required, numericality: { only_integer: true, greater_than: 0 }
-  validates :km_rate, presence: { message: "est obligatoire (mettez 0 si non pris en charge)" },
-                      numericality: { greater_than_or_equal_to: 0 }
-  validates :km_limit, numericality: { greater_than: 0, allow_nil: true }
+  validate :night_times_must_be_different
 
   # --- CALLBACKS ---
   before_validation :normalize_attributes
@@ -290,6 +322,12 @@ class JobOffer < ApplicationRecord
     end
     if break_start_time.present? && break_end_time.present?
       errors.add(:break_end_time, "doit être après le début de la pause") if break_end_time <= break_start_time
+    end
+  end
+
+  def night_times_must_be_different
+    if night_start == night_end
+      errors.add(:night_start, "L'heure de début et de fin de nuit ne peuvent pas être identiques")
     end
   end
 end
