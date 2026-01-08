@@ -201,6 +201,10 @@ class WorkSession < ApplicationRecord
     (net.round(2) + net_ifm + net_cp + amount_km + total_fees).round(2)
   end
 
+  def has_break?
+    break_start_time.present? && break_end_time.present?
+  end
+
   # ============================================================
   # MÉTHODES PRIVÉES
   # ============================================================

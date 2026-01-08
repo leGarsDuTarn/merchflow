@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_08_093819) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_08_095940) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,10 +25,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_093819) do
   create_table "contracts", force: :cascade do |t|
     t.string "agency", default: "other", null: false
     t.string "contract_type"
-    t.decimal "cp_rate", precision: 4, scale: 2, default: "0.1", null: false
+    t.decimal "cp_rate", precision: 4, scale: 2, default: "10.0", null: false
     t.datetime "created_at", null: false
     t.integer "fve_id"
-    t.decimal "ifm_rate", precision: 4, scale: 2, default: "0.1", null: false
+    t.decimal "ifm_rate", precision: 4, scale: 2, default: "10.0", null: false
     t.decimal "km_limit", precision: 5, scale: 2, default: "0.0", null: false
     t.decimal "km_rate", precision: 5, scale: 2
     t.boolean "km_unlimited", default: false, null: false

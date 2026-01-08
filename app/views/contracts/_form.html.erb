@@ -1,0 +1,135 @@
+<%= form_with model: contract, local: true do |f| %>
+
+  <%# --- 1. IDENTITÉ DU CONTRAT --- %>
+  <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+      <h6 class="fw-bold text-orange text-uppercase ls-1 mb-0" style="font-size: 0.75rem;">
+        <i class="fa-solid fa-file-contract me-2"></i>Général
+      </h6>
+    </div>
+    <div class="card-body p-4">
+
+      <div class="mb-3">
+        <%= f.label :name, "Nom du contrat", class: "form-label small fw-bold text-muted" %>
+        <%= f.text_field :name, placeholder: "Ex: Mission Carrefour Février", class: "form-control form-control-lg bg-light border-0 fw-bold" %>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :agency, "Agence", class: "form-label small fw-bold text-muted" %>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-0 text-muted"><i class="fa-solid fa-building"></i></span>
+            <%= f.select :agency, Contract.agency_options, { prompt: "Choisir..." }, class: "form-select bg-light border-0 fw-bold" %>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :contract_type, "Type", class: "form-label small fw-bold text-muted" %>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-0 text-muted"><i class="fa-solid fa-briefcase"></i></span>
+            <%= f.select :contract_type,
+                Contract.contract_types.keys.map { |k| [Contract::CONTRACT_TYPE_LABELS[k] || k.upcase, k] },
+                { prompt: "Choisir..." },
+                class: "form-select bg-light border-0 fw-bold" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 2. PARAMÈTRES NUIT (Le Cœur du Système) --- %>
+  <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+    <div class="card-header bg-dark border-0 pt-3 px-4 pb-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold text-white text-uppercase ls-1 mb-0" style="font-size: 0.75rem;">
+          <i class="fa-solid fa-moon me-2 text-warning"></i>Règles de Nuit
+        </h6>
+        <span class="badge bg-white bg-opacity-10 text-white border border-white border-opacity-25 rounded-pill" style="font-size: 0.65rem;">Important</span>
+      </div>
+    </div>
+    <div class="card-body p-4 bg-light">
+      <div class="row g-3">
+        <%# Heure Début %>
+        <div class="col-6 col-md-4">
+          <%= f.label :night_start, "DÉBUT (H)", class: "form-label small fw-bold text-muted" %>
+          <div class="input-group shadow-sm rounded-3 bg-white border-0">
+            <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="fa-regular fa-clock small"></i></span>
+            <%= f.number_field :night_start, class: "form-control bg-transparent border-0 text-center fw-bold", min: 0, max: 23, placeholder: "21" %>
+            <span class="input-group-text bg-transparent border-0 pe-3 small text-muted">h</span>
+          </div>
+        </div>
+
+        <%# Heure Fin %>
+        <div class="col-6 col-md-4">
+          <%= f.label :night_end, "FIN (H)", class: "form-label small fw-bold text-muted" %>
+          <div class="input-group shadow-sm rounded-3 bg-white border-0">
+            <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="fa-solid fa-sun small"></i></span>
+            <%= f.number_field :night_end, class: "form-control bg-transparent border-0 text-center fw-bold", min: 0, max: 23, placeholder: "6" %>
+            <span class="input-group-text bg-transparent border-0 pe-3 small text-muted">h</span>
+          </div>
+        </div>
+
+        <%# Taux %>
+        <div class="col-12 col-md-4">
+          <%= f.label :night_rate, "MAJORATION", class: "form-label small fw-bold text-muted" %>
+          <div class="input-group shadow-sm rounded-3 bg-white border-0">
+            <span class="input-group-text bg-transparent border-0 ps-3 text-warning fw-bold"><i class="fa-solid fa-percent"></i></span>
+            <%# NOTE: On affiche la valeur directe car la DB est maintenant en 50.0 %>
+            <%= f.number_field :night_rate, class: "form-control bg-transparent border-0 fw-bold text-end", step: 0.1, placeholder: "50" %>
+            <span class="input-group-text bg-transparent border-0 pe-3 fw-bold text-dark">%</span>
+          </div>
+        </div>
+      </div>
+      <p class="text-muted small mt-2 mb-0 fst-italic"><i class="fa-solid fa-circle-info me-1"></i>Les heures travaillées dans cette plage seront majorées.</p>
+    </div>
+  </div>
+
+  <%# --- 3. PRIMES & FRAIS --- %>
+  <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+      <h6 class="fw-bold text-orange text-uppercase ls-1 mb-0" style="font-size: 0.75rem;">
+        <i class="fa-solid fa-coins me-2"></i>Finances
+      </h6>
+    </div>
+    <div class="card-body p-4">
+
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <%= f.label :ifm_rate, "IFM (%)", class: "form-label small fw-bold text-muted" %>
+          <%= f.number_field :ifm_rate, class: "form-control bg-light border-0 fw-bold", step: 0.1 %>
+        </div>
+        <div class="col-6">
+          <%= f.label :cp_rate, "CP (%)", class: "form-label small fw-bold text-muted" %>
+          <%= f.number_field :cp_rate, class: "form-control bg-light border-0 fw-bold", step: 0.1 %>
+        </div>
+      </div>
+
+      <hr class="border-secondary opacity-10 my-3">
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :km_rate, "Indemnité KM (€)", class: "form-label small fw-bold text-muted" %>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-0 text-muted"><i class="fa-solid fa-car"></i></span>
+            <%= f.number_field :km_rate, class: "form-control bg-light border-0 fw-bold", step: 0.01 %>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :km_limit, "Plafond KM (Optionnel)", class: "form-label small fw-bold text-muted" %>
+          <%= f.number_field :km_limit, class: "form-control bg-light border-0 fw-bold", step: 0.1 %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 4. NOTES & SUBMIT --- %>
+  <div class="mb-4">
+    <%= f.label :notes, "Notes personnelles", class: "form-label small fw-bold text-muted" %>
+    <%= f.text_area :notes, rows: 2, class: "form-control bg-white border-0 shadow-sm rounded-3", placeholder: "Info utile..." %>
+  </div>
+
+  <div class="d-grid pb-5">
+    <%= f.submit contract.new_record? ? "Créer le contrat" : "Enregistrer les modifications",
+        class: "btn btn-orange btn-lg fw-bold rounded-pill shadow-sm py-3" %>
+  </div>
+
+<% end %>

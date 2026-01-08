@@ -1,4 +1,3 @@
-# app/models/contract.rb
 class Contract < ApplicationRecord
   # ============================================================
   # RELATIONS
@@ -45,14 +44,13 @@ class Contract < ApplicationRecord
   # ============================================================
 
   # --- 1. Logique Pure : Calcul des KM effectifs ---
-  # Cette méthode isole la règle métier de la limite et du "recommandé"
   def compute_km(kilometers, recommended: false)
     dist = kilometers.to_f
 
     # Règle 1 : Si recommandé ou illimité, on paie tout
     return dist if recommended || km_unlimited
 
-    # Règle 2 : Si pas de limite définie (0), on paie tout (ou rien selon votre règle, ici tout)
+    # Règle 2 : Si pas de limite définie (0 ou nil), on paie tout
     return dist if km_limit.nil? || km_limit.zero?
 
     # Règle 3 : Sinon, on plafonne
@@ -60,7 +58,6 @@ class Contract < ApplicationRecord
   end
 
   # --- 2. Calcul Financier : Paiement KM ---
-  # On réutilise la méthode du dessus pour calculer le montant
   def km_payment(kilometers, recommended: false)
     return 0.0 unless km_rate.present?
 
@@ -71,20 +68,23 @@ class Contract < ApplicationRecord
   # --- IFM ---
   def ifm(brut_salary)
     rate = (ifm_rate.presence || 0).to_d
-    (brut_salary * rate).round(2)
+    # Division par 100 car le taux est stocké en pourcentage (ex: 10.0)
+    (brut_salary * (rate / 100.0)).round(2)
   end
 
   # --- CP ---
   def cp(brut_salary)
     base = brut_salary
     rate = (cp_rate.presence || 0).to_d
-    (base * rate).round(2)
+    # Division par 100 car le taux est stocké en pourcentage (ex: 10.0)
+    (base * (rate / 100.0)).round(2)
   end
 
-  # --- TOTAL IFM + CP (Manquant dans votre code précédent) ---
+  # --- TOTAL IFM + CP ---
   def ifm_cp_total(brut_salary)
     ifm(brut_salary) + cp(brut_salary)
   end
+
   # ============================================================
   # HELPERS
   # ============================================================
@@ -113,7 +113,7 @@ class Contract < ApplicationRecord
 
   def normalize_decimal_fields
     %i[km_rate night_rate ifm_rate cp_rate].each do |field|
-      # Récupère la valeur brute avant que Rails ne la transforme en 0.0
+      # Récupère la valeur brute avant que Rails ne la transforme
       raw_value = read_attribute_before_type_cast(field)
 
       # Ne touche que si c'est une string contenant une virgule
