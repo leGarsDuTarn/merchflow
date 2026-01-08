@@ -60,7 +60,6 @@
               <span class="input-group-text bg-light border-0 ps-3 text-orange">
                 <i class="fa-solid fa-toggle-on"></i>
               </span>
-              <%# ICI : Ajout de l'option 'Archivée' %>
               <%= f.select :status,
                            [['Brouillon', 'draft'], ['Publiée', 'published'], ['Suspendue', 'suspended'], ['Archivée', 'archived']],
                            { include_blank: "Tous les statuts", selected: params[:status] },
@@ -169,7 +168,6 @@
              target = offer.headcount_required
              pending = offer.pending_count
              progress = (recruited.to_f / target.to_f) * 100
-             # Couleur opacifiée si archivée pour bien le visualiser
              is_archived = offer.status == 'archived'
              card_opacity = is_archived ? "opacity-75" : ""
           %>
@@ -205,7 +203,10 @@
                   </div>
                 </div>
 
+                <%# --- BLOC INFOS DÉTAILLÉES (MODIFIÉ) --- %>
                 <div class="bg-light p-3 rounded-4 small mb-3 border border-light">
+
+                  <%# 1. Dates %>
                   <div class="d-flex align-items-center mb-2">
                     <i class="fa-regular fa-calendar text-orange me-2"></i>
                     <span class="fw-bold text-dark">
@@ -216,12 +217,26 @@
                       <% end %>
                     </span>
                   </div>
-                  <div class="d-flex justify-content-between align-items-center">
-                     <div>
-                       <i class="fa-regular fa-clock text-orange me-2"></i>
-                       <span class="text-muted"><%= offer.job_offer_slots.count %> créneau(x)</span>
-                     </div>
-                     <span class="fw-bold text-dark"><%= number_to_currency(offer.hourly_rate) %>/h</span>
+
+                  <%# 2. Volume Horaire (NOUVEAU) %>
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center">
+                      <i class="fa-solid fa-clock text-orange me-2"></i>
+                      <span class="fw-bold text-dark"><%= offer.real_total_hours %>h</span>
+                    </div>
+
+                    <%# Badge Nuit (Uniquement si > 0) %>
+                    <% if offer.total_night_hours > 0 %>
+                      <span class="badge bg-dark text-warning border border-secondary border-opacity-25 rounded-pill px-2 py-1 small fw-normal shadow-sm" style="font-size: 0.65rem;" title="Dont <%= offer.total_night_hours %>h de nuit">
+                        <i class="fa-solid fa-moon me-1"></i><%= offer.total_night_hours %>h
+                      </span>
+                    <% end %>
+                  </div>
+
+                  <%# 3. Séparateur et Taux/Créneaux %>
+                  <div class="d-flex justify-content-between align-items-center border-top border-secondary border-opacity-10 pt-2 mt-1">
+                     <span class="text-muted" style="font-size: 0.75rem;"><%= offer.job_offer_slots.count %> créneau(x)</span>
+                     <span class="fw-bold text-dark bg-white px-2 py-1 rounded-3 border border-light shadow-sm"><%= number_to_currency(offer.hourly_rate) %>/h</span>
                   </div>
                 </div>
 
@@ -243,41 +258,41 @@
                 </div>
 
                 <div class="d-flex gap-2 position-relative z-2 pt-2 border-top border-light">
-  <%# BOUTON GERER %>
-  <%= link_to fve_job_offer_path(offer),
-      class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm" do %>
-    Gérer
-  <% end %>
+                  <%# BOUTON GERER %>
+                  <%= link_to fve_job_offer_path(offer),
+                      class: "btn btn-orange w-100 fw-bold rounded-3 py-2 small shadow-sm" do %>
+                    Gérer
+                  <% end %>
 
-  <% if offer.status == 'archived' %>
-    <%# BOUTON RESTAURER (apparaît uniquement si archivé) %>
-    <%= button_to toggle_status_fve_job_offer_path(offer),
-        method: :patch,
-        form_class: "d-inline-block",
-        class: "btn btn-success fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-        style: "width: 40px; height: 40px;",
-        title: "Désarchiver" do %>
-      <i class="fa-solid fa-trash-arrow-up"></i>
-    <% end %>
-  <% else %>
-    <%# BOUTON MODIFIER %>
-    <%= link_to edit_fve_job_offer_path(offer),
-        class: "btn btn-gray fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-        style: "width: 40px; height: 40px;" do %>
-      <i class="fa-solid fa-pen"></i>
-    <% end %>
+                  <% if offer.status == 'archived' %>
+                    <%# BOUTON RESTAURER %>
+                    <%= button_to toggle_status_fve_job_offer_path(offer),
+                        method: :patch,
+                        form_class: "d-inline-block",
+                        class: "btn btn-success fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                        style: "width: 40px; height: 40px;",
+                        title: "Désarchiver" do %>
+                      <i class="fa-solid fa-trash-arrow-up"></i>
+                    <% end %>
+                  <% else %>
+                    <%# BOUTON MODIFIER %>
+                    <%= link_to edit_fve_job_offer_path(offer),
+                        class: "btn btn-gray fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                        style: "width: 40px; height: 40px;" do %>
+                      <i class="fa-solid fa-pen"></i>
+                    <% end %>
 
-    <%# BOUTON ARCHIVER %>
-    <%= button_to fve_job_offer_path(offer),
-        method: :delete,
-        data: { turbo_confirm: "Archiver cette annonce ?" },
-        form_class: "d-inline-block",
-        class: "btn btn-red fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-        style: "width: 40px; height: 40px;" do %>
-      <i class="fa-solid fa-trash-can"></i>
-    <% end %>
-  <% end %>
-</div>
+                    <%# BOUTON ARCHIVER %>
+                    <%= button_to fve_job_offer_path(offer),
+                        method: :delete,
+                        data: { turbo_confirm: "Archiver cette annonce ?" },
+                        form_class: "d-inline-block",
+                        class: "btn btn-red fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                        style: "width: 40px; height: 40px;" do %>
+                      <i class="fa-solid fa-trash-can"></i>
+                    <% end %>
+                  <% end %>
+                </div>
 
               </div>
             </div>
