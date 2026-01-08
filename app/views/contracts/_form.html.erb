@@ -11,7 +11,7 @@
 
       <div class="mb-3">
         <%= f.label :name, "Nom du contrat (optionnel)", class: "form-label small fw-bold text-muted" %>
-        <%= f.text_field :name, placeholder: "Contrat CPM", class: "form-control form-control-lg bg-light border-0 fw-bold" %>
+        <%= f.text_field :name, placeholder: "Ex: Contrat CPM", class: "form-control form-control-lg bg-light border-0 fw-bold" %>
       </div>
 
       <div class="row g-3">
@@ -127,7 +127,7 @@
   </div>
 
   <div class="d-grid pb-5">
-    <%= f.submit contract.new_record? ? "Créer le contrat" : "Enregistrer les modifications",
+    <%= f.submit contract.new_record? ? "Créer" : "Enregistrer",
         class: "btn btn-orange fw-bold rounded-pill shadow-sm" %>
   </div>
 

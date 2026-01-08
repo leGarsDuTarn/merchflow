@@ -1,124 +1,21 @@
-<div class="container my-5">
-
-  <%# Titre + bouton retour %>
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold text-orange m-0">Modifier le contrat</h1>
-
-    <%= link_to contract_path(@contract),
-                class: "btn btn-orange d-flex justify-content-center align-items-center rounded-circle",
-                style: "width: 42px; height: 42px; padding: 0;",
-                title: "Retour au contrat",
-                aria: { label: "Retour au contrat" } do %>
-      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-    <% end %>
-  </div>
-
+<div class="container min-vh-100 py-4">
   <div class="row justify-content-center">
-    <div class="col-md-7 col-lg-6">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="d-flex align-items-center mb-4">
+        <div>
+          <h1 class="fw-bold text-dark m-0">Modifier le Contrat</h1>
+          <p class="text-muted small m-0 fs-5"><%= @contract.agency_label %></p>
+        </div>
 
-      <div class="card shadow-sm p-4 rounded-4">
-
-        <%# Messages d’erreur %>
-        <% if @contract.errors.any? %>
-          <div class="alert alert-danger">
-            <ul class="mb-0">
-              <% @contract.errors.full_messages.each do |msg| %>
-                <li><%= msg %></li>
-              <% end %>
-            </ul>
-          </div>
+        <%# On redirige vers  ou l'index (contracts_path) %>
+        <%= link_to contracts_path(@contract), class: "btn btn-white border shadow-sm rounded-circle ms-auto", style: "width:40px; height:40px; display:grid; place-items:center;" do %>
+          <i class="fa-solid fa-arrow-left text-dark"></i>
         <% end %>
-
-        <%= form_with model: @contract, local: true do |f| %>
-
-          <%# NOM DU CONTRAT %>
-          <div class="mb-3">
-            <%= f.label :name, "Nom du contrat", class: "form-label fw-semibold" %>
-            <%= f.text_field :name, class: "form-control" %>
-          </div>
-
-          <%# AGENCE %>
-          <div class="mb-3">
-            <%= f.label :agency, "Agence", class: "form-label fw-semibold" %>
-            <%= f.select :agency,
-                Contract.agency_options,
-                { prompt: "Sélectionnez une agence" },
-                class: "form-select" %>
-          </div>
-
-          <%# TYPE CONTRAT %>
-          <div class="mb-3">
-            <%= f.label :contract_type, "Type de contrat", class: "form-label fw-semibold" %>
-            <%= f.select :contract_type,
-                Contract.contract_types.keys.map { |k| [Contract::CONTRACT_TYPE_LABELS[k], k] },
-                { prompt: "Sélectionnez un type" },
-                class: "form-select" %>
-          </div>
-
-          <%# MAJORATION NUIT %>
-          <div class="mb-3">
-            <%= f.label :night_rate, "Majoration nuit (%)", class: "form-label fw-semibold" %>
-            <%= f.number_field :night_rate,
-                value: (@contract.night_rate * 100),
-                step: 0.1,
-                class: "form-control" %>
-          </div>
-
-          <%# KM %>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :km_rate, "Indemnité km (€/km)", class: "form-label fw-semibold" %>
-              <%= f.number_field :km_rate, step: 0.01, class: "form-control" %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= f.label :km_limit, "Plafond km (optionnel)", class: "form-label fw-semibold" %>
-              <%= f.number_field :km_limit, step: 0.1, class: "form-control" %>
-            </div>
-          </div>
-
-          <%# IFM & CP %>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :ifm_rate, "Taux IFM (%)", class: "form-label fw-semibold" %>
-              <%= f.number_field :ifm_rate,
-                  value: (@contract.ifm_rate * 100),
-                  step: 0.1,
-                  class: "form-control" %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= f.label :cp_rate, "Taux CP (%)", class: "form-label fw-semibold" %>
-              <%= f.number_field :cp_rate,
-                  value: (@contract.cp_rate * 100),
-                  step: 0.1,
-                  class: "form-control" %>
-            </div>
-          </div>
-
-          <%# NOTES %>
-          <div class="mb-3">
-            <%= f.label :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
-            <%= f.text_area :notes, rows: 3, class: "form-control" %>
-          </div>
-
-          <%# SUBMIT %>
-          <div class="d-grid mt-3">
-            <%= f.submit "Mettre à jour",
-                         class: "btn btn-orange btn-lg fw-bold" %>
-          </div>
-
-        <% end %>
-
-      </div><!-- card -->
-
-      <div class="text-center mt-3">
-        <%= link_to "Retour à la liste",
-                    contracts_path,
-                    class: "text-decoration-none text-muted" %>
       </div>
+
+      <%# Render du Partial %>
+      <%= render 'form', contract: @contract %>
 
     </div>
   </div>
-
 </div>
