@@ -84,9 +84,9 @@ RSpec.describe Contract, type: :model do
   # ------------------------------------------------------------
   # LOGIQUE MÉTIER : IFM / CP
   # ------------------------------------------------------------
-  context 'Calculs IFM / CP' do
-    # On fixe des taux précis pour vérifier le calcul mathématique
-    let(:contract) { build(:contract, ifm_rate: 0.1, cp_rate: 0.1) }
+ context 'Calculs IFM / CP' do
+    # On passe en base 100 : 10.0 = 10%
+    let(:contract) { build(:contract, ifm_rate: 10.0, cp_rate: 10.0) }
 
     it 'calcule l\'IFM correctement' do
       expect(contract.ifm(100)).to eq(10.0)
@@ -98,6 +98,12 @@ RSpec.describe Contract, type: :model do
 
     it 'calcule le total IFM + CP' do
       expect(contract.ifm_cp_total(100)).to eq(20.0)
+    end
+
+    it 'est invalide si le taux dépasse 50% (sécurité)' do
+      contract.ifm_rate = 51
+      expect(contract).not_to be_valid
+      expect(contract.errors[:ifm_rate]).to be_present
     end
   end
 

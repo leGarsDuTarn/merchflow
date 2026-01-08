@@ -1,6 +1,6 @@
 class Contract < ApplicationRecord
   # ============================================================
-  # RELATIONS
+  # 1. RELATIONS
   # ============================================================
   belongs_to :user
   belongs_to :fve, class_name: 'User', optional: true
@@ -10,13 +10,9 @@ class Contract < ApplicationRecord
   has_many :declarations, dependent: :destroy
 
   # ============================================================
-  # ENUM & CONSTANTES
+  # 2. ENUM & CONSTANTES
   # ============================================================
-  enum :contract_type, {
-    cdd: "cdd",
-    cidd: "cidd",
-    interim: "interim"
-  }
+  enum :contract_type, { cdd: "cdd", cidd: "cidd", interim: "interim" }
 
   CONTRACT_TYPE_LABELS = {
     "cdd" => "CDD",
@@ -25,68 +21,78 @@ class Contract < ApplicationRecord
   }.freeze
 
   # ============================================================
-  # VALIDATIONS
+  # 3. BLINDAGE & VALIDATIONS (LA SÉCURITÉ)
   # ============================================================
+
+  # Nettoyage avant toute validation (transforme "10,5" en "10.5")
+  before_validation :normalize_decimal_fields
+
   validates :agency, presence: { message: 'Vous devez sélectionner une agence' }
   validate :agency_must_exist_in_db
 
-  validates :night_rate, :ifm_rate, :cp_rate, numericality: { greater_than_or_equal_to: 0 }
-  validates :km_rate, presence: true, numericality: true
-  validates :km_limit, numericality: { greater_than_or_equal_to: 0 }
+  # SÉCURITÉ 1 : Limites logiques
+  # Empêche de mettre un taux négatif OU un taux absurde (ex: > 50% pour IFM c'est louche)
+  # Empêche aussi de mettre "100" si l'user pense que c'est 100%
+  validates :ifm_rate, :cp_rate, numericality: {
+    greater_than_or_equal_to: 0,
+    less_than_or_equal_to: 50, # Garde-fou : Personne n'a 50% de CP
+    allow_nil: true
+  }
+
+  validates :night_rate, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
+
+  # KM Rate est obligatoire pour les calculs, sinon ça crash ou fait 0
+  validates :km_rate, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :km_limit, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
 
   # ============================================================
-  # CALLBACKS
-  # ============================================================
-  before_validation :normalize_decimal_fields
-
-  # ============================================================
-  # CALCULS FINANCIERS
+  # 4. CALCULS FINANCIERS (PRÉCISION)
   # ============================================================
 
-  # --- 1. Logique Pure : Calcul des KM effectifs ---
+  # --- Calcul des KM effectifs ---
   def compute_km(kilometers, recommended: false)
-    dist = kilometers.to_f
+    dist = BigDecimal(kilometers.to_s)
 
-    # Règle 1 : Si recommandé ou illimité, on paie tout
     return dist if recommended || km_unlimited
-
-    # Règle 2 : Si pas de limite définie (0 ou nil), on paie tout
     return dist if km_limit.nil? || km_limit.zero?
 
-    # Règle 3 : Sinon, on plafonne
-    [dist, km_limit.to_f].min
+    [dist, BigDecimal(km_limit.to_s)].min
   end
 
-  # --- 2. Calcul Financier : Paiement KM ---
+  # --- Paiement KM ---
   def km_payment(kilometers, recommended: false)
     return 0.0 unless km_rate.present?
 
     dist_effective = compute_km(kilometers, recommended: recommended)
-    (dist_effective * km_rate.to_f).round(2)
+    rate = BigDecimal(km_rate.to_s)
+
+    (dist_effective * rate).round(2)
   end
 
-  # --- IFM ---
+  # --- IFM (Base 100) ---
   def ifm(brut_salary)
-    rate = (ifm_rate.presence || 0).to_d
-    # Division par 100 car le taux est stocké en pourcentage (ex: 10.0)
-    (brut_salary * (rate / 100.0)).round(2)
-  end
+    base = BigDecimal(brut_salary.to_s)
+    rate = BigDecimal(ifm_rate.to_s)
 
-  # --- CP ---
-  def cp(brut_salary)
-    base = brut_salary
-    rate = (cp_rate.presence || 0).to_d
-    # Division par 100 car le taux est stocké en pourcentage (ex: 10.0)
+    # Formule : Salaire * (Taux / 100)
     (base * (rate / 100.0)).round(2)
   end
 
-  # --- TOTAL IFM + CP ---
+  # --- CP (Base 100) ---
+  def cp(brut_salary)
+    base = BigDecimal(brut_salary.to_s)
+    rate = BigDecimal(cp_rate.to_s)
+
+    (base * (rate / 100.0)).round(2)
+  end
+
+  # --- TOTAL ---
   def ifm_cp_total(brut_salary)
     ifm(brut_salary) + cp(brut_salary)
   end
 
   # ============================================================
-  # HELPERS
+  # 5. HELPERS D'AFFICHAGE
   # ============================================================
   def self.agency_options
     Agency.where.not(code: 'other').order(:label).pluck(:label, :code)
@@ -101,26 +107,31 @@ class Contract < ApplicationRecord
   end
 
   # ============================================================
-  # PRIVÉ
+  # 6. PRIVÉ (MÉCANIQUE INTERNE)
   # ============================================================
   private
 
   def agency_must_exist_in_db
     return if agency.blank?
-
     errors.add(:agency, "n'est pas une agence valide") unless Agency.exists?(code: agency)
   end
 
+  # Gère le cas où l'utilisateur tape "10,5" ou copie-colle un nombre non conforme
   def normalize_decimal_fields
-    %i[km_rate night_rate ifm_rate cp_rate].each do |field|
-      # Récupère la valeur brute avant que Rails ne la transforme
+    fields = %i[km_rate night_rate ifm_rate cp_rate km_limit]
+
+    fields.each do |field|
       raw_value = read_attribute_before_type_cast(field)
 
-      # Ne touche que si c'est une string contenant une virgule
-      next unless raw_value.is_a?(String) && raw_value.include?(',')
+      next if raw_value.nil?
 
-      # Remplace et réassigne pour que Rails le prenne en compte
-      self[field] = raw_value.tr(',', '.')
+      if raw_value.is_a?(String)
+        # Remplace virgule par point
+        clean_value = raw_value.tr(',', '.')
+        # Supprime les espaces insécables ou autres saletés
+        clean_value = clean_value.gsub(/\s+/, '')
+        self[field] = clean_value
+      end
     end
   end
 end
