@@ -30,12 +30,11 @@ class Contract < ApplicationRecord
   validates :agency, presence: { message: 'Vous devez sélectionner une agence' }
   validate :agency_must_exist_in_db
 
-  # SÉCURITÉ 1 : Limites logiques
-  # Empêche de mettre un taux négatif OU un taux absurde (ex: > 50% pour IFM c'est louche)
+  # Empêche de mettre un taux négatif OU un taux non conforme (ex: > 50% pour IFM )
   # Empêche aussi de mettre "100" si l'user pense que c'est 100%
   validates :ifm_rate, :cp_rate, numericality: {
     greater_than_or_equal_to: 0,
-    less_than_or_equal_to: 50, # Garde-fou : Personne n'a 50% de CP
+    less_than_or_equal_to: 50,
     allow_nil: true
   }
 
