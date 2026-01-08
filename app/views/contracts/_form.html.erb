@@ -2,16 +2,16 @@
 
   <%# --- 1. IDENTITÉ DU CONTRAT --- %>
   <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
-    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
-      <h6 class="fw-bold text-orange text-uppercase ls-1 mb-0" style="font-size: 0.75rem;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-4">
+      <h6 class="fw-bold text-orange text-uppercase ls-1 mb-0" style="font-size: 0.80rem;">
         <i class="fa-solid fa-file-contract me-2"></i>Général
       </h6>
     </div>
     <div class="card-body p-4">
 
       <div class="mb-3">
-        <%= f.label :name, "Nom du contrat", class: "form-label small fw-bold text-muted" %>
-        <%= f.text_field :name, placeholder: "Ex: Mission Carrefour Février", class: "form-control form-control-lg bg-light border-0 fw-bold" %>
+        <%= f.label :name, "Nom du contrat (optionnel)", class: "form-label small fw-bold text-muted" %>
+        <%= f.text_field :name, placeholder: "Contrat CPM", class: "form-control form-control-lg bg-light border-0 fw-bold" %>
       </div>
 
       <div class="row g-3">
@@ -38,12 +38,11 @@
 
   <%# --- 2. PARAMÈTRES NUIT (Le Cœur du Système) --- %>
   <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
-    <div class="card-header bg-dark border-0 pt-3 px-4 pb-2">
+    <div class="card-header bg-dark border-0 pt-4 px-4 pb-4">
       <div class="d-flex justify-content-between align-items-center">
-        <h6 class="fw-bold text-white text-uppercase ls-1 mb-0" style="font-size: 0.75rem;">
+        <h6 class="fw-bold text-white text-uppercase ls-1 mb-0" style="font-size: 0.80rem;">
           <i class="fa-solid fa-moon me-2 text-warning"></i>Règles de Nuit
         </h6>
-        <span class="badge bg-white bg-opacity-10 text-white border border-white border-opacity-25 rounded-pill" style="font-size: 0.65rem;">Important</span>
       </div>
     </div>
     <div class="card-body p-4 bg-light">
@@ -79,14 +78,14 @@
           </div>
         </div>
       </div>
-      <p class="text-muted small mt-2 mb-0 fst-italic"><i class="fa-solid fa-circle-info me-1"></i>Les heures travaillées dans cette plage seront majorées.</p>
+      <p class="text-muted small mt-4 mb-0 fst-italic"><i class="fa-solid fa-circle-info me-1"></i>Les heures travaillées dans cette plage seront majorées.</p>
     </div>
   </div>
 
   <%# --- 3. PRIMES & FRAIS --- %>
   <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
-    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
-      <h6 class="fw-bold text-orange text-uppercase ls-1 mb-0" style="font-size: 0.75rem;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-4">
+      <h6 class="fw-bold text-orange text-uppercase ls-1 mb-0" style="font-size: 0.80rem;">
         <i class="fa-solid fa-coins me-2"></i>Finances
       </h6>
     </div>
@@ -114,7 +113,7 @@
           </div>
         </div>
         <div class="col-md-6">
-          <%= f.label :km_limit, "Plafond KM (Optionnel)", class: "form-label small fw-bold text-muted" %>
+          <%= f.label :km_limit, "Plafond KM AR", class: "form-label small fw-bold text-muted" %>
           <%= f.number_field :km_limit, class: "form-control bg-light border-0 fw-bold", step: 0.1 %>
         </div>
       </div>
@@ -129,7 +128,7 @@
 
   <div class="d-grid pb-5">
     <%= f.submit contract.new_record? ? "Créer le contrat" : "Enregistrer les modifications",
-        class: "btn btn-orange btn-lg fw-bold rounded-pill shadow-sm py-3" %>
+        class: "btn btn-orange fw-bold rounded-pill shadow-sm" %>
   </div>
 
 <% end %>
