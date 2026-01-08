@@ -199,6 +199,37 @@ class User < ApplicationRecord
     work_sessions.where(date: start_date..end_date)
   end
 
+
+  def conflicting_work_sessions(job_offer)
+    return [] unless job_offer.job_offer_slots.any?
+
+    # On récupère les sessions déjà validées ou en cours de validation
+    # Utilise status: ['accepted', 'pending'] selon ta config enum
+    my_sessions = work_sessions.joins(:contract).where(status: [:accepted, :pending])
+
+    conflicts = []
+
+    job_offer.job_offer_slots.each do |slot|
+      # On cherche s'il existe une session sur la même date avec chevauchement
+      overlap = my_sessions.find do |session|
+        next unless session.date == slot.date
+
+        # On compare uniquement les minutes écoulées depuis le début de la journée
+        # pour éviter les bugs de comparaison de dates complètes
+        s_start = session.start_time.seconds_since_midnight
+        s_end   = session.end_time.seconds_since_midnight
+        o_start = slot.start_time.seconds_since_midnight
+        o_end   = slot.end_time.seconds_since_midnight
+
+        # Logique de chevauchement : (Début1 < Fin2) ET (Fin1 > Début2)
+        o_start < s_end && o_end > s_start
+      end
+      conflicts << overlap if overlap
+    end
+
+    conflicts.compact.uniq
+  end
+
   # ============================================================
   # DASHBOARD — TOTAUX GLOBAUX
   # ============================================================
@@ -215,7 +246,7 @@ class User < ApplicationRecord
   end
 
   def total_ifm_cp
-    # CORRECTION : Calcul explicite pour s'assurer que CP est sur (Brut + IFM)
+    # Calcul explicite pour s'assurer que CP est sur (Brut + IFM)
     work_sessions.sum do |ws|
       b = ws.brut
       i = ws.contract.ifm(b)
