@@ -8,6 +8,9 @@
      ifm_rate = @job_offer.ifm_rate || 10
      cp_rate = @job_offer.cp_rate || 10
      km_limit_value = (@job_offer.km_unlimited || @job_offer.km_limit.to_f == 0) ? 99999 : @job_offer.km_limit
+
+     # On récupère l'application si elle existe pour gérer l'affichage du bouton annuler
+     application = current_user.job_applications.find_by(job_offer: @job_offer) if user_signed_in?
   %>
 
   <%# --- BANDEAU CONFLIT AGENDA --- %>
@@ -279,14 +282,23 @@
           <hr class="my-4 opacity-10">
 
           <% if user_signed_in? %>
-            <% if @already_applied %>
-              <div class="bg-success bg-opacity-10 border border-success rounded-4 p-4 text-center">
+            <% if application %>
+              <div class="bg-success bg-opacity-10 border border-success border-opacity-25 rounded-4 p-4 text-center">
                 <i class="fa-solid fa-circle-check text-success fs-2 mb-2"></i>
                 <h6 class="fw-bold text-success mb-1">Candidature envoyée</h6>
-                <p class="small text-muted mb-0">Le recruteur étudie votre profil.</p>
+                <p class="small text-muted mb-3">Le recruteur étudie votre profil.</p>
+
+                <%# BOUTON ANNULER AJOUTÉ ICI %>
+                <%= button_to job_offer_job_application_path(@job_offer, application),
+                    method: :delete,
+                    data: { turbo_confirm: "Êtes-vous sûr de vouloir annuler votre candidature ?" },
+                    class: "btn btn-link text-danger text-decoration-none small fw-bold p-0",
+                    status: :see_other do %>
+                  <i class="fa-solid fa-trash-can me-1"></i> Annuler ma candidature
+                <% end %>
               </div>
             <% else %>
-              <%= simple_form_for([@job_offer, @job_application]) do |f| %>
+              <%= simple_form_for([@job_offer, @job_application || JobApplication.new]) do |f| %>
                 <div class="mb-3">
                   <%= f.input :message,
                               label: false,
