@@ -3,13 +3,15 @@ import { Controller } from "@hotwired/stimulus";
 export default class extends Controller {
   static targets = [
     "kmInput",
+    "kmRow",
+    "kmResult",
     "ifm",
     "cp",
-    "kmResult",
-    "kmRow",
-    "totalBrut", // Nouveau
-    "totalNet", // Nouveau
+    "totalBrut",
+    "salaryNet",
+    "totalPocket",
   ];
+
   static values = {
     base: Number,
     ifmRate: Number,
@@ -19,56 +21,63 @@ export default class extends Controller {
   };
 
   connect() {
+    // On lance le calcul dès l'affichage de la page
     this.calculate();
   }
 
   calculate() {
-    // 1. Calcul des primes (IFM & CP) sur le salaire de base
-    const ifm = this.baseValue * this.ifmRateValue;
-    const cp = (this.baseValue + ifm) * this.cpRateValue;
+    // 1. Calculs Salaire
+    const base = this.baseValue;
+    const ifm = base * this.ifmRateValue;
+    const subTotal = base + ifm;
+    const cp = subTotal * this.cpRateValue;
 
-    // Salaire Brut Hors Frais
-    const salaryBrut = this.baseValue + ifm + cp;
+    const totalBrut = base + ifm + cp;
 
-    // 2. Calcul du Net (Salaire Brut - 22% de cotisations)
-    // Multiplier par 0.78 revient à retirer 22%
-    const salaryNet = salaryBrut * 0.78;
+    // Estimation Net (environ 78% du brut pour les contractuels hors-cadre)
+    const netSalary = totalBrut * 0.78;
 
-    this.ifmTarget.innerText = this.formatCurrency(ifm);
-    this.cpTarget.innerText = this.formatCurrency(cp);
-
-    // 3. Calcul des Indemnités Kilométriques (Non soumises aux cotisations)
-    let kmPay = 0;
+    // 2. Calculs KM (Net d'impôts)
+    let kmAmount = 0;
     if (this.hasKmInputTarget) {
-      const kms = parseFloat(this.kmInputTarget.value) || 0;
+      let km = parseFloat(this.kmInputTarget.value) || 0;
 
-      // On applique la limite si elle existe et qu'elle n'est pas à 0 (cas illimité)
-      const effectiveKms =
-        this.kmLimitValue > 0 ? Math.min(kms, this.kmLimitValue) : kms;
-      kmPay = effectiveKms * this.kmRateValue;
+      // Application de la limite si elle existe (et n'est pas illimitée/99999)
+      if (
+        this.kmLimitValue > 0 &&
+        this.kmLimitValue < 99999 &&
+        km > this.kmLimitValue
+      ) {
+        km = this.kmLimitValue;
+        // On pourrait ajouter une classe visuelle ici pour dire "Plafonné"
+      }
 
-      if (kms > 0) {
+      kmAmount = km * this.kmRateValue;
+
+      // Affichage de la ligne KM uniquement si montant > 0
+      if (kmAmount > 0) {
         this.kmRowTarget.classList.remove("d-none");
-        this.kmResultTarget.innerText = "+ " + this.formatCurrency(kmPay);
+        this.kmResultTarget.textContent = this.formatMoney(kmAmount);
       } else {
         this.kmRowTarget.classList.add("d-none");
       }
     }
 
-    // 4. Totaux Finaux
-    // Le Brut Total = (Salaire Brut + Frais)
-    // Le Net Total = (Salaire Net + Frais) -> Les frais sont payés "net" directement
-    const finalBrut = salaryBrut + kmPay;
-    const finalNet = salaryNet + kmPay;
+    // 3. Total Poche
+    const totalPocket = netSalary + kmAmount;
 
-    this.totalBrutTarget.innerText = this.formatCurrency(finalBrut);
-    this.totalNetTarget.innerText = this.formatCurrency(finalNet);
+    // 4. Mise à jour de l'affichage
+    this.ifmTarget.textContent = this.formatMoney(ifm);
+    this.cpTarget.textContent = this.formatMoney(cp);
+    this.totalBrutTarget.textContent = this.formatMoney(totalBrut);
+    this.salaryNetTarget.textContent = this.formatMoney(netSalary);
+    this.totalPocketTarget.textContent = this.formatMoney(totalPocket);
   }
 
-  formatCurrency(value) {
+  formatMoney(amount) {
     return new Intl.NumberFormat("fr-FR", {
       style: "currency",
       currency: "EUR",
-    }).format(value);
+    }).format(amount);
   }
 }
