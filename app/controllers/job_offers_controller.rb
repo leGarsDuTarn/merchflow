@@ -7,7 +7,7 @@ class JobOffersController < ApplicationController
  def index
     @job_offers = JobOffer.published
                           .upcoming
-                          .by_location(params[:city])     # Recherche texte (Ville/Zip)
+                          .by_query(params[:city])     # Recherche texte (Ville/Zip)
                           .by_department(params[:department])
                           .by_type(params[:type])
                           .by_contract(params[:contract_type])
