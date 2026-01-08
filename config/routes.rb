@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   # ============================================================
 
   resources :job_offers, only: [:index, :show, :destroy] do
-    resources :job_applications, only: [:create]
+    resources :job_applications, only: [:create, :destroy]
   end
 
   # ============================================================
