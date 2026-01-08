@@ -215,21 +215,22 @@
 
   <%# --- 5. BOUTONS D'ACTION BAS DE PAGE --- %>
   <div class="row justify-content-center mt-5 mb-5">
-    <div class="col-12 col-md-8 col-lg-6 text-center">
-      <div class="d-grid gap-3 d-md-flex justify-content-center">
-        <%= link_to new_contract_path, class: "btn btn-orange rounded-pill px-4 py-3 fw-bold shadow-sm" do %>
-          <i class="fa-solid fa-plus me-2"></i>Nouveau Contrat
-        <% end %>
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    <div class="d-grid gap-3 d-md-flex justify-content-center">
+      <%= link_to new_contract_path, class: "btn btn-orange rounded-pill px-4 py-3 fw-bold shadow-sm" do %>
+        <i class="fa-solid fa-plus me-2"></i>Nouveau Contrat
+      <% end %>
 
-        <% if current_user.contracts.exists? %>
-          <%= link_to new_contract_work_session_path(current_user.contracts.first), class: "btn btn-white border rounded-pill px-4 py-3 fw-bold shadow-sm text-orange" do %>
-            <i class="fa-solid fa-briefcase me-2"></i>Ajouter Mission
-          <% end %>
-        <% else %>
-          <button class="btn btn-light rounded-pill px-4 py-3 fw-bold text-muted" disabled>Ajouter Mission</button>
+      <% if current_user.contracts.exists? %>
+        <%# ICI : On utilise la route globale new_work_session_path au lieu de la route imbriquée %>
+        <%= link_to new_work_session_path, class: "btn btn-white border rounded-pill px-4 py-3 fw-bold shadow-sm text-orange" do %>
+          <i class="fa-solid fa-briefcase me-2"></i>Ajouter Mission
         <% end %>
-      </div>
+      <% else %>
+        <button class="btn btn-light rounded-pill px-4 py-3 fw-bold text-muted" disabled title="Créez d'abord un contrat">Ajouter Mission</button>
+      <% end %>
     </div>
   </div>
+</div>
 
 </div>

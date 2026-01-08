@@ -1,172 +1,21 @@
-<div class="container min-vh-100 d-flex align-items-center justify-content-center">
-  <div class="row w-100 justify-content-center">
+<div class="container min-vh-100 py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
 
-    <div class="col-md-6 col-lg-5">
-
-      <div class="card shadow-sm p-4 rounded-4 mt-4">
-
-        <h1 class="fw-bold text-center text-orange mb-4">Nouvelle mission</h1>
-
-        <%= form_with model: @work_session, local: true, html: { data: { turbo: false, controller: "break" } } do |f| %>
-
-          <%# SELECTION CONTRAT %>
-          <% if @contract.nil? %>
-            <div class="mb-3">
-              <%= f.label :contract_id, "Sélectionnez un contrat", class: "form-label fw-semibold" %>
-              <%= f.collection_select :contract_id,
-                            current_user.contracts.order(created_at: :desc),
-                            :id, :agency_label,
-                            { prompt: "Choisir un contrat" },
-                            class: "form-select" %>
-              <%= inline_error_for(@work_session, :contract_id) %>
-            </div>
-          <% else %>
-             <%= f.hidden_field :contract_id, value: @contract.id %>
-          <% end %>
-
-          <%# Entreprise %>
-          <div class="mb-3">
-            <%= f.label :company, "Entreprise", class: "form-label fw-semibold" %>
-            <%= f.text_field :company,
-            class: "form-control",
-            placeholder: "Ex : Lindt, Bonduelle, PepsiCo" %>
-          </div>
-
-          <%# DATE %>
-          <div class="mb-3">
-            <%= f.label :date, "Date de la mission", class: "form-label fw-semibold" %>
-            <%= f.date_field :date, class: "form-control" %>
-            <%= inline_error_for(@work_session, :date) %>
-          </div>
-
-          <%# HORAIRES %>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :start_time, "Début", class: "form-label fw-semibold" %>
-              <%= f.time_field :start_time, class: "form-control" %>
-              <%= inline_error_for(@work_session, :start_time) %>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <%= f.label :end_time, "Fin", class: "form-label fw-semibold" %>
-              <%= f.time_field :end_time, class: "form-control" %>
-              <%= inline_error_for(@work_session, :end_time) %>
-            </div>
-          </div>
-
-          <%# SECTION COUPURE (BREAK) %>
-          <div class="mb-4 bg-light p-3 rounded-4 border">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="toggleBreak"
-                     data-action="change->break#toggle"
-                     <%= 'checked' if @work_session.has_break? %>>
-              <label class="form-check-label fw-bold text-dark" for="toggleBreak">
-                <i class="fa-solid fa-mug-hot me-2 text-orange"></i>Coupure (pause non payée)
-              </label>
-            </div>
-
-            <div id="break-inputs"
-                 data-break-target="fields"
-                 class="mt-3 <%= 'd-none' unless @work_session.has_break? %>">
-              <div class="row">
-                <div class="col-6">
-                  <%= f.label :break_start_time, "Début pause", class: "small fw-semibold text-muted" %>
-                  <%= f.time_field :break_start_time, class: "form-control form-control-sm" %>
-                </div>
-                <div class="col-6">
-                  <%= f.label :break_end_time, "Fin pause", class: "small fw-semibold text-muted" %>
-                  <%= f.time_field :break_end_time, class: "form-control form-control-sm" %>
-                </div>
-              </div>
-              <div class="mt-2 text-orange" style="font-size: 0.75rem;">
-                <i class="fa-solid fa-info-circle"></i> Cette période sera déduite du temps payé.
-              </div>
-            </div>
-          </div>
-
-          <%# TAUX HORAIRE %>
-          <div class="mb-3">
-            <%= f.label :hourly_rate, "Taux horaire (€)", class: "form-label fw-semibold" %>
-            <%= f.number_field :hourly_rate, step: 0.01, class: "form-control" %>
-            <small class="text-muted">Par défaut : SMIC (12.02€)</small>
-            <%= inline_error_for(@work_session, :hourly_rate) %>
-          </div>
-
-          <%# MAGASIN %>
-          <div class="mb-3">
-            <%= f.label :store, "Nom du magasin", class: "form-label fw-semibold" %>
-            <%= f.text_field :store, class: "form-control", placeholder: "Ex. Intermarché Carmaux" %>
-            <%= inline_error_for(@work_session, :store) %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :store_full_address, "Adresse complète du magasin", class: "form-label fw-semibold" %>
-            <%= f.text_field :store_full_address,
-                             class: "form-control",
-                             placeholder: "Ex. Bd Flandres, 81400 Carmaux" %>
-            <%= inline_error_for(@work_session, :store_full_address) %>
-          </div>
-
-          <%# KM CUSTOM %>
-          <div class="mb-3">
-            <%= f.label :km_custom, "Kilomètres", class: "form-label fw-semibold" %>
-            <%= f.number_field :km_custom, step: 0.1, class: "form-control" %>
-            <%= inline_error_for(@work_session, :km_custom) %>
-          </div>
-
-          <%# === NOUVEAU BLOC : FRAIS ANNEXES === %>
-          <div class="mb-4 bg-light p-3 rounded-4 border">
-            <label class="form-label fw-bold text-dark mb-3">
-              <i class="fa-solid fa-receipt me-2 text-orange"></i>Frais annexes (Déclaratif)
-            </label>
-
-            <div class="row g-2">
-              <div class="col-4">
-                 <%= f.label :fee_meal, "Repas (€)", class: "small fw-semibold text-muted" %>
-                 <%= f.number_field :fee_meal, step: 0.01, class: "form-control", placeholder: "0.00" %>
-              </div>
-              <div class="col-4">
-                 <%= f.label :fee_parking, "Parking (€)", class: "small fw-semibold text-muted" %>
-                 <%= f.number_field :fee_parking, step: 0.01, class: "form-control", placeholder: "0.00" %>
-              </div>
-              <div class="col-4">
-                 <%= f.label :fee_toll, "Péage (€)", class: "small fw-semibold text-muted" %>
-                 <%= f.number_field :fee_toll, step: 0.01, class: "form-control", placeholder: "0.00" %>
-              </div>
-            </div>
-            <div class="mt-2 text-muted fst-italic" style="font-size: 0.75rem;">
-              Ces frais seront ajoutés au total net estimé.
-            </div>
-          </div>
-          <%# ==================================== %>
-
-          <%# MISSION RECOMMANDÉE %>
-          <div class="form-check mb-3">
-            <%= f.check_box :recommended, class: "form-check-input" %>
-            <%= f.label :recommended, "Êtes-vous recommandé pour cette mission ?", class: "form-check-label fw-semibold" %>
-          </div>
-
-          <%# NOTES %>
-          <div class="mb-3">
-            <%= f.label :notes, "Notes (optionnel)", class: "form-label fw-semibold" %>
-            <%= f.text_area :notes, rows: 3, class: "form-control",
-                             placeholder: "Détails de la mission…" %>
-            <%= inline_error_for(@work_session, :notes) %>
-          </div>
-
-          <%# SUBMIT %>
-          <div class="d-grid mt-3">
-            <%= f.submit "Enregistrer la mission", class: "btn btn-orange btn-lg fw-bold" %>
-          </div>
-
-        <% end %>
-
-        <div class="text-center mt-3">
-          <%= link_to "Retour", (@contract ? contract_path(@contract) : dashboard_path),
-                      class: "text-decoration-none text-muted" %>
+      <%# Header : Titre à gauche, Flèche à droite (Copié de Contract) %>
+      <div class="d-flex align-items-center mb-4">
+        <div>
+          <h1 class="fw-bold text-dark m-0">Nouvelle Mission</h1>
+          <p class="text-muted small m-0">Déclarez vos heures et frais de mission.</p>
         </div>
 
+        <%= link_to (@contract ? contract_path(@contract) : dashboard_path), class: "btn btn-white border shadow-sm rounded-circle ms-auto", style: "width:40px; height:40px; display:grid; place-items:center;" do %>
+          <i class="fa-solid fa-arrow-left text-dark"></i>
+        <% end %>
       </div>
+
+      <%# Render du Partial Form %>
+      <%= render 'form', work_session: @work_session %>
 
     </div>
   </div>

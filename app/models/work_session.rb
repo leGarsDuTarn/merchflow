@@ -162,13 +162,15 @@ class WorkSession < ApplicationRecord
     day_pay + night_pay
   end
 
-  # Helpers manquants pour tes tests (délèguent au contrat)
+  # IFM = 10% du Brut total (Base + Nuit)
   def amount_ifm
     contract.ifm(brut).round(2)
   end
 
+  # Les CP se calculent sur (Brut + IFM)
   def amount_cp
-    contract.cp(brut).round(2)
+    base_calcul = brut + amount_ifm
+    contract.cp(base_calcul).round(2)
   end
 
   # Somme des frais (Repas, Parking, Péage)
@@ -185,7 +187,7 @@ class WorkSession < ApplicationRecord
     contract.km_payment(effective_km.to_f, recommended: recommended)
   end
 
-  # Net fiscal estimé
+  # Net fiscal estimé (Sur le brut de base)
   def net
     (brut * (1 - 0.22)).round(2)
   end
@@ -194,6 +196,7 @@ class WorkSession < ApplicationRecord
   def net_total
     amount_km  = contract.km_payment(effective_km).round(2)
 
+    # On déduit les charges (approx 22%) sur les primes aussi
     net_ifm = (amount_ifm * 0.78).round(2)
     net_cp  = (amount_cp  * 0.78).round(2)
 
