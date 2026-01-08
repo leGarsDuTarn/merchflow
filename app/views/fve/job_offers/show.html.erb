@@ -155,21 +155,23 @@
               </div>
              </div>
 
-             <div class="bg-light p-3 text-center border-top border-light">
-               <% if @job_offer.km_rate > 0 %>
-                 <span class="badge bg-white text-dark border shadow-sm rounded-pill py-2 px-3 small">
-                   <i class="fa-solid fa-car text-orange me-2"></i>
-                   <%= @job_offer.km_rate %>€/km
-                   <% if @job_offer.km_unlimited %>
-                     - <span class="text-success fw-bold">(Illimité)</span>
-                   <% else %>
-                     - <span class="text-muted">(Limite AR : <%= @job_offer.km_limit.to_i %> km)</span>
-                   <% end %>
-                 </span>
-               <% else %>
-                 <span class="text-muted small">Pas de défraiement kilométrique</span>
-               <% end %>
-             </div>
+             <%# app/views/fve/job_offers/show.html.erb %>
+
+<div class="bg-light p-3 text-center border-top border-light">
+  <% if @job_offer.km_rate > 0 %>
+    <span class="badge bg-white text-dark border shadow-sm rounded-pill py-2 px-3 small">
+      <i class="fa-solid fa-car text-orange me-2"></i>
+      <%= @job_offer.km_rate %>€/km
+      <% if @job_offer.km_unlimited || @job_offer.km_limit.to_f == 0 %>
+        - <span class="text-success fw-bold">(Sans limite)</span>
+      <% else %>
+        - <span class="text-muted">(Limite AR : <%= @job_offer.km_limit.to_i %> km)</span>
+      <% end %>
+    </span>
+  <% else %>
+    <span class="text-muted small">Pas de défraiement kilométrique</span>
+  <% end %>
+</div>
           </div>
         </div>
       </div>
