@@ -6,7 +6,7 @@ class JobOffer < ApplicationRecord
 
   # --- ASSOCIATIONS ---
   belongs_to :fve, class_name: 'User', foreign_key: 'fve_id'
-  has_many :job_applications, dependent: :destroy
+  has_many :job_applications, dependent: :nullify
   has_many :candidates, through: :job_applications, source: :merch
 
   # Relation pour le planning flexible

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_09_081036) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_09_175128) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -85,10 +85,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_09_081036) do
   end
 
   create_table "job_applications", force: :cascade do |t|
+    t.string "company_name_snapshot"
+    t.string "contract_type_snapshot"
     t.datetime "created_at", null: false
+    t.datetime "end_date_snapshot"
+    t.decimal "hourly_rate_snapshot", precision: 5, scale: 2
     t.bigint "job_offer_id", null: false
+    t.string "job_title_snapshot"
+    t.string "location_snapshot"
     t.bigint "merch_id", null: false
     t.text "message"
+    t.datetime "start_date_snapshot"
     t.string "status", default: "pending"
     t.datetime "updated_at", null: false
     t.index ["job_offer_id", "merch_id"], name: "index_job_applications_on_job_offer_id_and_merch_id", unique: true

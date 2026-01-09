@@ -13,6 +13,20 @@ class JobApplicationsController < ApplicationController
       @job_applications = @job_applications.by_month(params[:search][:month])   if params[:search][:month].present?
       @job_applications = @job_applications.by_year(params[:search][:year])     if params[:search][:year].present?
     end
+
+      respond_to do |format|
+        format.html # Affiche la vue normale
+        format.pdf do
+         # On instancie notre classe PDF
+        pdf = ProofPdf.new(@job_applications, current_user)
+
+        # On envoie le fichier au navigateur
+        send_data pdf.render,
+                filename: "recap_candidatures_#{current_user.firstname}_#{Date.today}.pdf",
+                type: 'application/pdf',
+                disposition: 'attachment' # 'inline' pour voir dans le navigateur sans télécharger
+    end
+    end
   end
 
   def create
