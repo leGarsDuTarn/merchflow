@@ -9,6 +9,8 @@ class JobApplication < ApplicationRecord
 
   scope :pending, -> { where(status: 'pending') }
   scope :accepted, -> { where(status: 'accepted') }
+  scope :rejected, -> { where(status: 'rejected') }
+  scope :archived, -> { where(status: 'archived') }
   scope :by_status, ->(status) { where(status: status) if status.present? }
   scope :by_year,   ->(year)   { where('EXTRACT(YEAR FROM created_at) = ?', year) if year.present? }
   scope :by_month,  ->(month)  { where('EXTRACT(MONTH FROM created_at) = ?', month) if month.present? }

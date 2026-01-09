@@ -27,9 +27,10 @@
               <i class="fa-solid fa-list-check"></i>
             </span>
             <%= f.input_field :status,
-                collection: [['En attente', 'pending'], ['Acceptées', 'accepted'], ['Refusées', 'rejected']],
+                collection: [['En attente', 'pending'], ['Acceptées', 'accepted'], ['Refusées', 'rejected'], ['Archivées', 'archived'] ],
                 selected: params.dig(:search, :status),
                 include_blank: "Tous les statuts",
+                required: false,
                 class: "form-select bg-light border-0 py-2" %>
           </div>
         </div>
@@ -44,6 +45,7 @@
                 collection: (1..12).map { |m| [I18n.t("date.month_names")[m].capitalize, m] },
                 selected: params.dig(:search, :month),
                 include_blank: "Tous les mois",
+                required: false,
                 class: "form-select bg-light border-0 py-2" %>
           </div>
         </div>
@@ -54,10 +56,12 @@
             <span class="input-group-text bg-light border-0 ps-3 text-orange">
               <i class="fa-solid fa-calendar"></i>
             </span>
+            <%# CORRECTION ICI : Retrait de la valeur par défaut pour permettre de voir toutes les années %>
             <%= f.input_field :year,
-                collection: (2024..Date.today.year+1).to_a.reverse,
-                selected: params.dig(:search, :year) || Date.today.year,
-                include_blank: false,
+                collection: (2023..Date.today.year+1).to_a.reverse,
+                selected: params.dig(:search, :year),
+                include_blank: "Toutes les années",
+                required: false,
                 class: "form-select bg-light border-0 py-2" %>
           </div>
         </div>
@@ -85,7 +89,7 @@
       <button onclick="window.print();" class="btn btn-white border rounded-pill px-3 py-2 fw-bold small d-print-none shadow-sm">
         <i class="fa-solid fa-print me-2 text-orange"></i>Imprimer
       </button>
-      <span class=" bg-orange text-white rounded-pill px-3 py-2 shadow-sm"><%= @job_applications.count %> Candidatures</span>
+      <span class="badge bg-orange text-white rounded-pill px-3 py-2 shadow-sm"><%= @job_applications.count %> Candidatures</span>
     </div>
   </div>
 
@@ -139,7 +143,6 @@
                     <% end %>
 
                     <%# SUPPRESSION / ANNULATION %>
-                    <%# Utilisation de la route imbriquée job_offer_job_application_path(offer, app) %>
                     <% if offer %>
                       <%= link_to job_offer_job_application_path(offer, app),
                           data: { turbo_method: :delete, turbo_confirm: "Supprimer cet historique ? (Action irréversible)" },
