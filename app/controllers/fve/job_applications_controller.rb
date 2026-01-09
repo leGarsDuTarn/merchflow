@@ -10,10 +10,10 @@ module Fve
 
       # AU LIEU DE DESTROY : archive
       # Cela garde la trace en DB, donc le bouton "Déjà postulé" reste chez le Merch
-      @application.update(status: 'archived')
+      @application.update(status: 'rejected')
 
       redirect_to fve_job_offer_path(@job_offer),
-              notice: 'Candidat définitivement écarté de cette mission.',
+              notice: 'Candidat refusé. La trace est conservée pour son historique de candidature.',
               status: :see_other
     end
 
