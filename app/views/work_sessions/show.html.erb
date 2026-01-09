@@ -87,6 +87,7 @@
               </div>
             </div>
           <% end %>
+
           <div class="row g-2 mt-1 text-center">
             <div class="col-6">
               <div class="border border-orange-subtle bg-orange-light rounded-3 p-3 h-100 d-flex flex-column justify-content-center">
@@ -107,6 +108,17 @@
               </div>
             </div>
           </div>
+
+          <%# --- MODIFICATION DEMANDEE : AVERTISSEMENT SI 0 KM --- %>
+          <% if @work_session.effective_km.to_f == 0 %>
+            <div class="mt-3 text-center">
+              <div class="d-inline-flex align-items-center justify-content-center bg-orange-light bg-opacity-10 text-orange border-orange rounded-3 py-2 px-3 w-100">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                <small class="fw-semibold">Aucun kilomètre déclaré</small>
+              </div>
+            </div>
+          <% end %>
+          <%# ----------------------------------------------------- %>
 
         </div>
       </div>
@@ -147,7 +159,7 @@
               <i class="fa-solid fa-moon me-2"></i>
               <small class="mb-0">
                 Dont <strong><%= (@work_session.night_minutes / 60.0).round(2) %>h de nuit</strong>
-                (Majoration : +<%= (@work_session.contract.night_rate * 100).to_i %>%)
+                (Majoration : +<%= @work_session.contract.night_rate.to_i %>%
               </small>
             </div>
           <% end %>
