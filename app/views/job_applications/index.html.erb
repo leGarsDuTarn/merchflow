@@ -1,97 +1,169 @@
-<div class="container my-5">
+<div class="container mt-4 mb-5">
 
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
-    <div>
-      <h1 class="fw-bold text-gray m-0 text-center text-md-start">Mes Candidatures</h1>
-      <p class="text-muted mb-0 text-center text-md-start">Suivez l'état de vos demandes en temps réel.</p>
-    </div>
-
-    <%= link_to job_offers_path, class: "btn btn-orange rounded-pill px-4 py-2 fw-bold shadow-sm" do %>
-      <i class="fa-solid fa-magnifying-glass me-2"></i>Trouver des missions
-    <% end %>
+  <div class="text-center mb-5 d-print-none">
+    <h1 class="fw-bold text-dark m-0">Mes Candidatures</h1>
+    <p class="text-muted small">Historique et justificatifs pour vos démarches France Travail.</p>
   </div>
 
-  <div class="row g-3">
-    <% if @job_applications.any? %>
+  <%# --- SECTION RECHERCHE --- %>
+  <div class="card shadow rounded-4 border-0 mb-5 overflow-hidden d-print-none">
+    <div class="card-header bg-white border-bottom-0 p-4 pb-0">
+      <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+        <span class="bg-orange-light text-orange rounded-3 p-2 me-3 d-inline-flex">
+          <i class="fa-solid fa-magnifying-glass fa-sm"></i>
+        </span>
+        Rechercher dans mon historique
+      </h5>
+    </div>
+
+    <div class="card-body p-4 bg-white">
+
+      <%= simple_form_for :search, url: my_applications_path, method: :get, html: { class: "row g-3 align-items-end" } do |f| %>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-bold small text-muted text-uppercase ls-1 mb-1">État de la demande</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3 text-orange">
+              <i class="fa-solid fa-list-check"></i>
+            </span>
+            <%= f.input_field :status,
+                collection: [['En attente', 'pending'], ['Acceptées', 'accepted'], ['Refusées', 'rejected']],
+                selected: params.dig(:search, :status),
+                include_blank: "Tous les statuts",
+                class: "form-select bg-light border-0 py-2" %>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-4">
+          <label class="form-label fw-bold small text-muted text-uppercase ls-1 mb-1">Mois</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3 text-orange">
+              <i class="fa-regular fa-calendar"></i>
+            </span>
+            <%= f.input_field :month,
+                collection: (1..12).map { |m| [I18n.t("date.month_names")[m].capitalize, m] },
+                selected: params.dig(:search, :month),
+                include_blank: "Tous les mois",
+                class: "form-select bg-light border-0 py-2" %>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-4">
+          <label class="form-label fw-bold small text-muted text-uppercase ls-1 mb-1">Année</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-light border-0 ps-3 text-orange">
+              <i class="fa-solid fa-calendar"></i>
+            </span>
+            <%= f.input_field :year,
+                collection: (2024..Date.today.year+1).to_a.reverse,
+                selected: params.dig(:search, :year) || Date.today.year,
+                include_blank: false,
+                class: "form-select bg-light border-0 py-2" %>
+          </div>
+        </div>
+
+        <div class="col-12 mt-4 d-flex justify-content-center gap-2 flex-wrap">
+          <%= button_tag type: 'submit', class: "btn btn-orange fw-bold rounded-pill shadow-sm px-5 py-2" do %>
+            Rechercher
+          <% end %>
+
+          <%= link_to my_applications_path, class: "btn btn-light text-muted border rounded-pill px-3 py-2 fw-semibold" do %>
+            <i class="fa-solid fa-arrow-rotate-left me-1"></i> Effacer
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# --- RÉSULTATS --- %>
+  <div class="d-flex justify-content-between align-items-end mb-4 px-2">
+    <div>
+      <h4 class="fw-bold text-dark mb-0">Résultats</h4>
+      <p class="text-muted small mb-0 d-none d-print-block">Justificatif MerchFlow généré le <%= l Date.today %></p>
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print();" class="btn btn-white border rounded-pill px-3 py-2 fw-bold small d-print-none shadow-sm">
+        <i class="fa-solid fa-print me-2 text-orange"></i>Imprimer / PDF
+      </button>
+      <span class="badge bg-orange rounded-pill px-3 py-2 shadow-sm"><%= @job_applications.count %> Candidatures</span>
+    </div>
+  </div>
+
+  <% if @job_applications.any? %>
+    <div class="row g-3">
       <% @job_applications.each do |app| %>
+        <% offer = app.job_offer %>
         <div class="col-12">
+          <%# Carte avec bordure couleur statut %>
+          <div class="card shadow-sm border-0 rounded-4 position-relative overflow-hidden bg-white border-start border-5" style="border-left-color: <%= job_status_color(app.status) %> !important;">
 
-          <div class="card shadow border-0 rounded-4 p-3 mb-3 position-relative overflow-hidden <%= job_status_card_class(app.status) %>">
+            <div class="card-body p-3 p-lg-4">
+              <div class="row align-items-center g-3">
 
-            <div class="position-absolute start-0 top-0 bottom-0" style="width: 6px; background-color: <%= job_status_color(app.status) %>;"></div>
-
-            <div class="row align-items-center g-3">
-
-              <div class="col-12 col-md-4 ps-4">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <h5 class="fw-bold text-dark m-0 text-truncate"><%= app.job_offer.title %></h5>
-                  <%= job_status_badge(app.status) %>
-                </div>
-                <small class="text-muted d-block">
-                  <i class="fa-solid fa-store me-1 text-orange"></i> <%= app.job_offer.store_name %> • <%= app.job_offer.city %>
-                </small>
-              </div>
-
-              <div class="col-12 col-md-4">
-                <div class="bg-white bg-opacity-50 p-3 rounded-3 d-flex align-items-center justify-content-between border border-white">
-                  <div class="d-flex align-items-center">
-                    <i class="fa-regular fa-calendar text-orange me-2"></i>
-                    <span class="fw-bold text-dark small">
-                      <%= l(app.job_offer.start_date.to_date, format: :long).capitalize %>
-                    </span>
+                <%# BLOC 1 : INFO MISSION %>
+                <div class="col-12 col-md-5">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <%= job_status_badge(app.status) %>
+                    <small class="text-muted fw-bold" style="font-size: 0.65rem;">REF #<%= app.id %></small>
                   </div>
-                  <small class="text-muted" style="font-size: 0.7rem;">
-                    Postulé le <%= l app.created_at, format: "%d/%m/%y" %>
-                  </small>
+                  <h5 class="fw-bold text-dark mb-1"><%= offer&.title || "Mission archivée" %></h5>
+                  <div class="text-muted small d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-store text-orange opacity-75"></i>
+                    <%= offer&.store_name %> • <%= offer&.city %>
+                  </div>
                 </div>
-              </div>
 
-              <div class="col-12 col-md-4 text-md-end">
-                <div class="d-flex justify-content-md-end gap-2">
+                <%# BLOC 2 : PREUVES DATES %>
+                <div class="col-12 col-md-4">
+                  <div class="bg-light p-3 rounded-4 border border-light">
+                    <div class="d-flex align-items-center mb-1 small text-muted">
+                      <i class="fa-regular fa-paper-plane me-2 text-orange"></i>
+                      Envoi : <strong class="ms-1 text-dark"><%= l app.created_at.to_date, format: :long %></strong>
+                    </div>
+                    <% if offer %>
+                      <div class="d-flex align-items-center small text-muted">
+                        <i class="fa-regular fa-calendar-days me-2 text-orange"></i>
+                        Mission : <strong class="ms-1 text-dark"><%= l offer.start_date.to_date, format: :long %></strong>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
 
-                  <%= link_to job_offer_path(app.job_offer),
-                              class: "btn btn-white border text-muted rounded-3 shadow-sm d-flex align-items-center justify-content-center",
-                              style: "width: 42px; height: 42px;", title: "Voir l'offre" do %>
-                    <i class="fa-solid fa-eye"></i>
-                  <% end %>
-
-                  <% if app.status == 'accepted' %>
-                    <%# Accès contrat si accepté %>
-                    <% contract = current_user.merch_contracts.find_by(fve_id: app.job_offer.fve_id) %>
-                    <% if contract %>
-                      <%= link_to contract_path(contract),
-                                  class: "btn bg-orange-light text-orange rounded-3 border-orange-subtle shadow-sm px-3 fw-bold d-flex align-items-center" do %>
-                        <i class="fa-solid fa-file-contract me-2"></i>Contrat
+                <%# BLOC 3 : ACTIONS %>
+                <div class="col-12 col-md-3 text-md-end d-print-none">
+                  <div class="d-flex justify-content-md-end gap-2">
+                    <% if offer %>
+                      <%= link_to job_offer_path(offer), class: "btn btn-white border text-muted rounded-3 shadow-sm d-flex align-items-center justify-content-center", style: "width: 42px; height: 42px;", title: "Voir l'offre" do %>
+                        <i class="fa-solid fa-eye"></i>
                       <% end %>
                     <% end %>
-                  <% end %>
 
-                  <% if app.status == 'rejected' %>
-                    <%# BOUTON SUPPRIMER (POUBELLE ROUGE) %>
-                    <%= link_to fve_job_application_path(app),
-                                data: { turbo_method: :delete, turbo_confirm: "Supprimer cette candidature de votre liste ?" },
-                                class: "btn btn-white text-danger rounded-3 border shadow-sm d-flex align-items-center justify-content-center",
-                                style: "width: 42px; height: 42px;", title: "Supprimer" do %>
-                      <i class="fa-solid fa-trash-can"></i>
+                    <%# SUPPRESSION / ANNULATION %>
+                    <%# Utilisation de la route imbriquée job_offer_job_application_path(offer, app) %>
+                    <% if offer %>
+                      <%= link_to job_offer_job_application_path(offer, app),
+                          data: { turbo_method: :delete, turbo_confirm: "Supprimer cet historique ? (Action irréversible)" },
+                          class: "btn btn-white text-danger border rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                          style: "width: 42px; height: 42px;" do %>
+                        <i class="fa-solid fa-trash-can"></i>
+                      <% end %>
                     <% end %>
-                  <% end %>
-
+                  </div>
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
         </div>
       <% end %>
-    <% else %>
-      <div class="col-12 text-center py-5 mt-4">
-        <div class="bg-orange-light rounded-circle d-inline-flex p-4 mb-3 text-orange">
-          <i class="fa-solid fa-paper-plane fa-3x"></i>
-        </div>
-        <h4 class="fw-bold text-dark">Aucune candidature</h4>
-        <p class="text-muted small mb-4">Vos demandes de missions apparaîtront ici.</p>
-        <%= link_to "Parcourir les offres", job_offers_path, class: "btn btn-orange rounded-pill fw-bold px-4" %>
-      </div>
-    <% end %>
-  </div>
+    </div>
+  <% else %>
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed mt-3">
+      <div class="mb-3 text-muted opacity-25"><i class="fa-solid fa-folder-open fa-4x"></i></div>
+      <h4 class="fw-bold text-dark">Aucun résultat</h4>
+      <p class="text-muted small">Aucune candidature ne correspond aux filtres sélectionnés.</p>
+      <%= link_to "Réinitialiser les filtres", my_applications_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-bold mt-2" %>
+    </div>
+  <% end %>
+
 </div>

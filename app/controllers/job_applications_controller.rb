@@ -3,25 +3,26 @@ class JobApplicationsController < ApplicationController
   before_action :set_job_offer, only: [:create]
 
   def index
-    # On récupère toutes les candidatures du Merch
-    # On inclut l'offre et l'utilisateur FVE pour afficher le nom de l'agence/client
     @job_applications = current_user.job_applications
                                     .includes(job_offer: :fve)
                                     .order(created_at: :desc)
+
+    # --- LOGIQUE DE FILTRAGE (France Travail) ---
+    if params[:search].present?
+      @job_applications = @job_applications.by_status(params[:search][:status]) if params[:search][:status].present?
+      @job_applications = @job_applications.by_month(params[:search][:month])   if params[:search][:month].present?
+      @job_applications = @job_applications.by_year(params[:search][:year])     if params[:search][:year].present?
+    end
   end
 
   def create
-    # 1. Construit la candidature
     @job_application = @job_offer.job_applications.build(job_application_params)
-
-    # 2. Lie au candidat connecté (merch_id dans ta DB)
     @job_application.merch = current_user
     @job_application.status = 'pending'
 
     if @job_application.save
       redirect_to job_offer_path(@job_offer), notice: "Votre candidature a bien été envoyée ! 🚀"
     else
-      # En cas d'erreur (ex: déjà postulé), redirige vers l'offre avec le message d'erreur
       redirect_to job_offer_path(@job_offer), alert: @job_application.errors.full_messages.to_sentence
     end
   end
@@ -30,9 +31,14 @@ class JobApplicationsController < ApplicationController
     @application = current_user.job_applications.find(params[:id])
     @application.destroy
 
-    redirect_to job_offer_path(@application.job_offer),
-              notice: "Votre candidature a été annulée.",
-              status: :see_other
+    # Redirection intelligente :
+    # Si on vient de la liste "Mes candidatures", on y reste.
+    # Sinon on retourne à l'offre.
+    if request.referer&.include?(my_applications_path)
+      redirect_to my_applications_path, notice: "Candidature supprimée de votre historique.", status: :see_other
+    else
+      redirect_to job_offer_path(@application.job_offer), notice: "Candidature annulée.", status: :see_other
+    end
   end
 
   private
@@ -42,7 +48,6 @@ class JobApplicationsController < ApplicationController
   end
 
   def job_application_params
-    # Autorise le message s'il y en a un, sinon permet un hash vide
     params.require(:job_application).permit(:message) if params[:job_application].present?
   end
 end
