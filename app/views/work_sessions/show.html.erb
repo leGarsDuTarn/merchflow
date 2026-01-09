@@ -123,13 +123,10 @@
               <i class="fa-solid fa-align-left text-orange me-2"></i>Descriptif de la mission
             </h6>
 
-            <%# AJOUT : overflow-auto + max-height pour le scroll %>
             <div class="bg-light p-3 rounded-3 border border-light overflow-auto" style="max-height: 250px;">
               <p class="mb-0 text-muted small lh-lg" style="white-space: pre-wrap;"><%= @work_session.job_offer.description %></p>
             </div>
           <% end %>
-          <%# --------------------------------------- %>
-
         </div>
       </div>
     </div>
@@ -142,23 +139,10 @@
           <h5 class="fw-bold text-orange mb-4">Détail de la rémunération</h5>
 
           <%
-             # Calculs
-             brut      = @work_session.brut
-             ifm_brut  = @work_session.amount_ifm
-             cp_brut   = @work_session.amount_cp
-             total_brut = brut + ifm_brut + cp_brut
-
-             net_estime = @work_session.net
-             ifm_net    = (ifm_brut * 0.78).round(2)
-             cp_net     = (cp_brut  * 0.78).round(2)
-             km_net     = @work_session.km_payment_final
-
-             fees_total = (@work_session.fee_meal || 0) +
-                          (@work_session.fee_parking || 0) +
-                          (@work_session.fee_toll || 0)
-
-             sous_total_net = (net_estime + ifm_net + cp_net).round(2)
-             total_net      = (sous_total_net + km_net + fees_total).round(2)
+             # Calculs d'affichage pour le détail (Non persistés en base)
+             ifm_net = (@work_session.amount_ifm * 0.78).round(2)
+             cp_net  = (@work_session.amount_cp  * 0.78).round(2)
+             sous_total_net = (@work_session.net + ifm_net + cp_net).round(2)
           %>
 
           <% if @work_session.night_minutes > 0 %>
@@ -183,31 +167,33 @@
               <tbody>
                 <tr>
                   <td class="py-2">Salaire de base</td>
-                  <td class="text-end text-muted"><%= number_to_currency(brut) %></td>
-                  <td class="text-end fw-semibold"><%= number_to_currency(net_estime) %></td>
+                  <td class="text-end text-muted"><%= number_to_currency(@work_session.brut) %></td>
+                  <td class="text-end fw-semibold"><%= number_to_currency(@work_session.net) %></td>
                 </tr>
                 <tr>
                   <td class="py-2">Indemnités </td>
-                  <td class="text-end text-muted"><%= number_to_currency(ifm_brut) %></td>
+                  <td class="text-end text-muted"><%= number_to_currency(@work_session.amount_ifm) %></td>
                   <td class="text-end fw-semibold"><%= number_to_currency(ifm_net) %></td>
                 </tr>
                 <tr>
                   <td class="py-2">Congés Payés </td>
-                  <td class="text-end text-muted"><%= number_to_currency(cp_brut) %></td>
+                  <td class="text-end text-muted"><%= number_to_currency(@work_session.amount_cp) %></td>
                   <td class="text-end fw-semibold"><%= number_to_currency(cp_net) %></td>
                 </tr>
 
-                <% if fees_total > 0 %>
+                <% if @work_session.total_fees > 0 %>
                   <tr class="border-top border-light">
                     <td class="py-2 text-muted fst-italic"><small>Frais (Annexe)</small></td>
                     <td class="text-end text-muted">-</td>
-                    <td class="text-end fw-semibold text-success">+ <%= number_to_currency(fees_total) %></td>
+                    <td class="text-end fw-semibold text-success">+ <%= number_to_currency(@work_session.total_fees) %></td>
                   </tr>
                 <% end %>
 
                 <tr class="border-top">
                   <td class="pt-3 fw-bold text-muted">Sous-total</td>
-                  <td class="pt-3 text-end fw-bold text-muted"><%= number_to_currency(total_brut) %></td>
+                  <td class="pt-3 text-end fw-bold text-muted">
+                    <%= number_to_currency(@work_session.brut + @work_session.amount_ifm + @work_session.amount_cp) %>
+                  </td>
                   <td class="pt-3 text-end fw-bold"><%= number_to_currency(sous_total_net) %></td>
                 </tr>
               </tbody>
@@ -215,8 +201,10 @@
           </div>
 
           <div class="bg-orange text-white rounded-4 p-4 position-relative overflow-hidden">
+
+            <%# Cercle décoratif dynamique selon la présence de frais %>
             <div class="position-absolute bg-white opacity-10 rounded-circle"
-                 style="<%= fees_total > 0 ? 'width: 180px; height: 180px; top: -50px; right: -50px;' : 'width: 150px; height: 150px; top: -50px; right: -30px;' %>">
+                 style="<%= @work_session.total_fees > 0 ? 'width: 180px; height: 180px; top: -50px; right: -50px;' : 'width: 150px; height: 150px; top: -50px; right: -30px;' %>">
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-2 position-relative">
@@ -229,16 +217,16 @@
                 <i class="fa-solid fa-gas-pump me-2 opacity-75"></i>
                 <span class="opacity-75">Indemnités KM</span>
               </div>
-              <span class="text-muted fw-semibold">+ <%= number_to_currency(km_net) %></span>
+              <span class="text-muted fw-semibold">+ <%= number_to_currency(@work_session.km_payment_final) %></span>
             </div>
 
-            <% if fees_total > 0 %>
+            <% if @work_session.total_fees > 0 %>
               <div class="d-flex justify-content-between align-items-center mb-3 position-relative border-bottom border-white border-opacity-25 pb-3">
                 <div class="d-flex align-items-center">
                   <i class="fa-solid fa-receipt me-2 opacity-75"></i>
                   <span class="opacity-75">Autres Frais</span>
                 </div>
-                <span class="text-muted fw-semibold">+ <%= number_to_currency(fees_total) %></span>
+                <span class="text-muted fw-semibold">+ <%= number_to_currency(@work_session.total_fees) %></span>
               </div>
             <% else %>
                <div class="border-bottom border-white border-opacity-25 pb-3 mb-3"></div>
@@ -249,7 +237,7 @@
                 <h2 class="fw-bold mb-0 display-6">Total Net</h2>
                 <small class="opacity-75">Virement estimé</small>
               </div>
-              <h2 class="fw-bold mb-0 display-6"><%= number_to_currency(total_net) %></h2>
+              <h2 class="fw-bold mb-0 display-6"><%= number_to_currency(@work_session.net_total) %></h2>
             </div>
           </div>
 
