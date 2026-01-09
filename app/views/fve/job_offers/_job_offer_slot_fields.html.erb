@@ -1,4 +1,5 @@
 <div class="nested-form-wrapper mb-2" data-new-record="<%= f.object.new_record? %>">
+  <%= f.hidden_field :_destroy %>
   <div class="row g-2 align-items-center p-2 border border-light rounded-3 bg-white shadow-sm transition-hover position-relative">
 
     <%# --- 1. DATE (Pleine largeur sur mobile / Col-3 sur Desktop) --- %>
