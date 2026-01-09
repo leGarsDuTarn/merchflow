@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_08_134209) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_09_081036) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -246,6 +246,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_134209) do
     t.decimal "fee_parking", precision: 10, scale: 2, default: "0.0"
     t.decimal "fee_toll", precision: 10, scale: 2, default: "0.0"
     t.decimal "hourly_rate", precision: 5, scale: 2, default: "12.02", null: false
+    t.bigint "job_offer_id"
     t.decimal "km_custom", precision: 5, scale: 2
     t.integer "night_minutes", default: 0, null: false
     t.text "notes"
@@ -257,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_134209) do
     t.datetime "updated_at", null: false
     t.index ["contract_id"], name: "index_work_sessions_on_contract_id"
     t.index ["date"], name: "index_work_sessions_on_date"
+    t.index ["job_offer_id"], name: "index_work_sessions_on_job_offer_id"
   end
 
   add_foreign_key "contracts", "users"
@@ -274,4 +276,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_134209) do
   add_foreign_key "mission_proposals", "users", column: "merch_id"
   add_foreign_key "unavailabilities", "users"
   add_foreign_key "work_sessions", "contracts"
+  add_foreign_key "work_sessions", "job_offers"
 end

@@ -3,6 +3,7 @@ class WorkSession < ApplicationRecord
   # RELATIONS
   # ============================================================
   belongs_to :contract
+  belongs_to :job_offer, optional: true
   has_many :kilometer_logs, dependent: :destroy
 
   # ============================================================
@@ -110,8 +111,22 @@ class WorkSession < ApplicationRecord
   # ============================================================
   def compute_duration
     return if start_time.blank? || end_time.blank?
-    total = ((end_time - start_time) / 60).to_i
-    self.duration_minutes = total
+
+    # 1. Calcul total brut
+    raw_minutes = ((end_time - start_time) / 60).to_i
+
+    # 2. Soustraction de la pause si elle existe
+    if break_start_time.present? && break_end_time.present?
+      # On s'assure que break_end est bien après break_start (gestion minuit si besoin)
+      b_end = break_end_time
+      b_end += 1.day if b_end < break_start_time
+
+      break_minutes = ((b_end - break_start_time) / 60).to_i
+      raw_minutes -= break_minutes
+    end
+
+    # 3. Sécurité pour ne pas avoir de durée négative
+    self.duration_minutes = [raw_minutes, 0].max
   end
 
   def compute_night_minutes
@@ -124,6 +139,13 @@ class WorkSession < ApplicationRecord
     current = start_time
 
     while current < end_time
+      # Saute la minute si on est en pause ===
+      if in_break?(current)
+        current += 1.minute
+        next
+      end
+      # =======================================================
+
       h = current.hour
       is_night = if cfg_start > cfg_end
                    h >= cfg_start || h < cfg_end
@@ -135,6 +157,19 @@ class WorkSession < ApplicationRecord
     end
 
     self.night_minutes = minutes
+  end
+
+  # Helper pour vérifier si une heure donnée tombe dans la pause
+  def in_break?(time)
+    return false unless break_start_time.present? && break_end_time.present?
+
+    # Gestion du cas où la pause traverse minuit (ex: 23h à 01h)
+    b_end = break_end_time
+    b_end += 1.day if b_end < break_start_time
+
+    # Si le 'time' testé est le jour précédent mais que la pause a fini le lendemain
+    # (Cas complexe, mais généralement WorkSession gère des dates précises)
+    time >= break_start_time && time < b_end
   end
 
   def compute_effective_km
