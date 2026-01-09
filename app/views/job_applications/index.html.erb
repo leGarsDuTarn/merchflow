@@ -149,7 +149,7 @@
                     <% end %>
 
                     <%# SUPPRESSION / ANNULATION (Sécurisée pour France Travail) %>
-                    <%= link_to my_applications_path(app),
+                    <%= link_to job_application_path(app),
                         data: {
                           turbo_method: :delete,
                           turbo_confirm: "⚠️ ATTENTION : Si vous supprimez cet historique, vous perdez votre preuve de candidature. Supprimer quand même ?"

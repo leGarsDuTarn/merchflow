@@ -18,6 +18,12 @@ Rails.application.routes.draw do
   end
 
   # ============================================================
+  # JOB APPLICATIONS
+  # ============================================================
+
+  resources :job_applications, only: [:destroy]
+
+  # ============================================================
   # HOME + DASHBOARD
   # ============================================================
   root 'home#index'
@@ -76,6 +82,7 @@ Rails.application.routes.draw do
   get 'planning', to: 'planning#index'
   get 'communaute', to: 'static_pages#community', as: :community
   get 'mes-candidatures', to: 'job_applications#index', as: :my_applications
+
 
   # ============================================================
   # MERCH ROUTES
