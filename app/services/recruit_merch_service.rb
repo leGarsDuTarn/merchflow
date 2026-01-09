@@ -34,9 +34,6 @@ class RecruitMerchService
   def find_or_create_contract
     agency_code = @fve.respond_to?(:agency) ? @fve.agency : nil
 
-    # 🐛 DEBUG
-    Rails.logger.info "🔍 Recherche contrat avec : user_id=#{@merch.id}, agency=#{agency_code.inspect}"
-
     # ✅ SOLUTION FINALE : Utiliser user_id (la foreign key principale)
     # Un merch (user) peut avoir plusieurs contrats (1 par agence)
     existing = Contract.find_by(
@@ -44,12 +41,7 @@ class RecruitMerchService
       agency: agency_code
     )
 
-    # 🐛 DEBUG
-    all_contracts = Contract.where(user_id: @merch.id)
-    Rails.logger.info "📋 Contrats existants pour user #{@merch.id} : #{all_contracts.pluck(:id, :agency).inspect}"
-
     if existing.present?
-      Rails.logger.info "✅ Contrat existant trouvé : ##{existing.id} (user: #{@merch.id}, agency: #{agency_code})"
       return existing
     end
 
@@ -65,8 +57,6 @@ class RecruitMerchService
     # Calcul des taux
     is_precarious = %w[cdd cidd interim].include?(c_type)
     standard_rate = is_precarious ? 10.0 : 0.0
-
-    Rails.logger.info "🆕 Création d'un nouveau contrat pour user ##{@merch.id}, agence #{agency_code}"
 
     Contract.create!(
       name: "Mission #{@offer.mission_type.capitalize} - #{@offer.company_name}",

@@ -20,15 +20,12 @@ class JobApplication < ApplicationRecord
     # Seulement si la candidature était acceptée
     return unless status == 'accepted'
 
-    Rails.logger.info "🚨 BEFORE_DESTROY déclenché pour JobApplication ##{id}"
     clean_work_sessions
   end
 
   def clean_work_sessions
     fve = job_offer.fve
     agency_code = fve.respond_to?(:agency) ? fve.agency : nil
-
-    Rails.logger.info "🔍 [clean_work_sessions] Recherche contrat: user_id=#{merch_id}, agency=#{agency_code.inspect}"
 
     # ✅ Recherche cohérente avec user_id + agency
     contract = Contract.find_by(
@@ -42,14 +39,7 @@ class JobApplication < ApplicationRecord
         job_offer_id: job_offer_id
       )
 
-      deleted_count = sessions_to_delete.destroy_all.size
-
-      Rails.logger.info "🗑️ Suppression de #{deleted_count} work_session(s) pour le contrat ##{contract.id}"
-      Rails.logger.info "   Sessions IDs supprimées: #{sessions_to_delete.pluck(:id).inspect}"
-    else
-      Rails.logger.warn "⚠️ Aucun contrat trouvé pour user_id=#{merch_id}, agency=#{agency_code}"
-      Rails.logger.warn "   Job offer: #{job_offer_id}, FVE: #{job_offer.fve_id}"
-      Rails.logger.warn "   Contrats existants pour ce user: #{Contract.where(user_id: merch_id).pluck(:id, :agency).inspect}"
+      sessions_to_delete.destroy_all
     end
   end
 end
