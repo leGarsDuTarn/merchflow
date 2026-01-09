@@ -17,6 +17,7 @@
 
   <div class="row g-4">
 
+    <%# --- COLONNE GAUCHE : DÉTAILS MISSION --- %>
     <div class="col-lg-5">
 
       <div class="card shadow border-0 rounded-4 mb-4 h-100 position-relative overflow-hidden">
@@ -36,15 +37,11 @@
             </div>
             <div>
               <h5 class="fw-bold mb-0 text-dark"><%= @work_session.store.presence || "Magasin inconnu" %></h5>
-
-              <%# --- MODIFICATION ICI : AJOUT NOM AGENCE --- %>
               <small class="text-muted">
                 <%= @work_session.company %>
                 <span class="mx-1">•</span>
                 <%= @work_session.contract.agency_label %>
               </small>
-              <%# ------------------------------------------- %>
-
             </div>
           </div>
 
@@ -109,7 +106,6 @@
             </div>
           </div>
 
-          <%# --- MODIFICATION DEMANDEE : AVERTISSEMENT SI 0 KM --- %>
           <% if @work_session.effective_km.to_f == 0 %>
             <div class="mt-3 text-center">
               <div class="d-inline-flex align-items-center justify-content-center bg-orange-light bg-opacity-10 text-orange border-orange rounded-3 py-2 px-3 w-100">
@@ -118,12 +114,27 @@
               </div>
             </div>
           <% end %>
-          <%# ----------------------------------------------------- %>
+
+          <%# --- DESCRIPTIF MISSION (SCROLLABLE) --- %>
+          <% if @work_session.job_offer.present? %>
+            <hr class="text-muted opacity-25 my-4">
+
+            <h6 class="fw-bold text-dark mb-3">
+              <i class="fa-solid fa-align-left text-orange me-2"></i>Descriptif de la mission
+            </h6>
+
+            <%# AJOUT : overflow-auto + max-height pour le scroll %>
+            <div class="bg-light p-3 rounded-3 border border-light overflow-auto" style="max-height: 250px;">
+              <p class="mb-0 text-muted small lh-lg" style="white-space: pre-wrap;"><%= @work_session.job_offer.description %></p>
+            </div>
+          <% end %>
+          <%# --------------------------------------- %>
 
         </div>
       </div>
     </div>
 
+    <%# --- COLONNE DROITE : RÉMUNÉRATION --- %>
     <div class="col-lg-7">
 
       <div class="card shadow border-0 rounded-4 h-100">
@@ -131,11 +142,10 @@
           <h5 class="fw-bold text-orange mb-4">Détail de la rémunération</h5>
 
           <%
-             # Récupération des données
+             # Calculs
              brut      = @work_session.brut
              ifm_brut  = @work_session.amount_ifm
              cp_brut   = @work_session.amount_cp
-
              total_brut = brut + ifm_brut + cp_brut
 
              net_estime = @work_session.net
@@ -143,14 +153,11 @@
              cp_net     = (cp_brut  * 0.78).round(2)
              km_net     = @work_session.km_payment_final
 
-             # Calcul des nouveaux frais
              fees_total = (@work_session.fee_meal || 0) +
                           (@work_session.fee_parking || 0) +
                           (@work_session.fee_toll || 0)
 
              sous_total_net = (net_estime + ifm_net + cp_net).round(2)
-
-             # Le Total Net inclut maintenant les frais
              total_net      = (sous_total_net + km_net + fees_total).round(2)
           %>
 
@@ -208,8 +215,6 @@
           </div>
 
           <div class="bg-orange text-white rounded-4 p-4 position-relative overflow-hidden">
-
-            <%# Cercle décoratif dynamique selon la présence de frais %>
             <div class="position-absolute bg-white opacity-10 rounded-circle"
                  style="<%= fees_total > 0 ? 'width: 180px; height: 180px; top: -50px; right: -50px;' : 'width: 150px; height: 150px; top: -50px; right: -30px;' %>">
             </div>
