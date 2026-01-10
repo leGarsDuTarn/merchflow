@@ -33,7 +33,7 @@
           <h3 class="fw-bold text-capitalize m-0 text-orange">
             <%= I18n.l Date.new(@year, @month), format: "%B %Y" %>
           </h3>
-          <span class="badge bg-light text-muted fw-normal mt-3 border">
+          <span class="badge bg-light text-muted fw-bold mt-3 border">
             <%= @grouped.values.sum { |s| s.sum(&:duration_minutes) } / 60.0 %> h totales
           </span>
         </div>
@@ -49,7 +49,7 @@
       <%# J'ai remplacé le gros bloc par un bouton blanc élégant %>
       <div class="d-flex justify-content-center">
         <%= link_to france_travail_path(year: @year, month: @month, format: :pdf),
-            class: "btn btn-white border border-orange text-orange rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2",
+            class: "btn btn-orange rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2",
             style: "font-size: 0.9rem;",
             target: "_blank" do %>
           <i class="fa-solid fa-file-pdf"></i>
