@@ -1,12 +1,12 @@
 class DeclarationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_contract, only: %i[index create]  # <-- gardé pour ton système actuel
+  before_action :set_contract, only: %i[index create]
 
   # ============================================
   # FRANCE TRAVAIL (global, tous employeurs)
   # ============================================
   def france_travail
-    # Si une date YYYY-MM a été envoyée par la barre de recherche
+    # 1. Gestion de la Date (Mois/Année)
     if params[:date].present?
       parsed = Date.parse("#{params[:date]}-01")
       @year  = parsed.year
@@ -16,7 +16,7 @@ class DeclarationsController < ApplicationController
       @month = (params[:month] || Date.today.month).to_i
     end
 
-    # NORMALISATION mois <1 ou >12
+    # Normalisation des mois (ex: mois 13 => mois 1 année N+1)
     if @month < 1
       @month = 12
       @year -= 1
@@ -27,13 +27,30 @@ class DeclarationsController < ApplicationController
       @year += 1
     end
 
-    # WORK SESSIONS pour le mois demandé
+    # 2. Récupération des sessions du mois
     @sessions = current_user.work_sessions.for_month(@year, @month)
-    @grouped  = @sessions.group_by { |ws| ws.contract.agency }
+
+    # 3. Groupement et TRI ALPHABÉTIQUE par agence
+    # On trie sur le nom de l'agence (agency) pour que le PDF et la vue soient ordonnés
+    @grouped = @sessions.group_by { |ws| ws.contract.agency }
+                        .sort_by { |agency, _| agency.to_s.downcase }
+                        .to_h
+
+    # 4. Formats de réponse (HTML ou PDF)
+    respond_to do |format|
+      format.html # Affiche la vue normale
+      format.pdf do
+        pdf = FranceTravailPdf.new(@grouped, current_user, @month, @year)
+        send_data pdf.render,
+                  filename: "declaration_france_travail_#{@month}_#{@year}.pdf",
+                  type: 'application/pdf',
+                  disposition: 'attachment' # 'inline' pour voir dans le navigateur
+      end
+    end
   end
 
   # ============================================
-  # DÉCLARATIONS PAR CONTRAT (ton système actuel)
+  # DÉCLARATIONS PAR CONTRAT
   # ============================================
   def index
     @declarations = @contract.declarations.order(year: :desc, month: :desc)

@@ -1,95 +1,108 @@
 <div class="container my-5">
 
-  <h1 class="fw-bold text-orange mb-4">Déclaration France Travail</h1>
+  <%# --- EN-TÊTE + BOUTON PDF --- %>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-orange mb-0">Déclaration France Travail</h1>
 
-  <div class="card shadow-sm rounded-4 p-3 mb-4">
+    <%# BOUTON PDF AJOUTÉ ICI %>
+    <%= link_to france_travail_path(year: @year, month: @month, format: :pdf),
+        class: "btn btn-outline-secondary btn-sm shadow-sm rounded-pill px-3",
+        target: "_blank" do %>
+      <i class="fa-solid fa-file-pdf me-2 text-orange"></i> Télécharger PDF
+    <% end %>
+  </div>
+
+  <%# --- FORMULAIRE RECHERCHE --- %>
+  <div class="card shadow-sm rounded-4 p-3 mb-4 border-0">
     <%= form_with url: france_travail_path, method: :get, local: true, class: "row g-3 align-items-end" do %>
 
       <div class="col-8">
-        <label class="fw-semibold mb-1">Rechercher un mois</label>
+        <label class="fw-semibold mb-1 text-muted small text-uppercase">Changer de mois</label>
         <%= month_field_tag :date,
               "#{@year}-#{sprintf('%02d', @month)}",
-              class: "form-control" %>
+              class: "form-control bg-light border-0" %>
       </div>
 
       <div class="col-4">
-        <button class="btn btn-orange w-100 fw-semibold">
-          Rechercher
+        <button class="btn btn-orange w-100 fw-bold shadow-sm">
+          Voir
         </button>
       </div>
 
     <% end %>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <%# --- NAVIGATION MOIS --- %>
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-2 rounded-4">
     <%= link_to france_travail_path(year: @year, month: @month - 1),
-                class: "btn btn-orange-outline rounded-3" do %>
-      <i class="fa-solid fa-chevron-left"></i>
+                class: "btn btn-white border shadow-sm rounded-circle", style: "width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" do %>
+      <i class="fa-solid fa-chevron-left text-muted"></i>
     <% end %>
 
-    <h3 class="fw-semibold text-capitalize m-0">
+    <h3 class="fw-bold text-capitalize m-0 text-dark">
       <%= I18n.l Date.new(@year, @month), format: "%B %Y" %>
     </h3>
 
     <%= link_to france_travail_path(year: @year, month: @month + 1),
-                class: "btn btn-orange-outline rounded-3" do %>
-      <i class="fa-solid fa-chevron-right"></i>
+                class: "btn btn-white border shadow-sm rounded-circle", style: "width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" do %>
+      <i class="fa-solid fa-chevron-right text-muted"></i>
     <% end %>
   </div>
 
   <% if @grouped.empty? %>
-    <p class="text-muted text-center mt-5">
-      Aucune mission pour ce mois.
-    </p>
+    <div class="text-center py-5">
+      <div class="text-muted opacity-25 mb-3">
+        <i class="fa-solid fa-calendar-xmark fa-4x"></i>
+      </div>
+      <h4 class="fw-bold text-muted">Aucune données pour ce mois.</h4>
+      <p class="text-muted small">Vous n'avez pas encore d'heures enregistrées pour cette période.</p>
+    </div>
   <% end %>
 
+  <%# --- LISTE DES AGENCES (Désormais triées alphabétiquement par le contrôleur) --- %>
   <% @grouped.each do |agency, sessions| %>
 
     <%
-       # CALCULS PRÉCIS VIA LE MODÈLE (SANS IFM)
-
-       # 1. Heures
+       # CALCULS IDENTIQUES AU CONTROLEUR ET AU PDF
        total_minutes = sessions.sum(&:duration_minutes)
        hours = (total_minutes / 60.0).round(2)
-
-       # 2. Brut de Base (Salaire brut hors primes)
        base_brut = sessions.sum(&:brut)
-
-       # 3. CP (Congés Payés) - Toujours calculés par le modèle
        total_cp = sessions.sum(&:amount_cp)
-
-       # 4. Total à Déclarer (UNIQUEMENT Base + CP)
-       # L'IFM est exclue ici comme demandé
        declare = base_brut + total_cp
     %>
 
-    <div class="card shadow-sm rounded-4 p-4 mb-4 bg-white">
+    <div class="card shadow-sm rounded-4 p-4 mb-4 bg-white border-0">
 
-      <h4 class="fw-bold text-orange mb-3"><%= agency.upcase %></h4>
+      <div class="d-flex align-items-center mb-3">
+        <div class="bg-orange-light text-orange rounded-3 p-2 me-3">
+          <i class="fa-solid fa-building"></i>
+        </div>
+        <h4 class="fw-bold text-dark m-0"><%= agency.upcase %></h4>
+      </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-        <p class="text-muted m-0">Heures effectuées</p>
-        <h4 class="fw-bold m-0"><%= hours %> h</h4>
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+        <p class="text-muted m-0 fw-semibold">Heures effectuées</p>
+        <span class="badge bg-light text-dark border fs-6"><%= hours %> h</span>
       </div>
 
       <div class="row g-2 mb-3">
         <div class="col-12 d-flex justify-content-between">
           <span class="text-muted small">Salaire Brut (Base)</span>
-          <span class="fw-bold small"><%= number_to_currency(base_brut) %></span>
+          <span class="fw-bold small text-dark"><%= number_to_currency(base_brut) %></span>
         </div>
 
         <div class="col-12 d-flex justify-content-between">
           <span class="text-muted small">Congés Payés (CP)</span>
-          <span class="fw-bold small"><%= number_to_currency(total_cp) %></span>
+          <span class="fw-bold small text-dark"><%= number_to_currency(total_cp) %></span>
         </div>
       </div>
 
-      <div class="bg-light p-3 rounded-3 mt-2 text-center">
-        <p class="text-muted m-0 small mb-1">Montant Brut à déclarer (Base + CP)</p>
-        <h3 class="fw-bold text-orange m-0">
+      <div class="bg-orange-light p-3 rounded-4 mt-2 text-center border border-warning border-opacity-25">
+        <p class="text-orange m-0 small mb-1 fw-bold text-uppercase ls-1">Montant Brut à déclarer</p>
+        <h2 class="fw-bold text-orange m-0">
           <%= number_to_currency(declare) %>
-        </h3>
-        <small class="text-muted" style="font-size: 0.7rem;">(Hors IFM)</small>
+        </h2>
+        <small class="text-muted opacity-75" style="font-size: 0.75rem;">(Base + CP, hors IFM)</small>
       </div>
 
     </div>
