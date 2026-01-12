@@ -239,7 +239,7 @@ RSpec.describe User, type: :model do
       )
     end
 
-    describe '#conflicting_work_sessions' do
+    describe 'Conflit avec des work_session existante' do
       it 'détecte un conflit si les horaires se chevauchent' do
         new_offer = create(:job_offer)
         new_offer.job_offer_slots.destroy_all
@@ -251,7 +251,7 @@ RSpec.describe User, type: :model do
       end
     end
 
-    describe '#has_unavailability_during?' do
+    describe 'conflit avec une indisponibilité?' do
       it 'retourne true si une indisponibilité tombe sur la date de l\'offre' do
         create(:unavailability, user: merch, date: Date.tomorrow)
         offer = create(:job_offer)

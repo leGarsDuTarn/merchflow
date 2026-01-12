@@ -72,7 +72,7 @@ RSpec.describe MerchSetting, type: :model do
   # ------------------------------------------------------------
   # 4. LOGIQUE D'AFFICHAGE
   # ------------------------------------------------------------
-  describe '#mission_preferences' do
+  describe 'mission_preferences' do
     let(:setting) { build(:merch_setting) }
 
     it 'affiche "Merchandising" si seul role_merch est actif' do

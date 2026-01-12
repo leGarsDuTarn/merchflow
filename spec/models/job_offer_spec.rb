@@ -80,7 +80,7 @@ RSpec.describe JobOffer, type: :model do
     end
   end
 
-  describe '#remaining_spots' do
+  describe 'place restante' do
     let(:offer) { create(:job_offer, headcount_required: 3) }
 
     it 'décrémente quand un candidat est accepté' do
