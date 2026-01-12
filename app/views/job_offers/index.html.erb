@@ -216,9 +216,9 @@
                   <% end %>
                 <% elsif is_full %>
                   <div class="alert alert-light border border-secondary border-opacity-25 p-2 rounded-3 text-center mb-3">
-                    <small class="text-muted fw-bold"><i class="fa-solid fa-lock me-1"></i> Victime de son succès</small>
+                    <small class="text-orange fw-bold"><i class="fa-solid fa-lock me-1"></i> Victime de son succès</small>
                   </div>
-                  <button class="btn btn-light text-muted border w-100 fw-bold rounded-3" disabled>Complet</button>
+                  <button class="btn btn-light text-muted border w-100 fw-bold rounded-3" disabled>Toutes les places ont été pourvues pour cette mission.</button>
                 <% else %>
                   <%= link_to "Voir l'offre", job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm py-2 d-flex align-items-center justify-content-center"%>
                 <% end %>
