@@ -43,6 +43,10 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::IntegrationHelpers, type: :system # INDISPENSABLE POUR LE DASHBOARD
 
+  config.before(:each) do
+    Agency.find_or_create_by!(code: 'actiale', label: 'Actiale')
+  end
+
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
   ]
