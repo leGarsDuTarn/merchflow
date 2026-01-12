@@ -130,10 +130,9 @@ RSpec.describe JobOffer, type: :model do
       expect(slot.errors[:end_time]).to include("doit être strictement après l'heure de début")
     end
 
-    it 'refuse un start_time après end_time' do
-      slot = build(:job_offer_slot, job_offer: offer, start_time: "10:00", end_time: "08:00")
-      expect(slot).not_to be_valid
-      # Ici le modèle va ajouter l'erreur car 08:00 < 10:00
+    it 'accepte une mission qui traverse minuit (ex: 22h -> 02h)' do
+      slot = build(:job_offer_slot, job_offer: offer, start_time: "22:00", end_time: "02:00")
+      expect(slot).to be_valid
     end
     it 'refuse une pause qui sort des horaires de la mission' do
       # Mission 08h-12h / Pause 13h-14h
