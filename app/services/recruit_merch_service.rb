@@ -9,10 +9,10 @@ class RecruitMerchService
   end
 
   def call
-    if @application.status == 'accepted'
-      @error_message = "Ce candidat a déjà été recruté pour cette mission."
-      return false
-    end
+    # Vérifications en amont avant toute modification
+    return false unless validate_application_status
+    return false unless validate_schedule_conflicts
+    return false unless validate_availability
 
     ActiveRecord::Base.transaction do
       contract = find_or_create_contract
@@ -36,9 +36,61 @@ class RecruitMerchService
 
   private
 
+  def validate_application_status
+    if @application.status == 'accepted'
+      @error_message = "Ce candidat a déjà été recruté."
+      return false
+    end
+    true
+  end
+
+  def validate_schedule_conflicts
+    @offer.job_offer_slots.each do |slot|
+      # Récupérer toutes les sessions de travail du merch à cette date
+      conflicting_sessions = @merch.work_sessions
+                                   .where(date: slot.date)
+                                   .where.not(status: [:cancelled, :rejected])
+
+      conflicting_sessions.each do |session|
+        if times_overlap?(slot.start_time, slot.end_time, session.start_time, session.end_time)
+          @error_message = "Le merch est déjà en mission le #{slot.date} (#{slot.start_time.strftime('%H:%M')}-#{slot.end_time.strftime('%H:%M')})"
+          return false
+        end
+      end
+    end
+    true
+  end
+
+  def validate_availability
+    @offer.job_offer_slots.each do |slot|
+      # Vérifier si le merch a posé une indisponibilité ce jour-là
+      if @merch.unavailabilities.exists?(date: slot.date)
+        @error_message = "Le merch a posé une indisponibilité le #{slot.date}"
+        return false
+      end
+    end
+    true
+  end
+
+  def times_overlap?(start1, end1, start2, end2)
+    # Convertir en Time si nécessaire pour comparaison
+    s1 = ensure_time(start1)
+    e1 = ensure_time(end1)
+    s2 = ensure_time(start2)
+    e2 = ensure_time(end2)
+
+    # Deux créneaux se chevauchent si l'un commence avant que l'autre ne finisse
+    s1 < e2 && s2 < e1
+  end
+
+  def ensure_time(time_value)
+    return time_value if time_value.is_a?(Time)
+    Time.zone.parse(time_value.to_s)
+  end
+
   def find_or_create_contract
     agency_code = @fve.respond_to?(:agency) ? @fve.agency : nil
-    
+
     # Un merch (user) peut avoir plusieurs contrats (1 par agence)
     existing = Contract.find_by(
       user_id: @merch.id,
