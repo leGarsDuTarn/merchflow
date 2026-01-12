@@ -136,7 +136,15 @@
 
       <div class="card shadow border-0 rounded-4 h-100">
         <div class="card-body p-4">
-          <h5 class="fw-bold text-orange mb-4">Détail de la rémunération</h5>
+
+          <%# --- MODIFICATION ICI : AJOUT DU TAUX HORAIRE DANS LE HEADER --- %>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold text-orange mb-0">Détail de la rémunération</h5>
+            <div class="badge bg-orange-light text-orange border border-orange-subtle rounded-pill px-3 py-2 fw-bold" style="font-size: 0.8rem;">
+               <%= number_to_currency(@work_session.hourly_rate) %>/h
+            </div>
+          </div>
+          <%# ------------------------------------------------------------- %>
 
           <%
              # Calculs d'affichage pour le détail (Non persistés en base)
