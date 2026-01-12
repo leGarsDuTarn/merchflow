@@ -1,10 +1,10 @@
 FactoryBot.define do
   factory :job_offer_slot do
-    job_offer { nil }
-    date { "2026-01-06" }
-    start_time { "2026-01-06 10:44:15" }
-    end_time { "2026-01-06 10:44:15" }
-    break_start_time { "2026-01-06 10:44:15" }
-    break_end_time { "2026-01-06 10:44:15" }
+    association :job_offer
+    date { Date.tomorrow }
+    start_time { Time.zone.parse("08:00") }
+    end_time { Time.zone.parse("17:00") }
+    break_start_time { Time.zone.parse("12:00") }
+    break_end_time { Time.zone.parse("13:00") }
   end
 end
