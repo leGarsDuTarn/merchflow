@@ -17,7 +17,12 @@ class RecruitMerchService
     ActiveRecord::Base.transaction do
       contract = find_or_create_contract
       create_work_sessions_loop(contract)
+
+      # Valide le candidat actuel
       @application.update!(status: 'accepted')
+
+      # Refuse automatiquement les autres si l'offre est complète
+      reject_others_if_full!
     end
 
     true
@@ -33,8 +38,7 @@ class RecruitMerchService
 
   def find_or_create_contract
     agency_code = @fve.respond_to?(:agency) ? @fve.agency : nil
-
-    # ✅ SOLUTION FINALE : Utiliser user_id (la foreign key principale)
+    
     # Un merch (user) peut avoir plusieurs contrats (1 par agence)
     existing = Contract.find_by(
       user_id: @merch.id,
@@ -61,7 +65,7 @@ class RecruitMerchService
     Contract.create!(
       name: "Mission #{@offer.mission_type.capitalize} - #{@offer.company_name}",
 
-      # ✅ COHÉRENCE : user_id est la clé principale
+      # user_id est la clé principale
       user: @merch,          # belongs_to :user
       fve_id: @fve.id,       # Pour traçabilité
       merch_id: @merch.id,   # Pour traçabilité (si besoin)
@@ -107,6 +111,18 @@ class RecruitMerchService
         ws.store_full_address = [@offer.address, @offer.zipcode, @offer.city].compact.join(', ')
         ws.status           = 'accepted'
       end
+    end
+  end
+
+  def reject_others_if_full!
+    # Recharge l'offre pour avoir le compte à jour
+    if @offer.reload.remaining_spots <= 0
+      # Prend tous les autres candidats en attente sur cette offre
+      # et les passe à 'rejected'.
+      @offer.job_applications
+            .where(status: 'pending')
+            .where.not(id: @application.id) # Sécurité pour ne pas toucher celui qu'on traite
+            .update_all(status: 'rejected')
     end
   end
 end
