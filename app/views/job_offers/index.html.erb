@@ -214,11 +214,27 @@
                   <%= link_to job_offer_path(offer), class: "btn btn-light border text-muted w-100 fw-bold rounded-3 shadow-sm" do %>
                     Voir ma candidature
                   <% end %>
+
+                <%# --- CHANGEMENT ICI (NOUVEAU DESIGN COMPLET) --- %>
                 <% elsif is_full %>
-                  <div class="alert alert-light border border-secondary border-opacity-25 p-2 rounded-3 text-center mb-3">
-                    <small class="text-orange fw-bold"><i class="fa-solid fa-lock me-1"></i> Victime de son succès</small>
+                  <div class="bg-light border border-light-subtle rounded-4 p-4 text-center mb-3 shadow-sm">
+                    <div class="mb-2">
+                      <span class="bg-white shadow-sm rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fa-solid fa-users-check text-muted fs-4"></i>
+                      </span>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-1">Victime de son succès !</h6>
+                    <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;">
+                      Toutes les places ont été pourvues pour cette mission.
+                    </p>
                   </div>
-                  <button class="btn btn-light text-muted border w-100 fw-bold rounded-3" disabled>Toutes les places ont été pourvues pour cette mission.</button>
+
+                  <button class="btn btn-light text-muted border w-100 rounded-pill fw-bold py-3 opacity-75" disabled>
+                    <i class="fa-solid fa-ban me-2"></i>Mission Complète
+                  </button>
+                <%# ----------------------------------------------- %>
+
                 <% else %>
                   <%= link_to "Voir l'offre", job_offer_path(offer), class: "btn btn-orange w-100 fw-bold rounded-3 shadow-sm py-2 d-flex align-items-center justify-content-center"%>
                 <% end %>
