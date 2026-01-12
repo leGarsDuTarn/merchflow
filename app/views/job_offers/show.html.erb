@@ -7,7 +7,7 @@
      cp_rate = @job_offer.cp_rate || 10
      km_limit_value = (@job_offer.km_unlimited || @job_offer.km_limit.to_f == 0) ? 99999 : @job_offer.km_limit
 
-     # On récupère l'application si elle existe pour gérer l'affichage du bouton annuler
+     # On récupère l'application si elle existe
      application = current_user.job_applications.find_by(job_offer: @job_offer) if user_signed_in?
   %>
 
@@ -279,32 +279,54 @@
 
           <hr class="my-4 opacity-10">
 
-          <% if user_signed_in? %>
-            <% if application %>
+          <%# ========================= %>
+          <%# GESTION AFFICHAGE STATUT %>
+          <%# ========================= %>
 
-              <%# ========================= %>
-              <%# CONDITION ACCEPTED VS PENDING %>
-              <%# ========================= %>
+          <% if user_signed_in? %>
+
+            <% if @job_offer.status != 'published' %>
+
+              <%# CAS 1 : OFFRE ARCHIVÉE (Prioritaire sur tout le reste) %>
+              <%# Même si l'utilisateur a postulé, si c'est archivé, il voit ça et ne peut pas annuler %>
+              <div class="bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded-4 p-4 text-center">
+                 <i class="fa-solid fa-box-archive text-secondary fs-2 mb-2"></i>
+                 <h6 class="fw-bold text-secondary mb-1">Offre archivée</h6>
+                 <p class="small text-muted mb-0">Le recrutement pour cette mission est clôturé.</p>
+              </div>
+
+            <% elsif application %>
+
+              <%# CAS 2 : POSTULÉ & PUBLIÉ %>
 
               <% if application.status == 'accepted' %>
-                <%# CAS 1 : RECRUTÉ (ACCEPTED) 🎉 %>
+                <%# RECRUTÉ 🎉 %>
                 <div class="bg-success bg-opacity-10 border border-success border-opacity-25 rounded-4 p-4 text-center">
                   <div class="mb-2 fs-1">🎉</div>
                   <h6 class="fw-bold text-success mb-1">Félicitations !</h6>
                   <p class="small text-muted mb-3">Vous avez été recruté pour cette mission.</p>
 
-                  <%= button_to job_offer_job_application_path(@job_offer, application),
-                      method: :delete,
-                      data: { turbo_confirm: "Êtes-vous sûr de vouloir annuler votre candidature ?" },
-                      class: "btn btn-red text-decoration-none small fw-bold p-2",
-                      status: :see_other do %>
-                    <i class="fa-solid fa-trash-can me-1"></i> Annuler ma candidature
-                  <% end %>
-                </div>
+                  <hr class="border-success border-opacity-25 my-3">
+
+    <p class="small fw-bold text-dark mb-2">Un empêchement ?</p>
+    <p class="text-muted mb-3" style="font-size: 0.75rem;">
+      Votre candidature ayant été validée, merci de contacter directement l'agence pour toute annulation.
+    </p>
+
+    <% if @job_offer.contact_phone.present? %>
+      <a href="tel:<%= @job_offer.contact_phone %>" class="btn btn-gray w-100 rounded-pill fw-bold btn-sm shadow-sm">
+        <i class="fa-solid fa-phone me-2"></i> Appeler l'agence
+      </a>
+    <% elsif @job_offer.contact_email.present? %>
+      <a href="mailto:<%= @job_offer.contact_email %>" class="btn btn-white border-success text-success w-100 rounded-pill fw-bold btn-sm shadow-sm">
+        <i class="fa-regular fa-envelope me-2"></i> Envoyer un email
+      </a>
+    <% end %>
+  </div>
 
               <% else %>
 
-                <%# CAS 2 : EN ATTENTE (PENDING) %>
+                <%# EN ATTENTE %>
                 <div class="bg-success bg-opacity-10 border border-success border-opacity-25 rounded-4 p-4 text-center">
                   <i class="fa-solid fa-circle-check text-success fs-2 mb-2"></i>
                   <h6 class="fw-bold text-success mb-1">Candidature envoyée</h6>
@@ -322,6 +344,8 @@
               <% end %>
 
             <% else %>
+
+              <%# CAS 3 : PAS ENCORE POSTULÉ (ET PUBLIÉ) %>
               <%= simple_form_for([@job_offer, @job_application || JobApplication.new]) do |f| %>
                 <div class="mb-3">
                   <%= f.input :message,
@@ -334,7 +358,9 @@
                   En postulant, vous acceptez de partager votre nom, prénom et données de contact avec <strong><%= @job_offer.publisher_name %></strong>.
                 </p>
               <% end %>
+
             <% end %>
+
           <% else %>
              <%= link_to new_user_session_path, class: "btn btn-dark w-100 rounded-pill fw-bold py-3 shadow-sm" do %>
                <i class="fa-solid fa-right-to-bracket me-2"></i>Connexion requise

@@ -31,13 +31,16 @@ class JobOffersController < ApplicationController
 
   private
 
+  private
+
   def set_job_offer
-    # On récupère l'offre
     @job_offer = JobOffer.find(params[:id])
 
-    # Sécurité supplémentaire : si un candidat tente d'accéder à un brouillon (draft) via ID
-    # Seul l'auteur (FVE) ou un admin peut voir une offre non publiée
-    if @job_offer.status != 'published' && (current_user.nil? || !current_user.fve?)
+    is_public = @job_offer.status == 'published'
+    is_recruiter = current_user&.fve?
+    has_applied = current_user && @job_offer.job_applications.exists?(merch_id: current_user.id)
+    
+    if !is_public && !is_recruiter && !has_applied
       redirect_to job_offers_path, alert: "Cette offre n'est plus disponible."
     end
   end
