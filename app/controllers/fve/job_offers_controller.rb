@@ -2,7 +2,7 @@ module Fve
   class JobOffersController < ApplicationController
     before_action :authenticate_user!
     before_action :verify_fve
-    before_action :set_job_offer, only: [:show, :edit, :update, :destroy, :toggle_status, :accept_candidate, :cancel_candidate, :reject_candidate]
+    before_action :set_job_offer, only: [:show, :edit, :update, :destroy, :toggle_status, :accept_candidate, :cancel_candidate, :reject_candidate, :recover_candidate]
 
     def index
       authorize [:fve, JobOffer]
@@ -108,21 +108,13 @@ module Fve
       authorize [:fve, @job_offer], :accept_candidate?
       application = @job_offer.job_applications.find(params[:application_id])
 
-      contract = Contract.find_by(merch_id: application.merch_id, fve_id: current_user.id)
+      service = CancelRecruitmentService.new(application)
 
-      ActiveRecord::Base.transaction do
-        if contract
-          WorkSession.where(
-            contract: contract,
-            start_time: @job_offer.start_date.beginning_of_day..@job_offer.end_date.end_of_day
-          ).destroy_all
-        end
-        application.update!(status: 'pending')
+      if service.call
+        redirect_to fve_job_offer_path(@job_offer), notice: "Recrutement annulé. La place est libérée."
+      else
+        redirect_to fve_job_offer_path(@job_offer), alert: service.error_message
       end
-
-      redirect_to fve_job_offer_path(@job_offer), notice: "Recrutement annulé."
-    rescue StandardError => e
-      redirect_to fve_job_offer_path(@job_offer), alert: "Erreur : #{e.message}"
     end
 
     def reject_candidate
@@ -133,6 +125,17 @@ module Fve
         redirect_to fve_job_offer_path(@job_offer), notice: 'Candidature refusée.', status: :see_other
       else
         redirect_to fve_job_offer_path(@job_offer), alert: "Impossible de modifier le statut.", status: :see_other
+      end
+    end
+
+    def recover_candidate
+      authorize [:fve, @job_offer], :reject_candidate? # On utilise la même policy que reject
+      @application = @job_offer.job_applications.find(params[:application_id])
+
+      if @application.update(status: 'pending')
+        redirect_to fve_job_offer_path(@job_offer), notice: 'Le candidat a été repêché.'
+      else
+        redirect_to fve_job_offer_path(@job_offer), alert: 'Impossible de modifier le statut.'
       end
     end
 

@@ -338,9 +338,19 @@
                             <% end %>
                           </div>
 
+                        <%# --- CHANGEMENT ICI : AJOUT DU BOUTON REPÊCHER --- %>
                         <% elsif app.status == 'rejected' %>
-                          <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">Refusé</span>
+                          <div class="d-flex flex-column align-items-end gap-1">
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">Refusé</span>
+                            <%= button_to recover_candidate_fve_job_offer_path(@job_offer, application_id: app.id),
+                                method: :post,
+                                class: "btn btn-link text-muted p-0 text-decoration-none small" do %>
+                              <i class="fa-solid fa-rotate-left me-1"></i>Repêcher
+                            <% end %>
+                          </div>
                         <% end %>
+                        <%# ----------------------------------------------- %>
+
                       </div>
                     </div>
 

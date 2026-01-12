@@ -116,7 +116,7 @@ Rails.application.routes.draw do
       member do
         post :accept_candidate
         post :reject_candidate
-        # --- NOUVELLES ROUTES GESTION ---
+        post :recover_candidate
         post  :cancel_candidate # Pour annuler un recrutement
         patch :toggle_status    # Pour passer de Brouillon à Publiée
       end
