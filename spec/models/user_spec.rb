@@ -217,4 +217,65 @@ RSpec.describe User, type: :model do
       expect(user.net_total_estimated_for_month(Date.current)).to eq(95.8)
     end
   end
+
+  # ------------------------------------------------------------
+  # GESTION DES CONFLITS & INDISPONIBILITÉS
+  # ------------------------------------------------------------
+  describe 'Gestion des conflits' do
+    let(:merch) { create(:user) }
+
+    # Setup pour conflicting_work_sessions
+    let(:contract) { create(:contract, user: merch) }
+    let(:existing_offer) { create(:job_offer) }
+    # Session acceptée demain de 14h à 18h
+    let!(:existing_session) do
+      create(:work_session,
+        contract: contract,
+        job_offer: existing_offer,
+        date: Date.tomorrow,
+        start_time: Time.zone.parse("14:00"),
+        end_time: Time.zone.parse("18:00"),
+        status: 'accepted'
+      )
+    end
+
+    describe '#conflicting_work_sessions' do
+      it 'détecte un conflit si les horaires se chevauchent' do
+        new_offer = create(:job_offer)
+        # On écrase les slots par défaut pour créer un conflit (15h-17h)
+        new_offer.job_offer_slots.destroy_all
+        create(:job_offer_slot, job_offer: new_offer, date: Date.tomorrow, start_time: "15:00", end_time: "17:00")
+
+        expect(merch.conflicting_work_sessions(new_offer)).to include(existing_session)
+      end
+
+      it 'ne détecte PAS de conflit si les horaires sont distincts' do
+        new_offer = create(:job_offer)
+        # Pas de conflit (08h-12h)
+        new_offer.job_offer_slots.destroy_all
+        create(:job_offer_slot, job_offer: new_offer, date: Date.tomorrow, start_time: "08:00", end_time: "12:00")
+
+        expect(merch.conflicting_work_sessions(new_offer)).to be_empty
+      end
+    end
+
+    describe '#has_unavailability_during?' do
+      it 'retourne true si une indisponibilité tombe sur la date de l\'offre' do
+        create(:unavailability, user: merch, date: Date.tomorrow)
+        offer = create(:job_offer)
+        offer.job_offer_slots.destroy_all
+        create(:job_offer_slot, job_offer: offer, date: Date.tomorrow)
+
+        expect(merch.has_unavailability_during?(offer)).to be true
+      end
+
+      it 'retourne false si aucune indisponibilité' do
+        offer = create(:job_offer)
+        offer.job_offer_slots.destroy_all
+        create(:job_offer_slot, job_offer: offer, date: Date.tomorrow + 5.days)
+
+        expect(merch.has_unavailability_during?(offer)).to be false
+      end
+    end
+  end
 end
