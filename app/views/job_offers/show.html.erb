@@ -14,16 +14,33 @@
   <%# --- BANDEAU CONFLIT AGENDA --- %>
   <% if user_signed_in? %>
     <% conflicts = current_user.conflicting_work_sessions(@job_offer) %>
+    <% is_unavailable = current_user.has_unavailability_during?(@job_offer) %>
+
     <% if conflicts.any? %>
+      <%# CAS 1 : CONFLIT AVEC UNE AUTRE MISSION (JAUNE) %>
       <div class="alert alert-warning border-0 rounded-4 shadow-sm p-3 mb-4 d-flex align-items-center">
         <div class="bg-warning bg-opacity-25 text-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; flex-shrink: 0;">
           <i class="fa-solid fa-calendar-day fs-5"></i>
         </div>
         <div>
-          <h6 class="fw-bold mb-1 text-dark">Attention : avant de postuler vérifier votre agenda.</h6>
+          <h6 class="fw-bold mb-1 text-dark">Attention : avant de postuler vérifiez votre agenda.</h6>
           <p class="small text-muted mb-0">
             Le <strong><%= l(conflicts.first.date, format: "%d %b") %></strong>, vous avez déjà une mission prévue de
             <strong><%= conflicts.first.start_time.strftime("%H:%M") %> - <%= conflicts.first.end_time.strftime("%H:%M") %></strong> pour <strong><%= conflicts.first.company %></strong>
+          </p>
+        </div>
+      </div>
+
+    <% elsif is_unavailable %>
+      <%# CAS 2 : INDISPONIBILITÉ DÉCLARÉE (ROUGE) %>
+      <div class="alert alert-danger border-0 rounded-4 shadow-sm p-3 mb-4 d-flex align-items-center">
+        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; flex-shrink: 0;">
+          <i class="fa-solid fa-calendar-xmark fs-5"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-1 text-dark">Indisponibilité détectée</h6>
+          <p class="small text-muted mb-0">
+            Vous avez déclaré être indisponible aux dates de cette mission.
           </p>
         </div>
       </div>
