@@ -32,7 +32,7 @@ class JobApplication < ApplicationRecord
   def clean_work_sessions
     fve = job_offer.fve
     agency_code = fve.respond_to?(:agency) ? fve.agency : nil
-    
+
     contract = Contract.find_by(
       user_id: merch_id,
       agency: agency_code
@@ -53,6 +53,7 @@ class JobApplication < ApplicationRecord
 
     self.job_title_snapshot     = job_offer.title
     self.company_name_snapshot  = job_offer.company_name
+    self.agency_snapshot        = job_offer.agency_label
     self.contract_type_snapshot = job_offer.contract_type
     self.start_date_snapshot    = job_offer.start_date
     self.end_date_snapshot      = job_offer.end_date

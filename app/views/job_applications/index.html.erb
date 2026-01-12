@@ -25,7 +25,7 @@
               <i class="fa-solid fa-list-check"></i>
             </span>
             <%= f.input_field :status,
-                collection: [['En attente', 'pending'], ['Acceptées', 'accepted'], ['Refusées', 'rejected'], ['Archivées', 'archived'] ],
+                collection: [['En attente', 'pending'], ['Acceptées', 'accepted'], ['Refusées', 'rejected']],
                 selected: params.dig(:search, :status),
                 include_blank: "Tous les statuts",
                 required: false,
@@ -116,6 +116,7 @@
                   <div class="text-muted small d-flex align-items-center gap-2">
                     <i class="fa-solid fa-store text-orange opacity-75"></i>
                     <%# Utilisation du Snapshot pour l'entreprise et le lieu %>
+                    <%= app.agency_snapshot.presence || offer&.agency_label || "Enseigne archivée" %> •
                     <%= app.company_name_snapshot.presence || offer&.store_name || "Enseigne archivée" %> •
                     <%= app.location_snapshot.presence || offer&.city || "Ville archivée" %>
                   </div>
@@ -143,9 +144,7 @@
                 <div class="col-12 col-md-3 text-md-end d-print-none">
                   <div class="d-flex justify-content-md-end gap-2">
                     <% if offer %>
-                      <%= link_to job_offer_path(offer), class: "btn btn-white border text-muted rounded-3 shadow-sm d-flex align-items-center justify-content-center", style: "width: 42px; height: 42px;", title: "Voir l'offre" do %>
-                        <i class="fa-solid fa-eye"></i>
-                      <% end %>
+                      <%= link_to "Voir l'offre", job_offer_path(offer), class: "btn btn-gray border  rounded-3 shadow-sm d-flex align-items-center justify-content-center"%>
                     <% end %>
 
                     <%# SUPPRESSION / ANNULATION (Sécurisée pour France Travail) %>
@@ -154,7 +153,7 @@
                           turbo_method: :delete,
                           turbo_confirm: "⚠️ ATTENTION : Si vous supprimez cet historique, vous perdez votre preuve de candidature. Supprimer quand même ?"
                         },
-                        class: "btn btn-white text-danger border rounded-3 shadow-sm d-flex align-items-center justify-content-center",
+                        class: "btn btn-red border rounded-3 shadow-sm d-flex align-items-center justify-content-center",
                         style: "width: 42px; height: 42px;" do %>
                       <i class="fa-solid fa-trash-can"></i>
                     <% end %>

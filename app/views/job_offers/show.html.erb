@@ -308,21 +308,21 @@
 
                   <hr class="border-success border-opacity-25 my-3">
 
-    <p class="small fw-bold text-dark mb-2">Un empêchement ?</p>
-    <p class="text-muted mb-3" style="font-size: 0.75rem;">
-      Votre candidature ayant été validée, merci de contacter directement l'agence pour toute annulation.
-    </p>
+                  <p class="small fw-bold text-dark mb-2">Un empêchement ?</p>
+                  <p class="text-muted mb-3" style="font-size: 0.75rem;">
+                    Votre candidature ayant été validée, merci de contacter directement l'agence pour toute annulation.
+                  </p>
 
-    <% if @job_offer.contact_phone.present? %>
-      <a href="tel:<%= @job_offer.contact_phone %>" class="btn btn-gray w-100 rounded-pill fw-bold btn-sm shadow-sm">
-        <i class="fa-solid fa-phone me-2"></i> Appeler l'agence
-      </a>
-    <% elsif @job_offer.contact_email.present? %>
-      <a href="mailto:<%= @job_offer.contact_email %>" class="btn btn-white border-success text-success w-100 rounded-pill fw-bold btn-sm shadow-sm">
-        <i class="fa-regular fa-envelope me-2"></i> Envoyer un email
-      </a>
-    <% end %>
-  </div>
+                  <% if @job_offer.contact_phone.present? %>
+                    <a href="tel:<%= @job_offer.contact_phone %>" class="btn btn-gray w-100 rounded-pill fw-bold btn-sm shadow-sm">
+                      <i class="fa-solid fa-phone me-2"></i> Appeler l'agence
+                    </a>
+                  <% elsif @job_offer.contact_email.present? %>
+                    <a href="mailto:<%= @job_offer.contact_email %>" class="btn btn-white border-success text-success w-100 rounded-pill fw-bold btn-sm shadow-sm">
+                      <i class="fa-regular fa-envelope me-2"></i> Envoyer un email
+                    </a>
+                  <% end %>
+                </div>
 
               <% else %>
 

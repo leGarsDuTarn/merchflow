@@ -68,6 +68,7 @@ class ProofPdf < Prawn::Document
 
       agency_name = app.job_offer&.agency_label || "Agence archivée"
       company_name  = app.company_name_snapshot.presence || app.job_offer&.company_name || "N/A"
+      agency_name = app.agency_snapshot.presence || app.job_offer&.agency_label || "N/A"
 
       full_agency_info = "#{agency_name} - #{company_name}"
 
