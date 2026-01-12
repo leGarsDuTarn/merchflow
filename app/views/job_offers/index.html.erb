@@ -136,7 +136,7 @@
             <% application = user_signed_in? ? current_user.job_applications.find_by(job_offer: offer) : nil %>
             <% is_full = offer.remaining_spots == 0 %>
             <%# CHECK OVERLAP %>
-            <% has_conflict = user_signed_in? && current_user.conflicting_work_sessions(offer).any? %>
+            <% has_conflict = user_signed_in? && (current_user.conflicting_work_sessions(offer).any? || current_user.has_unavailability_during?(offer)) %>
 
             <div class="card-body p-4 d-flex flex-column h-100">
               <div class="d-flex justify-content-between align-items-start mb-2">

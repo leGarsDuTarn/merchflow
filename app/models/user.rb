@@ -230,6 +230,19 @@ class User < ApplicationRecord
     conflicts.compact.uniq
   end
 
+  # app/models/user.rb
+
+  def has_unavailability_during?(job_offer)
+    # Sécurité : si l'offre n'a pas de créneaux, retourne faux
+    return false if job_offer.job_offer_slots.blank?
+
+    # Récupère toutes les dates des créneaux de l'offre
+    offer_dates = job_offer.job_offer_slots.pluck(:date)
+
+    # Vérifie si l'utilisateur a une indisponibilité enregistrée à l'une de ces dates
+    unavailabilities.where(date: offer_dates).exists?
+  end
+
   # ============================================================
   # DASHBOARD — TOTAUX GLOBAUX
   # ============================================================
