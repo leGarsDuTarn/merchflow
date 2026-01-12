@@ -20,7 +20,7 @@ RSpec.describe RecruitMerchService, type: :service do
   let!(:application_1) { create(:job_application, job_offer: offer, merch: merch_1) }
   let!(:application_2) { create(:job_application, job_offer: offer, merch: merch_2) }
 
-  describe '#call' do
+  describe 'call' do
     context 'quand tout est valide (Succès)' do
       subject(:service) { described_class.new(application_1) }
 
@@ -138,6 +138,32 @@ RSpec.describe RecruitMerchService, type: :service do
 
         expect(service.call).to be false
         expect(service.error_message).to include("déjà été recruté")
+      end
+    end
+
+    context 'cas limites supplémentaires' do
+      it "échoue si le FVE n'a pas d'agence valide" do
+        # On passe par update_columns pour skip les validations si nécessaire
+        fve.update_columns(agency: nil)
+        service = RecruitMerchService.new(application_1)
+        expect(service.call).to be false
+        expect(service.error_message).to include("agence")
+      end
+
+      it 'gère correctement une mission qui passe minuit' do
+        slot.update!(start_time: "22:00", end_time: "02:00")
+        offer.reload
+        service = RecruitMerchService.new(application_1)
+        expect { service.call }.to change(WorkSession, :count).by(1)
+      end
+
+      it "renvoie true même si l'offre n'a pas de slots" do
+        slot.destroy
+        offer.reload
+        service = RecruitMerchService.new(application_1)
+        # Actuellement ton service boucle sur slots, si vide il finit et renvoie true
+        expect(service.call).to be true
+        expect(WorkSession.where(job_offer: offer).count).to eq(0)
       end
     end
   end
