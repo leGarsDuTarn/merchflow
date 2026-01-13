@@ -41,6 +41,29 @@ RSpec.describe JobOffer, type: :model do
       offer.job_offer_slots.destroy_all
     end
 
+    it 'ajuste automatiquement la date de fin au lendemain pour une mission de nuit' do
+      offer.job_offer_slots.destroy_all
+
+      create(:job_offer_slot,
+             job_offer: offer,
+             date: Date.new(2026, 3, 2),
+             start_time: "22:00",
+             end_time: "04:00")
+
+      # === IMPORTANT ===
+      # 1. On dit à l'offre de regarder ce qu'il y a en base de données (le nouveau slot)
+      offer.job_offer_slots.reload
+
+      # 2. On sauvegarde l'offre pour déclencher la méthode 'sync_dates_from_slots'
+      offer.save
+
+      # 3. On recharge l'objet offre pour être sûr d'avoir les dates à jour
+      offer.reload
+
+      expect(offer.start_date.to_date).to eq(Date.new(2026, 3, 2))
+      expect(offer.end_date.to_date).to eq(Date.new(2026, 3, 3))
+    end
+
     it 'calcule le total des heures réelles (real_total_hours)' do
       # 08:00 -> 12:00 (4h)
       create(:job_offer_slot, job_offer: offer, start_time: "08:00", end_time: "12:00", break_start_time: nil, break_end_time: nil)
