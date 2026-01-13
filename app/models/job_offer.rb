@@ -266,6 +266,10 @@ class JobOffer < ApplicationRecord
 
   private
 
+  def set_department_code
+    self.department_code = zipcode[0..1] if zipcode.present?
+  end
+
   # Méthode issue de WorkSession pour gérer les virgules
   def normalize_decimal_fields
     fields_to_check = %i[hourly_rate night_rate ifm_rate cp_rate km_rate km_limit]
@@ -297,17 +301,24 @@ class JobOffer < ApplicationRecord
     valid_slots = job_offer_slots.reject(&:marked_for_destruction?)
     return if valid_slots.empty?
 
-    first_slot = valid_slots.min_by { |s| [s.date, s.start_time] }
-    last_slot  = valid_slots.max_by { |s| [s.date, s.end_time] }
+    # Trouve le premier et le dernier créneau
+    first_slot = valid_slots.min_by { |s| [s.date, s.start_time.strftime('%H:%M')] }
+    last_slot  = valid_slots.max_by { |s| [s.date, s.end_time.strftime('%H:%M')] }
 
     if first_slot && last_slot
+      # 1. Définition de la date de début
       self.start_date = Time.zone.parse("#{first_slot.date} #{first_slot.start_time.strftime('%H:%M')}")
-      self.end_date   = Time.zone.parse("#{last_slot.date} #{last_slot.end_time.strftime('%H:%M')}")
-    end
-  end
 
-  def set_department_code
-    self.department_code = zipcode[0..1] if zipcode.present?
+      # 2. Définition de la date de fin
+      # Si l'heure de fin (ex: 04:00) est avant l'heure de début (ex: 22:00),
+      # on considère que la fin est le lendemain (+1 jour).
+      date_fin_base = last_slot.date
+      if last_slot.end_time.strftime('%H:%M') <= last_slot.start_time.strftime('%H:%M')
+        date_fin_base += 1.day
+      end
+
+      self.end_date = Time.zone.parse("#{date_fin_base} #{last_slot.end_time.strftime('%H:%M')}")
+    end
   end
 
   def compute_duration_minutes

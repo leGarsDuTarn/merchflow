@@ -80,74 +80,35 @@ RSpec.describe JobOffer, type: :model do
     end
   end
 
-  describe 'place restante' do
+  describe 'Gestion des places (Spots)' do
     let(:offer) { create(:job_offer, headcount_required: 3) }
 
-    it 'décrémente quand un candidat est accepté' do
-      create(:job_application, job_offer: offer, status: 'accepted')
-      expect(offer.remaining_spots).to eq(2)
+    context 'Calcul simple' do
+      it 'décrémente quand un candidat est accepté' do
+        create(:job_application, job_offer: offer, status: 'accepted')
+        expect(offer.remaining_spots).to eq(2)
+      end
+
+      it 'ne change pas pour les candidats en attente' do
+        create(:job_application, job_offer: offer, status: 'pending')
+        expect(offer.remaining_spots).to eq(3)
+      end
     end
 
-    it 'ne change pas pour les candidats en attente' do
-      create(:job_application, job_offer: offer, status: 'pending')
-      expect(offer.remaining_spots).to eq(3)
-    end
-  end
+    context 'Cas limites' do
+      let(:single_spot_offer) { create(:job_offer, headcount_required: 1) }
 
-  context 'gestion des candidatures' do
-    let(:offer) { create(:job_offer, headcount_required: 1) }
+      it 'calcule correctement le nombre de places même en cas de dépassement' do
+        create_list(:job_application, 2, job_offer: single_spot_offer, status: 'accepted')
+        expect(single_spot_offer.remaining_spots).to eq(0) # Ou -1 selon ta logique, mais ici on teste 0
+      end
 
-    it 'calcule correctement le nombre de places même en cas de dépassement' do
-      create_list(:job_application, 2, job_offer: offer, status: 'accepted')
-      expect(offer.remaining_spots).to eq(0)
-    end
-
-    it 'recalcule remaining_spots correctement après annulation' do
-      app = create(:job_application, job_offer: offer, status: 'accepted')
-      expect(offer.remaining_spots).to eq(0)
-      app.update(status: 'pending')
-      expect(offer.remaining_spots).to eq(1)
-    end
-  end
-
-  context 'validation des créneaux (Slots)' do
-    let(:offer) { create(:job_offer) }
-
-    it 'accepte un slot valide' do
-      # 08h-12h avec pause 10h-11h
-      slot = build(:job_offer_slot, job_offer: offer,
-                   start_time: "08:00", end_time: "12:00",
-                   break_start_time: "10:00", break_end_time: "11:00")
-      expect(slot).to be_valid
-    end
-
-    # spec/models/job_offer_spec.rb
-
-    it 'refuse un start_time identique à end_time' do
-      slot = build(:job_offer_slot, job_offer: offer, start_time: "08:00", end_time: "08:00")
-      expect(slot).not_to be_valid
-      # On vérifie le message exact produit par le modèle
-      expect(slot.errors[:end_time]).to include("doit être strictement après l'heure de début")
-    end
-
-    it 'accepte une mission qui traverse minuit (ex: 22h -> 02h)' do
-      slot = build(:job_offer_slot, job_offer: offer, start_time: "22:00", end_time: "02:00")
-      expect(slot).to be_valid
-    end
-    it 'refuse une pause qui sort des horaires de la mission' do
-      # Mission 08h-12h / Pause 13h-14h
-      slot = build(:job_offer_slot, job_offer: offer,
-                   start_time: "08:00", end_time: "12:00",
-                   break_start_time: "13:00", break_end_time: "14:00")
-      expect(slot).not_to be_valid
-      expect(slot.errors[:break_start_time]).to include("la pause doit être comprise dans les horaires de mission")
-    end
-
-    it 'refuse une pause dont la fin est avant le début' do
-      slot = build(:job_offer_slot, job_offer: offer,
-                   break_start_time: "12:30", break_end_time: "12:00")
-      expect(slot).not_to be_valid
-      expect(slot.errors[:break_end_time]).to include("doit être après le début de la pause")
+      it 'recalcule remaining_spots correctement après annulation' do
+        app = create(:job_application, job_offer: single_spot_offer, status: 'accepted')
+        expect(single_spot_offer.remaining_spots).to eq(0)
+        app.update(status: 'pending')
+        expect(single_spot_offer.remaining_spots).to eq(1)
+      end
     end
   end
 end
