@@ -72,8 +72,12 @@
           <%= f.label :night_rate, "MAJORATION", class: "form-label small fw-bold text-muted" %>
           <div class="input-group shadow-sm rounded-3 bg-white border-0">
             <span class="input-group-text bg-transparent border-0 ps-3 text-warning fw-bold"><i class="fa-solid fa-percent"></i></span>
-            <%# NOTE: On affiche la valeur directe car la DB est maintenant en 50.0 %>
-            <%= f.number_field :night_rate, class: "form-control bg-transparent border-0 fw-bold text-end", step: 0.1, placeholder: "50" %>
+            <%= f.number_field :night_rate,
+                class: "form-control bg-transparent border-0 fw-bold text-end",
+                step: 0.1,
+                min: 0,
+                max: 100,
+                placeholder: "50" %>
             <span class="input-group-text bg-transparent border-0 pe-3 fw-bold text-dark">%</span>
           </div>
         </div>
