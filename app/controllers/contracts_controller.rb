@@ -74,10 +74,6 @@ class ContractsController < ApplicationController
       :name, :agency, :contract_type,
       :night_rate, :km_rate, :km_limit, :km_unlimited,
       :ifm_rate, :cp_rate, :notes
-    ).tap do |w|
-      w[:ifm_rate]   = w[:ifm_rate].to_f   / 100 if w[:ifm_rate].present?
-      w[:cp_rate]    = w[:cp_rate].to_f    / 100 if w[:cp_rate].present?
-      w[:night_rate] = w[:night_rate].to_f / 100 if w[:night_rate].present?
-    end
+    )
   end
 end
