@@ -22,28 +22,19 @@ class Admin::FveInvitationsController < ApplicationController
     @invitation.expires_at = 7.days.from_now
 
     if @invitation.save
-
-      # 1. GÉNÉRATION DU LIEN (Pour le copier-coller Admin)
-      # Note : On utilise fve_accept_invitation_url car la route est dans le namespace :fve
       invite_link = fve_accept_invitation_url(token: @invitation.token)
-
-      # 2. LOGIQUE D'ENVOI D'EMAIL (Seulement en DEV pour l'instant)
-      # Permet de garder la logique de récupération du Label Agence
       agency_label = Agency.find_by(code: @invitation.agency)&.label || @invitation.agency.to_s.humanize
 
-      if Rails.env.development?
-        # En Dev, ca envoie le mail pour tester le design via Letter Opener
-        FveInvitationMailer.invite_fve(@invitation, agency_label).deliver_now
-      end
+      # Envoi du mail (prod & dev)
+      FveInvitationMailer.invite_fve(@invitation, agency_label).deliver_now
 
-      # 3. MESSAGE FLASH AVEC LE LIEN
-      # L'input permet de copier le lien facilement même en Prod sans SMTP
-      flash[:notice] = "Invitation FVE créée !<br>
-                        <small>Copiez ce lien et envoyez-le manuellement :</small><br>
-                        <input type='text' value='#{invite_link}' class='form-control mt-2' readonly onclick='this.select();'>".html_safe
+      flash[:notice] = "Invitation FVE créée et email envoyé !<br>
+                      <small>Lien de secours :</small><br>
+                      <input type='text' value='#{invite_link}' class='form-control mt-2' readonly onclick='this.select();'>".html_safe
 
-      redirect_to admin_fve_invitations_path
+      redirect_to admin_fve_invitations_path, status: :see_other
     else
+      # C'est bien de garder unprocessable_entity ici pour que Turbo affiche les erreurs
       render :new, status: :unprocessable_entity
     end
   end
