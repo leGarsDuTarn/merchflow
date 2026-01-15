@@ -11,23 +11,37 @@ class DashboardController < ApplicationController
     end
 
     # ==========================================================
-    # 1. GESTION DE LA DATE (Sécurisée)
+    # 1. GESTION DE LA DATE (Nouvelle implémentation)
     # ==========================================================
-    @year = (params[:year] || Date.current.year).to_i
-    @month = (params[:month] || Date.current.month).to_i
 
-    begin
-      @target_date = Date.new(@year, @month, 1)
-    rescue ArgumentError
-      @target_date = Date.current.beginning_of_month
-      @year = @target_date.year
-      @month = @target_date.month
+    # 1. Gestion de la Date (Mois/Année)
+    if params[:date].present?
+      parsed = Date.parse("#{params[:date]}-01")
+      @year  = parsed.year
+      @month = parsed.month
+    else
+      @year  = (params[:year]  || Date.today.year).to_i
+      @month = (params[:month] || Date.today.month).to_i
     end
+
+    # Normalisation des mois (ex: mois 13 => mois 1 année N+1)
+    if @month < 1
+      @month = 12
+      @year -= 1
+    end
+
+    if @month > 12
+      @month = 1
+      @year += 1
+    end
+
+    # On définit target_date basé sur les calculs ci-dessus pour que le reste du fichier fonctionne
+    @target_date = Date.new(@year, @month, 1)
 
     @is_current_month = (@target_date.beginning_of_month == Date.current.beginning_of_month)
     @user = current_user
 
-    # Navigation
+    # Navigation (Basée sur target_date mise à jour)
     @prev_month = (@target_date - 1.month).month
     @prev_year  = (@target_date - 1.month).year
     @next_month = (@target_date + 1.month).month

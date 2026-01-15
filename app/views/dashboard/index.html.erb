@@ -2,6 +2,8 @@
 
   <%# --- NAVIGATION MOIS --- %>
   <div class="d-flex justify-content-between align-items-center mb-5">
+
+    <%# 1. Bouton Précédent %>
     <%= link_to dashboard_path(year: @prev_year, month: @prev_month), class: "btn btn-white shadow-sm rounded-3 border" do %>
       <i class="fa-solid fa-chevron-left text-orange"></i>
     <% end %>
@@ -13,10 +15,11 @@
       <small class="text-muted">Tableau de bord</small>
     </div>
 
-    <% is_next_month_in_future = (@target_date + 1.month).beginning_of_month > Date.current.beginning_of_month %>
-    <%= link_to dashboard_path(year: @next_year, month: @next_month), class: "btn btn-white shadow-sm rounded-3 border #{'disabled' if is_next_month_in_future}" do %>
+    <%# 2. Bouton Suivant (J'ai retiré la condition 'disabled' pour que tu puisses aller en Février) %>
+    <%= link_to dashboard_path(year: @next_year, month: @next_month), class: "btn btn-white shadow-sm rounded-3 border" do %>
       <i class="fa-solid fa-chevron-right text-orange"></i>
     <% end %>
+
   </div>
 
   <%# --- 1. BLOC STATISTIQUES --- %>
