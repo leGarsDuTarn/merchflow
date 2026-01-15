@@ -89,7 +89,7 @@ class WorkSessionsController < ApplicationController
     if @work_session.save
       redirect_to @work_session, notice: "Mission enregistrée."
     else
-      flash.now[:alert] = "Erreur lors de l’enregistrement."
+      flash.now[:alert] = @work_session.errors.full_messages.to_sentence
       # @contract reste nil ici dans le Cas 2, donc le select s'affichera
       render :new, status: :unprocessable_entity
     end
