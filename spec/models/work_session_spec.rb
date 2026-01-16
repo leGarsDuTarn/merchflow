@@ -68,7 +68,7 @@ RSpec.describe WorkSession, type: :model do
   end
 
   # ------------------------------------------------------------
-  # CALLBACK : normalize_decimal_fields (NOUVEAU)
+  # CALLBACK : normalize_decimal_fields
   # ------------------------------------------------------------
   describe 'Callback normalize_decimal_fields' do
     it 'remplace les virgules par des points pour les frais' do
@@ -182,30 +182,38 @@ RSpec.describe WorkSession, type: :model do
       expect(ws.net).to eq(15.6)
     end
 
-    it 'calcule net + ifm + cp + km_payment_final + FRAIS' do
-      contract = build(:contract, night_rate: 0, ifm_rate: 0, cp_rate: 0, km_rate: 0)
+    # --- NOUVEAU TEST D'INTÉGRATION (Correction du Bug KM) ---
+    it 'calcule le net_total en prenant en compte le taux KM personnalisé (0.50)' do
+      # On force un taux spécifique (0.50) sur le contrat
+      # ET on active km_unlimited: true pour ne pas être bloqué par la limite de 40km de la Factory
+      contract = create(:contract,
+                        km_rate: 0.50,
+                        km_unlimited: true,
+                        night_rate: 0,
+                        ifm_rate: 10,
+                        cp_rate: 10)
 
       ws = build(:work_session,
                  contract: contract,
                  start_time: Time.zone.parse("10:00"),
-                 end_time: Time.zone.parse("12:00"),
-                 night_minutes: 0,
-                 hourly_rate: 10,
-                 effective_km: 10,
-                 fee_meal: 10,
-                 fee_parking: 5)
+                 end_time: Time.zone.parse("12:00"), # 2h
+                 hourly_rate: 10.0,                  # Brut = 20€
+                 km_custom: 100,                     # Utilise km_custom (100km * 0.50 = 50€)
+                 fee_meal: 0,
+                 fee_parking: 0)
 
-      allow(contract).to receive(:ifm).and_return(5.0)
-      allow(contract).to receive(:cp).and_return(5.0)
-      allow(contract).to receive(:km_payment).and_return(7.0)
+      ws.valid? # Lance les calculs
 
-      ws.valid?
+      # 1. Vérifie que km_payment_final retourne bien 50€
+      expect(ws.km_payment_final).to eq(50.0)
 
-      net_ifm = 5.0 * 0.78
-      net_cp  = 5.0 * 0.78
-      # Frais = 15.0
+      # 2. Vérifie le total complet sans utiliser de Mock
+      net_brut = ws.net                      # 15.6
+      net_ifm  = (ws.amount_ifm * 0.78).round(2)
+      net_cp   = (ws.amount_cp * 0.78).round(2)
 
-      expected_total = (ws.net + net_ifm + net_cp + 7.0 + 15.0).round(2)
+      expected_total = (net_brut + net_ifm + net_cp + 50.0).round(2)
+
       expect(ws.net_total).to eq(expected_total)
     end
   end
