@@ -219,26 +219,43 @@ RSpec.describe WorkSession, type: :model do
   end
 
   # ------------------------------------------------------------
-  # total_payment (avec frais)
+  # total_payment (avec frais) - VERSION ROBUSTE (SANS MOCKS)
   # ------------------------------------------------------------
   describe 'Méthode total_payment' do
-    it 'calcule brut + ifm + cp + km + fees' do
-      contract = build(:contract)
+    it 'calcule correctement la somme : brut + ifm + cp + km + fees' do
+      # 1. On configure un contrat clair (10% IFM, 10% CP, 0.50€/km)
+      contract = create(:contract,
+                        ifm_rate: 10.0,
+                        cp_rate: 10.0,
+                        km_rate: 0.50,
+                        km_unlimited: true, 
+                        night_rate: 0)
+
+      # 2. On crée une session de 2h à 10€/h (Brut = 20€)
+      # + 10km (5€) + 20€ de frais divers
       ws = build(:work_session,
                  contract: contract,
-                 duration_minutes: 120,
-                 night_minutes: 0,
-                 hourly_rate: 10,
-                 effective_km: 15,
-                 fee_meal: 15,    # +15
-                 fee_parking: 5,  # +5
-                 fee_toll: 2)     # +2 = Total frais 22
+                 start_time: Time.zone.parse("10:00"),
+                 end_time: Time.zone.parse("12:00"),
+                 hourly_rate: 10.0,
+                 km_custom: 10,       # 10 km * 0.50 = 5.0 €
+                 fee_meal: 15,        # 15 €
+                 fee_parking: 5,      # 5 €
+                 fee_toll: 0)
 
-      allow(contract).to receive(:ifm).and_return(5)
-      allow(contract).to receive(:cp).and_return(5)
-      allow(contract).to receive(:km_payment).and_return(7)
+      ws.valid? # Lance les calculs
 
-      expect(ws.total_payment).to eq(ws.brut + 5 + 5 + 7 + 22)
+      # 3. On calcule ce qu'on attend "en vrai"
+      # Brut = 20.0
+      # IFM  = 10% de 20 = 2.0
+      # CP   = 10% de (20 + 2) = 2.2
+      # KM   = 5.0
+      # Fees = 20.0
+      # TOTAL ATTENDU = 49.2
+
+      expected_total = 20.0 + 2.0 + 2.2 + 5.0 + 20.0
+
+      expect(ws.total_payment).to eq(expected_total)
     end
   end
 
