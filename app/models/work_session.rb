@@ -229,7 +229,9 @@ class WorkSession < ApplicationRecord
 
   # Net à payer (Virement final)
   def net_total
-    amount_km  = contract.km_payment(effective_km).round(2)
+    # CORRECTION ICI : On appelle km_payment_final pour être sûr d'avoir
+    # le même montant que celui affiché dans le détail (50 € et non 25 €).
+    amount_km = km_payment_final.round(2)
 
     # On déduit les charges (approx 22%) sur les primes aussi
     net_ifm = (amount_ifm * 0.78).round(2)
