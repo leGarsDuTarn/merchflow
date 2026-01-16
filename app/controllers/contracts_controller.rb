@@ -73,7 +73,7 @@ class ContractsController < ApplicationController
     params.require(:contract).permit(
       :name, :agency, :contract_type,
       :night_rate, :km_rate, :km_limit, :km_unlimited,
-      :ifm_rate, :cp_rate, :notes
+      :ifm_rate, :cp_rate, :notes, :night_start, :night_end
     )
   end
 end
