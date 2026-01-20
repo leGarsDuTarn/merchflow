@@ -4,98 +4,101 @@
     Gestion des utilisateurs
   </h1>
 
-  <%# ========================================================== %>
-  <%# ZONE DE RECHERCHE (Formulaire simple avec bouton de reset) %>
-  <%# ========================================================== %>
+  <%# --- BARRE D'OUTILS (Recherche + Tri) --- %>
   <div class="row justify-content-center mb-5">
-    <div class="col-12 col-md-8 col-lg-6">
-      <%= form_with url: admin_users_path, method: :get, class: "d-flex shadow-sm rounded-pill overflow-hidden border" do %>
+    <div class="col-12 col-md-10 col-lg-8">
+      <div class="d-flex gap-2">
+        <div class="flex-grow-1">
+          <%= form_with url: admin_users_path, method: :get, class: "d-flex shadow-sm rounded-pill overflow-hidden border bg-white" do %>
+            <%= hidden_field_tag :sort, params[:sort] %>
+            <input type="search" name="query" class="form-control border-0 py-3 ps-4" placeholder="Rechercher (Nom, Email, Rôle...)" value="<%= params[:query] %>">
+            <button type="submit" class="btn btn-orange px-4 flex-shrink-0"><i class="fa-solid fa-search"></i></button>
+          <% end %>
+        </div>
 
-        <input type="search"
-               name="query"
-               class="form-control border-0 py-3 ps-4"
-               placeholder="Rechercher par nom, email ou rôle (admin, fve, merch, etc.)..."
-               value="<%= params[:query] %>">
+        <div class="dropdown">
+          <button class="btn btn-white border shadow-sm rounded-pill py-3 px-4 fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-arrow-up-wide-short me-2 text-orange"></i>Trier
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
+            <li><h6 class="dropdown-header text-uppercase small ls-1">Date d'inscription</h6></li>
+            <li><%= link_to admin_users_path(sort: 'date_desc', query: params[:query]), class: "dropdown-item rounded-3 #{'active bg-orange' if params[:sort] == 'date_desc' || params[:sort].blank?}" do %><i class="fa-solid fa-calendar-plus me-2"></i>Plus récents<% end %></li>
+            <li><%= link_to admin_users_path(sort: 'date_asc', query: params[:query]), class: "dropdown-item rounded-3 #{'active bg-orange' if params[:sort] == 'date_asc'}" do %><i class="fa-solid fa-calendar-minus me-2"></i>Plus anciens<% end %></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header text-uppercase small ls-1">Activité</h6></li>
+            <li><%= link_to admin_users_path(sort: 'missions_desc', query: params[:query]), class: "dropdown-item rounded-3 #{'active bg-orange' if params[:sort] == 'missions_desc'}" do %><i class="fa-solid fa-briefcase me-2"></i>Missions : Décroissant<% end %></li>
+            <li><%= link_to admin_users_path(sort: 'missions_asc', query: params[:query]), class: "dropdown-item rounded-3 #{'active bg-orange' if params[:sort] == 'missions_asc'}" do %><i class="fa-solid fa-briefcase me-2"></i>Missions : Croissant<% end %></li>
+          </ul>
+        </div>
+      </div>
 
-        <%# BOUTON DE RECHERCHE AMÉLIORÉ (Orange) %>
-        <button type="submit" class="btn btn-orange px-4 flex-shrink-0">
-          <i class="fa-solid fa-search"></i>
-        </button>
-
+      <% if params[:query].present? || params[:sort].present? %>
+        <div class="text-center mt-2">
+          <%= link_to admin_users_path, class: "text-muted small text-decoration-none" do %><i class="fa-solid fa-rotate-left me-1"></i> Tout réinitialiser<% end %>
+        </div>
       <% end %>
-
-      <%# Bouton de réinitialisation (Affiché seulement si une recherche est active) %>
-      <% if params[:query].present? %>
-        <%= link_to admin_users_path, class: "btn btn-sm btn-green mt-2 w-100" do %>
-          <i class="fa-solid fa-xmark me-2"></i> Réinitialiser la recherche
-        <% end %>
-      <% end %>
-
     </div>
   </div>
 
+  <%# --- LISTE DES CARTES --- %>
   <div class="row g-4">
     <% @users.each do |user| %>
       <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4 p-4 h-100 d-flex flex-column">
+        <div class="card bg-white shadow-sm rounded-4 p-4 h-100 d-flex flex-column border-0">
 
-          <h5 class="fw-bold text-orange mb-1">
-            <%= user.full_name %>
-          </h5>
-
-          <p class="text-muted small mb-3">
-            <i class="fa-solid fa-envelope me-1"></i>
-            <%= user.email %>
-            <br>
-
-            <span class="badge rounded-pill
-                         <%=
-                            case user.role
-                            when 'admin' then 'bg-dark'
-                            when 'fve' then 'bg-primary'
-                            when 'merch' then 'bg-info'
-                            else 'bg-secondary'
-                            end
-                         %>">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+               <h5 class="fw-bold text-dark mb-0"><%= user.full_name %></h5>
+               <div class="text-muted small mt-1"><i class="fa-regular fa-clock me-1"></i>Inscrit le <%= l user.created_at.to_date %></div>
+            </div>
+            <%# Correction ici : user.role au lieu de @user %>
+            <span class="badge rounded-pill border px-3 py-2 <%= case user.role when 'admin' then 'bg-dark text-white' when 'fve' then 'bg-info-subtle text-info border-info' else 'bg-orange-subtle text-orange border-warning' end %>">
               <%= user.role.upcase %>
             </span>
+          </div>
 
-            <% if user.premium? %>
-              <span class="badge bg-gold text-dark rounded-pill ms-1">
-                ★ Premium
-              </span>
-            <% else %>
-              <span class="badge bg-blue text-dark rounded-pill ms-1">
-                Standard
-              </span>
+          <div class="mb-4 mt-2">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fa-solid fa-envelope text-muted me-2 opacity-50"></i>
+              <span class="small text-dark"><%= user.email %></span>
+            </div>
 
+            <%# Affichage missions seulement pour les Merchs %>
+            <% if user.merch? %>
+              <div class="bg-light rounded-3 p-2 d-flex align-items-center mt-3">
+                <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-2 text-orange" style="width: 30px; height: 30px;">
+                  <i class="fa-solid fa-briefcase small"></i>
+                </div>
+                <div>
+                  <span class="fw-bold text-dark"><%= user.missions_count %></span>
+                  <span class="text-muted small">missions saisies</span>
+                </div>
+              </div>
             <% end %>
-          </p>
+          </div>
 
-          <div class="mt-4 d-flex gap-2 justify-content-around">
+          <div class="mt-auto pt-3 border-top d-flex gap-2 justify-content-between">
 
-            <%= link_to admin_user_path(user),
-              class: "btn btn-sm btn-orange-outline fw-semibold",
-              aria: { label: "Modifier l'abonnement #{user.full_name}" } do %>
-              <i class="fa-solid fa-pen me-1"></i>
-            <% end %>
 
-            <%= link_to edit_admin_user_path(user),
-              class: "btn btn-sm btn-orange-outline fw-semibold",
-              aria: { label: "Voir l'utilisateur #{user.full_name}" } do %>
-              <i class="fa-solid fa-eye me-1"></i>
-            <% end %>
 
-            <%= link_to admin_user_path(user),
-              data: {
-              turbo_method: :delete,
-              turbo_confirm: "Supprimer cet utilisateur ?"
-              },
-              class: "btn btn-sm btn-orange-outline fw-semibold",
-              aria: { label: "Supprimer l'utilisateur #{user.full_name}" } do %>
-              <i class="fa-solid fa-trash me-1"></i>
-            <% end %>
+            <div class="d-flex gap-1 d-end">
+              <%# Bouton VOIR (L'icône suffit car on a le 'title' pour l'accessibilité) %>
+              <%= link_to admin_user_path(user),
+                class: "btn btn-sm btn-orange",
+                style: "display: flex; align-items: center; justify-content: center;",
+                title: "Voir le profil" do %>
+                  <i class="fa-solid fa-eye text-dark small"></i>
+                <% end %>
 
+              <%# Bouton SUPPRIMER %>
+              <%= link_to admin_user_path(user),
+                data: { turbo_method: :delete, turbo_confirm: "Supprimer cet utilisateur ?" },
+                class: "btn btn-sm btn-red shadow-sm",
+                style: "display: flex; align-items: center; justify-content: center;",
+                title: "Supprimer" do %>
+                  <i class="fa-solid fa-trash small"></i>
+                <% end %>
+              </div>
 
           </div>
 
@@ -103,5 +106,4 @@
       </div>
     <% end %>
   </div>
-
 </div>

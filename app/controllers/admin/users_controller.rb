@@ -1,44 +1,32 @@
 class Admin::UsersController < ApplicationController
   before_action :authenticate_user!
   before_action :verify_admin
-  before_action :set_user, only: %i[show edit update destroy toggle_premium]
+  before_action :set_user, only: %i[show edit update destroy toggle_premium export_data]
 
   # GET /admin/users
   def index
     authorize [:admin, User]
 
-    if params[:query].present?
-      query = params[:query].downcase
-      search_pattern = "%#{query}%"
+    # 1. Utilisation du scope pour charger les stats de missions (Optimisé)
+    @users = User.with_mission_stats
 
-      # 1. Gestion intelligente des Rôles (Enum)
-      # On regarde si le texte tapé correspond à un rôle (ex: "adm" correspond à "admin" -> 0)
-      # User.roles renvoie un hash {"admin" => 0, "fve" => 1, ...}
-      matching_roles = User.roles.select { |name, _val| name.include?(query) }.values
+    # 2. Utilisation du scope de recherche si paramètre présent
+    @users = @users.search_admin(params[:query]) if params[:query].present?
 
-      # 2. Construction de la requête
-      # On commence par les champs TEXTE classiques
-      sql_query = "LOWER(firstname) LIKE :search OR
-                   LOWER(lastname) LIKE :search OR
-                   LOWER(email) LIKE :search OR
-                   CAST(id AS TEXT) LIKE :search" # Recherche sur l'ID converti en texte
-
-      # 3. Si on a trouvé des rôles correspondants, on ajoute la condition sur l'entier
-      if matching_roles.any?
-        sql_query += " OR role IN (:role_ids)"
-      end
-
-      # 4. Exécution de la requête
-      @users = User.where(sql_query, search: search_pattern, role_ids: matching_roles).order(:firstname)
-
+    # 3. Application du Tri
+    case params[:sort]
+    when 'date_asc'
+      @users = @users.order(created_at: :asc)
+    when 'missions_desc'
+      # Tri basé sur l'attribut calculé par le scope 'with_mission_stats'
+      @users = @users.order('missions_count DESC')
+    when 'missions_asc'
+      @users = @users.order('missions_count ASC')
     else
-      # Pas de recherche : on affiche tout
-      @users = User.order(:firstname)
+      # Défaut : "date_desc" (Les plus récents en premier)
+      @users = @users.order(created_at: :desc)
     end
   end
-
-  # ... Le reste du contrôleur (show, edit, etc.) reste identique ...
-  # (Assurez-vous de garder les autres méthodes en dessous)
 
   # GET /admin/users/:id
   def show
@@ -83,8 +71,7 @@ class Admin::UsersController < ApplicationController
   end
 
   def export_data
-    @user = User.find(params[:id])
-    authorize [:admin, @user], :export_data? # Ligne Pundit corrigée
+    authorize [:admin, @user] # Modification pour utiliser l'instance @user déjà settée
 
     # 1. Création de l'instance du PDF avec Prawn
     pdf = UserPdf.new(@user)
@@ -104,12 +91,5 @@ class Admin::UsersController < ApplicationController
 
   def verify_admin
     redirect_to root_path, alert: 'Accès interdit.' unless current_user&.admin?
-  end
-
-  def user_params
-    params.require(:user).permit(
-      :firstname, :lastname, :email, :phone_number,
-      :allow_email, :allow_phone, :allow_identity
-    )
   end
 end

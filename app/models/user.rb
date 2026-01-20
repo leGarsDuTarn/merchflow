@@ -30,6 +30,38 @@ class User < ApplicationRecord
   has_many :job_applications, class_name: 'JobApplication', foreign_key: 'merch_id', dependent: :destroy
 
   # ============================================================
+  # SCOPES (ADMIN DASHBOARD)
+  # ============================================================
+
+  # Charge les utilisateurs avec le compteur de missions (SQL optimisé)
+  scope :with_mission_stats, -> {
+    left_joins(:work_sessions)
+    .select('users.*, COUNT(work_sessions.id) as missions_count')
+    .group('users.id')
+  }
+
+  # Recherche intelligente (Nom, Email, ID, Rôle)
+  scope :search_admin, ->(query) {
+    return all if query.blank?
+
+    term = "%#{query.strip.downcase}%"
+
+    # On cherche si le terme correspond à un rôle (ex: "adm" -> admin)
+    matching_roles = roles.select { |name, _v| name.include?(query.strip.downcase) }.values
+
+    # Construction de la requête
+    sql = "LOWER(firstname) LIKE :search OR
+           LOWER(lastname) LIKE :search OR
+           LOWER(email) LIKE :search OR
+           CAST(users.id AS TEXT) LIKE :search"
+
+    # On ajoute la condition sur le rôle si pertinent
+    sql += " OR role IN (:roles)" if matching_roles.any?
+
+    where(sql, search: term, roles: matching_roles)
+  }
+
+  # ============================================================
   # RÔLE + ENUM
   # ============================================================
   after_initialize :set_default_role, if: :new_record?
@@ -229,8 +261,6 @@ class User < ApplicationRecord
 
     conflicts.compact.uniq
   end
-
-  # app/models/user.rb
 
   def has_unavailability_during?(job_offer)
     # Sécurité : si l'offre n'a pas de créneaux, retourne faux
