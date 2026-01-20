@@ -8,7 +8,7 @@
     </div>
     <div class="text-end">
       <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
-        <i class="fa-regular fa-calendar me-2"></i><%= l Date.current, format: "%B %Y" %>
+        <i class="fa-regular fa-calendar me-2"></i><%= I18n.l(Date.current, format: "%B %Y").capitalize %>
       </span>
     </div>
   </div>
@@ -16,7 +16,7 @@
   <%# --- 1. KPI PRINCIPAUX --- %>
   <div class="row g-4 mb-4">
 
-    <%# KPI : UTILISATEURS (TOTAL + SEMAINE + MOIS) %>
+    <%# KPI : UTILISATEURS %>
     <div class="col-md-6 col-lg-3">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-dark">
         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -54,53 +54,60 @@
       </div>
     </div>
 
-    <%# KPI : ENGAGEMENT %>
+    <%# KPI : ENGAGEMENT (30 JOURS) %>
     <div class="col-md-6 col-lg-3">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-success">
         <div class="d-flex justify-content-between align-items-start mb-2">
-          <span class="text-muted small text-uppercase fw-bold ls-1">Engagement (7j)</span>
+          <span class="text-muted small text-uppercase fw-bold ls-1">Engagement (30j)</span>
           <i class="fa-solid fa-circle-info text-muted opacity-25"
              data-bs-toggle="tooltip" data-bs-placement="top"
-             title="% d'utilisateurs uniques ayant saisi une mission ces 7 derniers jours."></i>
+             title="% d'utilisateurs uniques ayant saisi une mission ces 30 derniers jours."></i>
         </div>
         <div class="d-flex align-items-baseline">
           <h2 class="fw-bold text-dark mb-0 me-2 text-success"><%= @engagement_rate %>%</h2>
         </div>
-        <small class="text-muted" style="font-size: 0.75rem;">Utilisateurs actifs récents</small>
+        <small class="text-muted" style="font-size: 0.75rem;">Utilisateurs actifs (Mois glissant)</small>
       </div>
     </div>
 
-    <%# KPI : VOLUME D'AFFAIRES %>
+    <%# KPI : VOLUME D'AFFAIRES (TOTAL + MOIS DYNAMIQUE) %>
     <div class="col-md-6 col-lg-3">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-orange">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <span class="text-muted small text-uppercase fw-bold ls-1">Volume Géré</span>
           <i class="fa-solid fa-circle-info text-muted opacity-25"
              data-bs-toggle="tooltip" data-bs-placement="top"
-             title="Valeur totale estimée (Salaires + Frais) des missions saisies ce mois-ci."></i>
+             title="Valeur totale estimée (Salaires + Frais) depuis le lancement."></i>
         </div>
-        <div class="d-flex align-items-baseline">
-          <h2 class="fw-bold text-orange mb-0 me-2">
-            <%= number_to_currency(@total_volume_month, unit: "€", format: "%n %u") %>
+        <div class="d-flex flex-column">
+          <%# 1. TOTAL ABSOLU (Gros) %>
+          <h2 class="fw-bold text-orange mb-1">
+            <%= number_to_currency(@total_volume_all_time, unit: "€", format: "%n %u", precision: 0) %>
           </h2>
+
+          <%# 2. TOTAL DU MOIS (Petit Badge avec Date Dynamique) %>
+          <div class="mt-1">
+             <span class="badge bg-orange-subtle text-orange border border-warning rounded-pill fw-normal">
+               <%= I18n.l(Date.current, format: "%B %Y").capitalize %> : <%= number_to_currency(@total_volume_month, unit: "€", format: "%n %u", precision: 0) %>
+             </span>
+          </div>
         </div>
-        <small class="text-muted" style="font-size: 0.75rem;">Flux financier estimé</small>
       </div>
     </div>
 
-    <%# KPI : CHURN %>
+    <%# KPI : CHURN (30 JOURS) %>
     <div class="col-md-6 col-lg-3">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4 border-start border-4 border-danger">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <span class="text-muted small text-uppercase fw-bold ls-1">Taux de Churn</span>
           <i class="fa-solid fa-circle-info text-muted opacity-25"
              data-bs-toggle="tooltip" data-bs-placement="top"
-             title="% d'utilisateurs (inscrits > 7j) inactifs depuis 30 jours."></i>
+             title="% d'utilisateurs (inscrits > 30j) inactifs depuis 30 jours."></i>
         </div>
         <div class="d-flex align-items-baseline">
           <h2 class="fw-bold text-danger mb-0 me-2"><%= @churn_rate %>%</h2>
         </div>
-        <small class="text-muted" style="font-size: 0.75rem;"><%= @ghost_users_count %> utilisateurs à relancer</small>
+        <small class="text-muted" style="font-size: 0.75rem;"><%= @ghost_users_count %> comptes inactifs > 1 mois</small>
       </div>
     </div>
 
@@ -109,36 +116,40 @@
   <%# --- 2. GRAPHIQUE & PERFORMANCE --- %>
   <div class="row g-4 mb-4">
 
-    <%# GRAPHIQUE INSCRIPTIONS (Avec échelle corrigée et couleur douce) %>
+    <%# COLONNE GAUCHE : GRAPHIQUE + DERNIERS INSCRITS %>
     <div class="col-lg-8">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
-        <h5 class="fw-bold text-dark mb-4">Inscriptions (7 derniers jours)</h5>
 
-        <div class="d-flex justify-content-around align-items-end h-100 pb-2" style="min-height: 180px;">
+        <%# --- PARTIE HAUTE : LE GRAPHIQUE --- %>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark m-0">Inscriptions (7 derniers jours)</h5>
+        </div>
+
+        <div class="d-flex justify-content-around align-items-end pb-2 mb-4" style="min-height: 150px;">
           <%
-             # CALCUL DE L'ÉCHELLE : Minimum 10
+             # Calcul échelle : On met le max à 5 minimum pour éviter d'écraser une seule inscription
+             # Si max = 1, l'échelle est 5, donc 1 barre = 20% de hauteur (bien visible)
              current_max = @registrations_by_day.values.max.to_i
-             scale_max   = [current_max, 10].max
+             scale_max   = [current_max, 5].max
           %>
 
           <% @registrations_by_day.each do |date, count| %>
             <%
-               # Hauteur en %
                height_percent = (count.to_f / scale_max * 100).round
+               # Si count > 0, on force au moins 15% de hauteur pour que ça se voit
+               display_height = count > 0 ? [height_percent, 15].max : 2
             %>
             <div class="d-flex flex-column align-items-center w-100">
-
-              <%# Le chiffre %>
               <div class="fw-bold text-muted mb-1 small" style="<%= 'visibility: hidden;' if count == 0 %>; font-size: 0.75rem;">
                 <%= count %>
               </div>
 
-              <%# La barre (Orange pastel) %>
+              <%# BARRE ORANGE VIF (#fd7e14) %>
               <div class="w-50 rounded-top-pill"
                    data-bs-toggle="tooltip"
                    title="<%= count %> inscrit(s) le <%= l date %>"
-                   style="height: <%= [height_percent, 2].max %>%;
-                          background-color: <%= count > 0 ? '#FFCC80' : '#f8f9fa' %>;
+                   style="height: <%= display_height %>%;
+                          background-color: <%= count > 0 ? '#fd7e14' : '#f8f9fa' %>;
                           transition: height 0.5s;">
               </div>
 
@@ -148,10 +159,55 @@
             </div>
           <% end %>
         </div>
+
+        <%# --- SÉPARATEUR --- %>
+        <hr class="text-muted opacity-10 my-3">
+
+        <%# --- PARTIE BASSE : LES 3 DERNIERS INSCRITS --- %>
+        <h6 class="text-muted small fw-bold text-uppercase ls-1 mb-3">Derniers inscrits</h6>
+
+        <div class="d-flex flex-column gap-3">
+          <% if @last_registrations.present? && @last_registrations.any? %>
+            <% @last_registrations.each do |user| %>
+              <div class="d-flex align-items-center justify-content-between">
+
+                <div class="d-flex align-items-center">
+                  <%# Avatar (Initiale) %>
+                  <div class="rounded-circle bg-light text-dark fw-bold d-flex align-items-center justify-content-center me-3 border shadow-sm"
+                       style="width: 40px; height: 40px; font-size: 0.9rem;">
+                    <%= user.email.first.upcase %>
+                  </div>
+
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size: 0.9rem;">
+                      <%= user.email.split('@').first.capitalize %>
+                    </div>
+                    <div class="text-muted small" style="font-size: 0.75rem;">
+                      <i class="fa-regular fa-clock me-1"></i><%= time_ago_in_words(user.created_at) %>
+                    </div>
+                  </div>
+                </div>
+
+                <%# Badge Rôle %>
+                <% if user.merch? %>
+                  <span class="badge bg-orange-subtle text-orange border border-warning rounded-pill px-3 py-2 small fw-bold">Merch</span>
+                <% else %>
+                  <span class="badge bg-info-subtle text-info border border-info rounded-pill px-3 py-2 small fw-bold">FVE</span>
+                <% end %>
+
+              </div>
+            <% end %>
+          <% else %>
+            <div class="text-center py-2">
+              <span class="text-muted small fst-italic">Aucun utilisateur récent.</span>
+            </div>
+          <% end %>
+        </div>
+
       </div>
     </div>
 
-    <%# PERFORMANCE (Conversion & Temps & Total Missions) %>
+    <%# COLONNE DROITE : PERFORMANCE %>
     <div class="col-lg-4">
       <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
         <h5 class="fw-bold text-dark mb-4">Performance</h5>
